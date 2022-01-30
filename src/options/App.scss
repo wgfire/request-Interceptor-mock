@@ -1,0 +1,10 @@
+@import '~styles/reset.scss';
+
+.app {
+    width: 100vw;
+    height: 100vh;
+
+    .title {
+        text-align: center;
+    }
+}

@@ -1,0 +1,9 @@
+language: node_js
+cache:
+    - yarn
+install:
+    - yarn
+script:
+    # postcss Regular Expression Denial of Service
+    - npx audit-ci -m
+    - yarn test
