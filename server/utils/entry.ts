@@ -34,29 +34,37 @@ if (ENABLE_DEVTOOLS) {
         error && console.error(error);
     });
 }
+// 对其他文件入口进行设置
+const contentsDirs = [
+    { fileName: 'contents', file: fs.readdirSync(resolve(src, 'contents')) },
 
-const contentsDirs = fs.readdirSync(resolve(src, 'contents'));
+    { fileName: 'pageScript', file: fs.readdirSync(resolve(src, 'pageScript')) },
+];
 const validExtensions = ['tsx', 'ts'];
-contentsDirs.forEach((contentScriptDir) => {
-    const hasValid = validExtensions.some((ext) => {
-        const abs = resolve(src, `contents/${contentScriptDir}/index.${ext}`);
-        if (fs.existsSync(abs)) {
-            entry[contentScriptDir] = [abs];
-            return true;
+contentsDirs.forEach((item) => {
+    item.file.forEach((contentScriptDir) => {
+        console.log(contentScriptDir, 'x');
+
+        const hasValid = validExtensions.some((ext) => {
+            const abs = resolve(src, `${item.fileName}/${contentScriptDir}/index.${ext}`);
+            if (fs.existsSync(abs)) {
+                entry[item.fileName] = [abs];
+                return true;
+            }
+
+            return false;
+        });
+
+        if (!hasValid) {
+            const dir = resolve(src, `contents/${contentScriptDir}`);
+            throw new Error(`You must put index.tsx or index.ts under directory: ${dir}`);
         }
-
-        return false;
     });
-
-    if (!hasValid) {
-        const dir = resolve(src, `contents/${contentScriptDir}`);
-        throw new Error(`You must put index.tsx or index.ts under directory: ${dir}`);
-    }
 });
 
 // NOTE: 有可能用户没打算开发 content script，所以 contents/all 这个文件夹可能不存在
-if (entry.all && __DEV__) {
-    entry.all.unshift(resolve(__dirname, './allTabClient.ts'));
+if (entry.index && __DEV__) {
+    entry.index.unshift(resolve(__dirname, './allTabClient.ts'));
     entry.background.unshift(resolve(__dirname, './backgroundClient.ts'));
 }
 

@@ -1,6 +1,6 @@
-export function injectCustomJs(jsPath: string) {
+export function injectCustomJs(jsPath: string = 'lib/mock.js') {
     return new Promise((resolve) => {
-        jsPath = jsPath || 'assets/mock.js';
+        jsPath = jsPath;
         var temp = document.createElement('script');
         temp.setAttribute('type', 'text/javascript');
         temp.setAttribute('async', 'true');

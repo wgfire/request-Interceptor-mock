@@ -6,7 +6,7 @@
     "minimum_chrome_version": "80",
     "permissions": [],
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self';",
-    "web_accessible_resources": ["icons/*", "images/*", "fonts/*"],
+    "web_accessible_resources": ["icons/*", "images/*", "fonts/*", "js/*"],
     "background": {
         "scripts": ["js/background.js"],
         "persistent": true
@@ -15,7 +15,7 @@
         {
             "matches": ["http://*/*", "https://*/*", "<all_urls>"],
             "css": ["css/index.css"],
-            "js": ["js/index.js"]
+            "js": ["js/content.js"]
         }
     ],
     "browser_action": {
