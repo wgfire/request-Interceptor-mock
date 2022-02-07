@@ -58,7 +58,7 @@
     "@babel/preset-typescript": "^7.15.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
     "@soda/friendly-errors-webpack-plugin": "^1.8.0",
-    "@types/chrome": "0.0.157",
+    "@types/chrome": "^0.0.157",
     "@types/copy-webpack-plugin": "^8.0.1",
     "@types/cors": "^2.8.12",
     "@types/css-minimizer-webpack-plugin": "^3.0.2",

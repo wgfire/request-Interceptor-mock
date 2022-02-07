@@ -24,6 +24,8 @@
 
         /* Advanced Options */
         "forceConsistentCasingInFileNames": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        // 类型申明
+        "typeRoots": ["./@types"]
     }
 }
