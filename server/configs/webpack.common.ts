@@ -62,6 +62,10 @@ const commonConfig: Configuration = {
                     from: resolve(PROJECT_ROOT, `src/manifest.${__DEV__ ? 'dev' : 'prod'}.json`),
                     to: 'manifest.json',
                 },
+                {
+                    from: resolve(PROJECT_ROOT, `src/lib`),
+                    to: 'lib',
+                },
             ],
         }),
         new WebpackBar({

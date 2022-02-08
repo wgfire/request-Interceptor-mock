@@ -5,4 +5,5 @@ type EventSourceEvent = Event & {
 
 declare interface Window {
     Mock: mockjs;
+    mockData:any
 }

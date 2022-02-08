@@ -15,3 +15,22 @@ export function injectCustomJs(jsPath: string = 'lib/mock.js') {
         document.head.insertBefore(temp, document.head.firstChild);
     });
 }
+
+export function observerProxy(obj: object, onchange: (target: any) => void): any {
+    let handler = {
+        get(target: any, key: string, receiver: any) {
+            console.log('获取：' + key);
+            // 如果是对象，就递归添加 proxy 拦截
+            if (typeof target[key] === 'object' && target[key] !== null) {
+                return observerProxy(target[key], onchange);
+            }
+            return Reflect.get(target, key, receiver);
+        },
+        set(target: any, key: string, value: any, receiver: any) {
+            console.log(key + '-数据改变了', value);
+            onchange && onchange(target);
+            return Reflect.set(target, key, value, receiver);
+        },
+    };
+    return new Proxy(obj, handler);
+}
