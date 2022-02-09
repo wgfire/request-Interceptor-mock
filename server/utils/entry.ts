@@ -43,8 +43,6 @@ const contentsDirs = [
 const validExtensions = ['tsx', 'ts'];
 contentsDirs.forEach((item) => {
     item.file.forEach((contentScriptDir) => {
-        console.log(contentScriptDir, 'x');
-
         const hasValid = validExtensions.some((ext) => {
             const abs = resolve(src, `${item.fileName}/${contentScriptDir}/index.${ext}`);
             if (fs.existsSync(abs)) {

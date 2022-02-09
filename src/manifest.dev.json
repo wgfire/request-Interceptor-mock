@@ -1,10 +1,22 @@
 {
-    "name": "awesome chrome extension boilerplate",
+    "name": "jjie chrome extension ",
     "version": "1.0",
-    "description": "made by awesome-chrome-extension-boilerplate",
+    "description": "拦截xhr请求，并对其进行mock数据将其返回",
     "manifest_version": 2,
     "minimum_chrome_version": "80",
-    "permissions": [],
+    "permissions": [
+        "webRequest",
+        "*://*/*",
+        "http://*/*",
+        "https://*/*",
+        "tabs",
+        "contextMenus",
+        "notifications",
+        "webRequestBlocking",
+        "storage",
+        "activeTab",
+        "declarativeContent"
+    ],
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self';",
     "web_accessible_resources": ["icons/*", "images/*", "fonts/*", "js/pageScript.js", "lib/*"],
     "background": {
