@@ -1,12 +1,10 @@
 console.log(window.Mock);
 const Mock = window.Mock;
 window.addEventListener('message', (e) => {
-    console.log(e);
     if (e.data.action === 'start') actionMap.start(e.data.mockData);
 });
 
 const startXhr = (mockData: any) => {
-    console.log('执行成功');
     refreshMockAction(mockData);
 };
 const actionMap = {
@@ -19,7 +17,7 @@ export const refreshMockAction = (mockData: Array<any>) => {
         if (item.switch) {
             Mock.mock(item.api, 'POST', () => {
                 console.log('拦截到请求');
-                return item.headData.body;
+                return Mock.mock(item.headData.body)
             });
         } else {
             deleteMockUrl(item.api);
