@@ -28,7 +28,7 @@
             "matches": ["http://*/*", "https://*/*", "<all_urls>"],
             "css": ["css/contents.css"],
             "js": ["js/contents.js"],
-            "run_at": ""
+            "run_at": "document_end"
         }
     ],
     "browser_action": {

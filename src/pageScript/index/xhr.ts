@@ -5,34 +5,34 @@
 */
 interface originalXhrInterface extends XMLHttpRequest {}
 
-// class Xhr extends XMLHttpRequest {
-//     constructor() {
-//         super();
-//     }
-//     send(body?: Document | XMLHttpRequestBodyInit | null): void {
-//         console.log(body, 'body');
-//         super.send(body);
-//     }
-//     onreadystatechange = (ev: XMLHttpRequestEventMap['readystatechange']) => {
-//         console.log('状态改变', this.readyState, this.responseURL);
+class Xhr extends XMLHttpRequest {
+    constructor() {
+        super();
+    }
+    open(method: string, url: string | URL): void {
+        super.open(method,url)
+    }
+     
+    
+    send(body?: Document | XMLHttpRequestBodyInit | null): void {
+        console.log(body, 'body');
+        super.send(body);
+    }
+    onreadystatechange = (ev: XMLHttpRequestEventMap['readystatechange']) => {
+        console.log('状态改变', this.readyState, this.responseURL);
 
-//         if (this.readyState == 4) {
-//             console.log('请求完成');
-//         }
+        if (this.readyState == 4) {
+            console.log('请求完成');
+        }
 
-//         super.onreadystatechange?.(ev);
-//     };
-//     setRequestHeader(name: string, value: string): void {
-//         console.log(name, value);
-//         super.setRequestHeader(name, value);
-//     }
-// }
+        super.onreadystatechange?.(ev);
+    };
+    setRequestHeader(name: string, value: string): void {
+        console.log(name, value);
+        super.setRequestHeader(name, value);
+    }
+}
 
-var aa = XMLHttpRequest.prototype.onreadystatechange;
 
-XMLHttpRequest.prototype.onreadystatechange = function () {
-    console.log('状态改变', this.readyState, this.responseURL);
-    // aa?.apply(this, args);
-};
 
-// window.XMLHttpRequest = Xhr;
+window.XMLHttpRequest = Xhr;
