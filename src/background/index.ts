@@ -12,11 +12,11 @@ window.mockData = [
         headData: {
             body: {
                 data: {
-                    "data|1-2": [
+                    'data|1-2': [
                         {
                             user_id: '3a016e0a-90c5-6f94-3e10-ba0665fbcd39',
                             supplier_name: '中国二十冶集团有限公司',
-                            "name|1-3": '邓-=-',
+                            'name|1-3': '邓-=-',
                         },
                     ],
                     page: 1,
@@ -43,7 +43,7 @@ window.mockData = observerProxy(window.mockData, mockDataChange);
 chrome.browserAction.onClicked.addListener(function () {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         console.log('发送消息');
-        chrome.tabs.sendMessage(tabs[0].id!, {to:'content',action:"toggle"});
+        chrome.tabs.sendMessage(tabs[0].id!, { to: 'content', action: 'toggle' });
     });
 });
 

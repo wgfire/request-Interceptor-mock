@@ -1,4 +1,5 @@
 console.log(window.Mock);
+import './xhr'
 const Mock = window.Mock;
 window.addEventListener('message', (e) => {
     if (e.data.action === 'start') actionMap.start(e.data.mockData);

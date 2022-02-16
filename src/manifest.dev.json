@@ -27,11 +27,11 @@
         {
             "matches": ["http://*/*", "https://*/*", "<all_urls>"],
             "css": ["css/contents.css"],
-            "js": ["js/contents.js"]
+            "js": ["js/contents.js"],
+            "run_at": ""
         }
     ],
     "browser_action": {
-        
         "default_icon": {
             "16": "icons/extension-icon-x16.png",
             "32": "icons/extension-icon-x32.png",

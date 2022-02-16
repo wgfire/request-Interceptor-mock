@@ -10,11 +10,8 @@ import ReactDOM from 'react-dom';
 import { Iframe } from './iframe';
 import { useEffect, useState } from 'react';
 console.log(`Current page show`);
-injectCustomJs('lib/mock.js').then(() => {
-    injectCustomJs('js/pageScript.js').then(() => {
-        console.log('注入完成');
-    });
-}); // 注入mock js
+
+let mockData: any = null;
 const actionMap: {
     [key: string]: (data?: any) => void;
 } = {
@@ -55,29 +52,35 @@ chrome.runtime.onMessage.addListener((response) => {
 
     return true;
 });
+
 const App: React.FC = () => {
-    const [mockData, setMockData] = useState(null);
+    const [iMockData, setImockData] = useState(mockData);
     const getMockData = () => {
         // 向后端发送消息获取mock列表
         chrome.runtime.sendMessage({ action: 'getMock', to: 'background' }, function (response) {
             console.log(response, '获取到的mock数据');
             if (response) {
-                setMockData(response);
-                window.postMessage({
-                    action: 'start',
-                    to: 'pageScript',
-                    mockData: mockData,
-                });
+                // setMockData(response);
+                mockData = response;
+                // window.postMessage({
+                //     action: 'start',
+                //     to: 'pageScript',
+                //     mockData: mockData,
+                // });
             }
         });
     };
     useEffect(() => {
-        getMockData();
+          getMockData();
     }, []);
-    return <Iframe mockData={mockData} />;
+    useEffect(() => {
+        setImockData(mockData);
+    }, [mockData]);
+    return <Iframe mockData={iMockData} />;
 };
-ReactDOM.render(<App />, document.querySelector('#aj'));
 
-// 专业技能：
-// 1.原型制作Axure/墨刀/Visio,PRD文档
-//
+
+    injectCustomJs('js/pageScript.js').then(() => {
+        console.log('注入完成');
+        ReactDOM.render(<App />, document.querySelector('#aj'));
+    });
