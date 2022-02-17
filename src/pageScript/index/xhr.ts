@@ -6,31 +6,56 @@
 // @ts-nocheck
 interface originalXhrInterface extends XMLHttpRequest {}
 const originXhr = new window.XMLHttpRequest();
-
-class Xhr {
-    constructor() {
-        console.log('XX', this.__proto__);
-        for (let selfAttr in this.__proto__) {
-            console.log(selfAttr, 'selfAttr');
-
-            // if (this.__proto__.hasOwnProperty(selfAttr)) {
-            //     console.log(selfAttr, 'selfAttr');
-            //     originXhr[selfAttr] = this[selfAttr];
-            // }
-        }
-        // for (let attr in originXhr) {
-        //     if (typeof originXhr[attr] === 'function') {
-        //         this[attr] = originXhr[attr].bind(originXhr);
-        //     } else {
-        //         this[attr] = originXhr[attr];
-        //     }
+const Overload:XMLHttpRequest = {
+    
+    onreadystatechange (ev: XMLHttpRequestEventMap['readystatechange']) {
+        console.log('状态改变', this.readyState, this.responseURL);
+        if (this.readyState == 4) {
+            console.log('请求完成');
+        } 
+    },
+    send(body?: Document | XMLHttpRequestBodyInit | null): void {
+        console.log(body, 'body');
+      
+    },
+    setRequestHeader(name: string, value: string): void {
+        console.log(name, value);
+    }
+}
+class Xhr  {
+      constructor () {
+        console.log(this)
+        // for(let selfAttr in Overload) {
+        //     console.log(selfAttr,'self')
+        //     originXhr[selfAttr] = Overload[selfAttr].bind(originXhr)
         // }
+      
+        for (let attr in originXhr) {
+            if(attr==='onreadystatechange'){
+                originXhr[attr] = this.onreadystatechange
+            }
+            if(attr==='send'){
+                originXhr[attr] = this.send
+            }
+          
+
+            if (typeof originXhr[attr] === 'function') {
+                this[attr] = originXhr[attr].bind(originXhr);
+            } else {
+                this[attr] = originXhr[attr];
+            }
+        }
+    
+    }
+    onreadystatechange (ev: XMLHttpRequestEventMap['readystatechange']) {
+        console.log('状态改变', this.readyState, this.responseURL);
+        if (this.readyState == 4) {
+            console.log('请求完成');
+        } 
     }
     send(body?: Document | XMLHttpRequestBodyInit | null): void {
         console.log(body, 'body');
-    }
-    setRequestHeader(name: string, value: string): void {
-        console.log(name, value);
+
     }
 }
 
