@@ -1,4 +1,3 @@
-console.log(window.Mock);
 import './xhr'
 const Mock = window.Mock;
 window.addEventListener('message', (e) => {

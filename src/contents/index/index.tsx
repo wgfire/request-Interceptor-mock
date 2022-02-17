@@ -6,12 +6,12 @@
 */
 import './style.scss';
 import { injectCustomJs } from '../../utils/common';
-import ReactDOM from 'react-dom';
-import { Iframe } from './iframe';
-import { useEffect, useState } from 'react';
+// import ReactDOM from 'react-dom';
+// import { Iframe } from './iframe';
+// import { useEffect, useState } from 'react';
 console.log(`Current page show`);
 
-let mockData: any = null;
+// let mockData: any = null;
 const actionMap: {
     [key: string]: (data?: any) => void;
 } = {
@@ -35,52 +35,54 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     }
 });
 
-const aj = document.createElement('div');
-aj.setAttribute('id', 'aj');
-document.body.appendChild(aj);
-let show = false;
+document.onreadystatechange = function () {
+    // 有document的时候 准备插入交互界面
+    // if (document.readyState === 'complete') {
+    //     const aj = document.createElement('div');
+    //     aj.setAttribute('id', 'aj');
+    //     document.body.appendChild(aj);
+    //     let show = false;
+    //     chrome.runtime.onMessage.addListener((response) => {
+    //         if (response.action == 'toggle') {
+    //             show = !show;
+    //             aj.style.setProperty(
+    //                 'transform',
+    //                 show ? 'translateX(0)' : 'translateX(470px)',
+    //                 'important',
+    //             );
+    //         }
 
-chrome.runtime.onMessage.addListener((response) => {
-    if (response.action == 'toggle') {
-        show = !show;
-        aj.style.setProperty(
-            'transform',
-            show ? 'translateX(0)' : 'translateX(470px)',
-            'important',
-        );
-    }
-
-    return true;
-});
-
-const App: React.FC = () => {
-    const [iMockData, setImockData] = useState(mockData);
-    const getMockData = () => {
-        // 向后端发送消息获取mock列表
-        chrome.runtime.sendMessage({ action: 'getMock', to: 'background' }, function (response) {
-            console.log(response, '获取到的mock数据');
-            if (response) {
-                // setMockData(response);
-                mockData = response;
-                // window.postMessage({
-                //     action: 'start',
-                //     to: 'pageScript',
-                //     mockData: mockData,
-                // });
-            }
-        });
-    };
-    useEffect(() => {
-          getMockData();
-    }, []);
-    useEffect(() => {
-        setImockData(mockData);
-    }, [mockData]);
-    return <Iframe mockData={iMockData} />;
+    //         return true;
+    //     });
+    // }
 };
 
+// const App: React.FC = () => {
+//     const [iMockData, setImockData] = useState(mockData);
+//     const getMockData = () => {
+//         // 向后端发送消息获取mock列表
+//         chrome.runtime.sendMessage({ action: 'getMock', to: 'background' }, function (response) {
+//             console.log(response, '获取到的mock数据');
+//             if (response) {
+//                 // setMockData(response);
+//                 mockData = response;
+//                 // window.postMessage({
+//                 //     action: 'start',
+//                 //     to: 'pageScript',
+//                 //     mockData: mockData,
+//                 // });
+//             }
+//         });
+//     };
+//     useEffect(() => {
+//           getMockData();
+//     }, []);
+//     useEffect(() => {
+//         setImockData(mockData);
+//     }, [mockData]);
+//     return <Iframe mockData={iMockData} />;
+// };
 
-    injectCustomJs('js/pageScript.js').then(() => {
-        console.log('注入完成');
-        ReactDOM.render(<App />, document.querySelector('#aj'));
-    });
+injectCustomJs('js/pageScript.js').then(() => {
+    // ReactDOM.render(<App />, document.querySelector('#aj'));
+});
