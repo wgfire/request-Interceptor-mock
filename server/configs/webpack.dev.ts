@@ -9,7 +9,7 @@ import { PROJECT_ROOT } from '../utils/constants';
 
 const devConfig = merge(commonConfig, {
     mode: 'development',
-    devtool: 'eval-source-map',
+    devtool: 'cheap-module-source-map',
     plugins: [
         new HotModuleReplacementPlugin(),
         new ReactRefreshWebpackPlugin(),
