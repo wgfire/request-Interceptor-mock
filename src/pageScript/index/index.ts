@@ -1,4 +1,4 @@
-import './xhr'
+import './proxyXhr'
 const Mock = window.Mock;
 window.addEventListener('message', (e) => {
     if (e.data.action === 'start') actionMap.start(e.data.mockData);
