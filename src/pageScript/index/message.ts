@@ -10,7 +10,11 @@ export const MockUrl = [
             // 请求携带的信息
             headers: [],
             timeout: 2000,
-            data: {}, // 请求携带的数据
+            data: {
+                data:{},
+                token:"3a028a07-bb7b-6dab-87d8-dad64f29ddd3",
+                name:"wg"
+            }, // 请求携带的数据
         },
         response: {
             data: {

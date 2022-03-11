@@ -47,7 +47,7 @@ export class BaseXhr {
     /**
      * 初始化 重写xhr对象
      */
-     init() {
+    init() {
         let _this = this;
         //@ts-ignore
         window.XMLHttpRequest = function () {
@@ -81,15 +81,22 @@ export class BaseXhr {
         let hooks = this.hooks;
         proxyXHR[key] = (...args: any[]) => {
             // 拦截的方法
-            if (hooks[key] && hooks[key].call(proxyXHR, args) === false) {
-                return;
+            let hooksResult:boolean|any[] = false;
+            if (hooks[key]) {
+                hooksResult = hooks[key].call(proxyXHR, args);
+             //  return;
+             if(hooksResult===false)return false
+            }
+
+            if(key=='send' && typeof hooksResult ==='object') {
+             //   args= [...hooksResult]
+                console.log( typeof hooksResult ==='object',[JSON.stringify(hooksResult)],args,'hooks')
+                args = [JSON.stringify(hooksResult)]
             }
             //console.log(key,'方法',args)
 
             // 执行方法本体
             const res = proxyXHR._xhr[key].apply(proxyXHR._xhr, args);
-
-            // 方法本体执行后的钩子
 
             return res;
         };
@@ -125,7 +132,7 @@ export class BaseXhr {
 
         // 对用户设置的属性，挂载一份到自己的实例上
         obj.set = function (val: any) {
-            console.log(key, 'set属性',val); // 用户设置的属性将会在此拦截
+            console.log(key, 'set属性', val); // 用户设置的属性将会在此拦截
             // 如果不是on打头的属性
             if (!key.startsWith('on')) {
                 proxyXHR['__' + key] = val;
