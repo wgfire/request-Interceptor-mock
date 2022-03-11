@@ -96,7 +96,8 @@ class ProxyXhr extends BaseXhr {
  */
 const xhr = new ProxyXhr({
     send: function (body: any) {
-        ProxyXhr.config.data = JSON.parse(body[0])
+      try {
+        ProxyXhr.config.data = body?JSON.parse(body[0]):null
         xhr.setResponseData(ProxyXhr.config, this);
         const data = xhr.setRequestData(ProxyXhr.config)
         console.log(data, '数据data');
@@ -104,6 +105,9 @@ const xhr = new ProxyXhr({
         // 修改请求信息
        
         return data;
+      } catch (error) {
+          console.log(error)
+      }
     },
     open: function (data: any) {
         console.log(new Date().getTime(), '打开链接');
