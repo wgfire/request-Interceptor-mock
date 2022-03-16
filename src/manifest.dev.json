@@ -1,5 +1,5 @@
 {
-    "name": "jjie chrome extension ",
+    "name": "mt chrome extension ",
     "version": "1.0",
     "description": "拦截xhr请求，并对其进行mock数据将其返回",
     "manifest_version": 2,

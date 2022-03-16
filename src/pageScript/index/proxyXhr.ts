@@ -54,10 +54,10 @@ class ProxyXhr extends BaseXhr {
         this.instance = new ProxyXhr(this.hooks);
     }
 
-    setRequestHeader(header: any[], xhr: any) {
-        header.forEach((el) => {
-            const key = Object.keys(el);
-            xhr.setRequestHeader(key[0], el[key[0]]);
+    setRequestHeader(header: object, xhr: any) {
+       Object.keys(header).forEach((el) => {
+            /// @ts-ignore
+            xhr.setRequestHeader(el, header[el]);
         });
     }
     setRequestInfo(config: configProps, xhr: any) {
@@ -65,9 +65,9 @@ class ProxyXhr extends BaseXhr {
         // const data = findUrlBuyMock(config);
         hocFindUrl(config,(data)=>{
                 const { request } = data;
-                request.headers.length > 0 && this.setRequestHeader(request.headers, xhr);
+                Object.keys(request.headers).length > 0 && this.setRequestHeader(request.headers, xhr);
                 xhr.timeout = request.timeout; //  用户如果设置的话 会覆盖当前的属性
-                console.log(xhr, '设置了超时时间');
+                console.log(request.timeout, '设置了超时时间');
             
         })
       
@@ -132,7 +132,8 @@ const xhr = new ProxyXhr({
 
 
 const findUrlBuyMock = (config: configProps) => {
-    const index = MockUrl.findIndex((el) => {
+    const  mockData = MockUrl || []
+    const index = mockData.findIndex((el) => {
         return el.url === config.url;
     });
     return index > -1 ? MockUrl[index] : false;

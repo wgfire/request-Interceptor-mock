@@ -1,7 +1,7 @@
 {
-    "name": "awesome chrome extension boilerplate",
+    "name": "mt chrome extension ",
     "version": "1.0",
-    "description": "made by awesome-chrome-extension-boilerplate",
+    "description": "拦截xhr请求，并对其进行mock数据将其返回",
     "manifest_version": 2,
     "minimum_chrome_version": "80",
     "permissions": [
@@ -17,7 +17,8 @@
         "activeTab",
         "declarativeContent"
     ],
-    "web_accessible_resources": ["icons/*", "images/*", "fonts/*"],
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self';",
+    "web_accessible_resources": ["icons/*", "images/*", "fonts/*", "js/pageScript.js", "lib/*"],
     "background": {
         "scripts": ["js/background.js"],
         "persistent": true
@@ -25,12 +26,12 @@
     "content_scripts": [
         {
             "matches": ["http://*/*", "https://*/*", "<all_urls>"],
-            "css": ["css/all.css"],
-            "js": ["js/vendor.js", "js/all.js"]
+            "css": ["css/contents.css"],
+            "js": ["js/contents.js"],
+            "run_at": "document_start"
         }
     ],
     "browser_action": {
-        "default_popup": "popup.html",
         "default_icon": {
             "16": "icons/extension-icon-x16.png",
             "32": "icons/extension-icon-x32.png",

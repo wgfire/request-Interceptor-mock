@@ -1,4 +1,25 @@
 // 处理接受消息的行为
+window.addEventListener('message', (e) => {
+    if (e.data.action === 'start') actionMap.start(e.data.mockData);
+});
+
+const startXhr = (mockData: any) => {
+    refreshMockAction(mockData);
+};
+const actionMap = {
+    start: startXhr,
+};
+
+export const refreshMockAction = (mockData: Array<any>) => {
+    // 重新用mockjs 执行一遍对应数据的拦截逻辑
+    console.log(mockData,'mock列表')
+  
+};
+
+export const deleteMockUrl = (url: string) => {
+    // 关闭后需要删除mock的拦截的url
+   console.log(url)
+};
 
 export const MockUrl = [
     {
@@ -8,7 +29,7 @@ export const MockUrl = [
         url: 'https://api-tools-test.mycaigou.com/message/erp-template-list?o=gyltest',
         request: {
             // 请求携带的信息
-            headers: [],
+            headers: {},
             timeout: 2000,
             data: {
                 data:{},
@@ -51,7 +72,7 @@ export const MockUrl = [
         url: 'https://api-tools-test.mycaigou.com/message/erp-record-list?o=gyltest',
         request: {
             // 请求携带的信息
-            headers: [],
+            headers: {},
             timeout: 2000,
             data: {}, // 请求携带的数据
         },

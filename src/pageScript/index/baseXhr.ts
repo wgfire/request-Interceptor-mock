@@ -132,7 +132,7 @@ export class BaseXhr {
 
         // 对用户设置的属性，挂载一份到自己的实例上
         obj.set = function (val: any) {
-            console.log(key, 'set属性', val); // 用户设置的属性将会在此拦截
+         //   console.log(key, 'set属性', val); // 用户设置的属性将会在此拦截
             // 如果不是on打头的属性
             if (!key.startsWith('on')) {
                 proxyXHR['__' + key] = val;
@@ -155,7 +155,7 @@ export class BaseXhr {
 
         obj.get = function () {
             const result = proxyXHR['__' + key] || this._xhr[key];
-            console.log(key, 'get属性', proxyXHR['__' + key], this._xhr[key]);
+           // console.log(key, 'get属性', proxyXHR['__' + key], this._xhr[key]);
             // 此时用户访问这个对象上的其他属性通过拦截get 返回_xhr原生上的属性
             return result;
         };

@@ -6,7 +6,6 @@ import TerserPlugin from 'terser-webpack-plugin';
 import webpack, { BannerPlugin } from 'webpack';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import merge from 'webpack-merge';
-
 import { COPYRIGHT, ENABLE_ANALYZE, PROJECT_ROOT } from '../utils/constants';
 import commonConfig from './webpack.common';
 
@@ -33,19 +32,19 @@ const prodConfig = merge(commonConfig, {
         new CssMinimizerPlugin(),
     ],
     optimization: {
-        splitChunks: {
-            minSize: 20000,
-            name: "vendor",
-            minChunks:2,
-            cacheGroups: {
-                vendor: {
-                    test: /[/\\]node_modules[/\\](react|react-dom)[/\\]/,
-                    name: 'vendor',
-                    priority: -10
-                },
-            },
-            chunks: 'all',
-        },
+        // splitChunks: {
+        //     minSize: 20000,
+        //     name: "vendor",
+        //     minChunks:2,
+        //     cacheGroups: {
+        //         vendor: {
+        //             test: /[/\\]node_modules[/\\](react|react-dom)[/\\]/,
+        //             name: 'vendor',
+        //             priority: -10
+        //         },
+        //     },
+        //     chunks: 'all',
+        // },
         minimize: true,
         minimizer: [
             new TerserPlugin({
