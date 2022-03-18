@@ -44,18 +44,20 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         if (sendResponse) sendResponse();
     }
 });
+
+injectCustomJs('js/pageScript.js').then(() => {});
+
 chrome.runtime.sendMessage({ action: 'getMock', to: 'background' }, function (response) {
     if (response) {
         mockData = response;
         console.log(mockData, '获取到的mock数据');
-        // window.postMessage({
-        //     action: 'start',
-        //     to: 'pageScript',
-        //     mockData: mockData,
-        // });
+        window.postMessage({
+            action: 'start',
+            to: 'pageScript',
+            mockData: mockData,
+        });
     }
 });
-injectCustomJs('js/pageScript.js').then(() => {});
 document.onreadystatechange = function () {
     // 有document的时候 准备插入交互界面
     if (document.readyState === 'complete') {
@@ -65,3 +67,5 @@ document.onreadystatechange = function () {
         popup.style.setProperty('transform', 'translateX(450px)', 'important');
     }
 };
+
+

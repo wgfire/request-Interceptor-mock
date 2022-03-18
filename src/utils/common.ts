@@ -35,3 +35,32 @@ export function observerProxy(obj: object, onchange: (target: any) => void): any
     };
     return new Proxy(obj, handler);
 }
+
+/**
+ * @desc 函数防抖
+ * @param func 函数
+ * @param wait 延迟执行毫秒数
+ * @param immediate true 表立即执行，false 表非立即执行
+ */
+ export function debounce(func:Function, wait:number, immediate:boolean) {
+    let timeout:number | null;
+    return  () => {
+      //@ts-ignore
+      const context:any = this;
+      const args = [...arguments];
+      if (timeout) clearTimeout(timeout);
+      if (immediate) {
+        const callNow = !timeout;
+        timeout = setTimeout(() => {
+          timeout = null;
+        }, wait)
+        if (callNow) func.apply(context, args)
+      }
+      else {
+        timeout = setTimeout(() => {
+          func.apply(context, args)
+        }, wait);
+      }
+    }
+  }
+  

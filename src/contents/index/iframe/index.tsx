@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState} from 'react';
 import { Card, Switch, Input, Collapse } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
 import type{ mockDataInterfaceItem } from '../../../background/index';
 const { Panel } = Collapse;
 import './index.scss'
+import {debounce}from '../../../utils/common'
 console.log('我是准备拦截器交互的界面');
 
 const Cardtitle: React.FC<{ url: string }> = (props) => {
@@ -15,8 +16,8 @@ const Cardtitle: React.FC<{ url: string }> = (props) => {
 };
 
 export const Iframe: React.FC<{ mockData: mockDataInterfaceItem[] }> = (props) => {
-    let { mockData } = props;
-    const [testMock, setTestMock] = useState(mockData[0]);
+    
+    const [mockData,setMockData] = useState(props.mockData)
     // const switchClickHandel = (open: boolean) => {
     //     // 发送通知 告诉content,由content在转发给pagescript
     //     console.log('x');
@@ -27,30 +28,35 @@ export const Iframe: React.FC<{ mockData: mockDataInterfaceItem[] }> = (props) =
     //     //     mockData: mockData,
     //     // });
     // };
-    const switchHandel = (value: boolean) => {
-        setTestMock({
-            ...testMock,
-            switch: value,
-        });
+    const setMockDataProps = (value: any,index:number,key:string) => {
+       const mock = [...mockData]
+       mock[index][key] = value
+       setMockData(mock)
     };
-    useEffect(() => {
+    const refreshMockData = debounce(()=>{
         console.log(mockData, '拦截数据变化');
+        // 将现有的数据重新发送个pagescript
+    },1500,false)
+    useEffect(() => {
+        refreshMockData()
+        
     }, [mockData]);
     return (
         <div className='popup-box'>
             <h1 className="title">mt插件┗|｀O′|┛ 嗷~~</h1>
-            {mockData.map((el) => {
+            {mockData && mockData.map((el,index) => {
                 return (
                     <Card
+                      key={index}
                        className='card-box'
                         title={<Cardtitle url={el.url}></Cardtitle>}
-                        extra={<Switch checked={el.switch} onChange={switchHandel}></Switch>}
+                        extra={<Switch checked={el.switch} onChange={(value=>{setMockDataProps(value,index,'switch')})}></Switch>}
                         size="small"
                     >
                         <Collapse>
                             <Panel header="RequestHeader" key="1">
                                 <p>{'修改请求头地方'}</p>
-                                <TextArea defaultValue={JSON.stringify(el.request.headers)}></TextArea>
+                                <TextArea defaultValue={JSON.stringify(el.request.headers)} ></TextArea>
                             </Panel>
                         </Collapse>
                         <Collapse>
@@ -64,7 +70,7 @@ export const Iframe: React.FC<{ mockData: mockDataInterfaceItem[] }> = (props) =
                         <Collapse>
                             <Panel header="ReponsetData" key="1">
                                 <p>{'修改返回数据的地方'}</p>
-                                <TextArea defaultValue={JSON.stringify(el.response)}></TextArea>
+                                <TextArea defaultValue={JSON.stringify(el.response)} onChange={(event)=>{setMockDataProps(event.target.value,index,'response')}}></TextArea>
                             </Panel>
                         </Collapse>
                     </Card>
@@ -73,3 +79,7 @@ export const Iframe: React.FC<{ mockData: mockDataInterfaceItem[] }> = (props) =
         </div>
     );
 };
+
+Iframe.defaultProps ={
+    mockData:[]
+}

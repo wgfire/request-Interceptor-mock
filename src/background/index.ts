@@ -12,7 +12,8 @@ export interface mockDataInterfaceItem {
      timeout:number;
      data:any
  }
- response:any
+ response:any;
+ [key:string]:any
 }
 window.mockData = [
     {
@@ -26,7 +27,7 @@ window.mockData = [
             timeout: 2000,
             data: {
                 data:{},
-                token:"3a028a07-bb7b-6dab-87d8-dad64f29ddd3",
+                token:"3a02a919-e44b-c3bd-cf33-f92c02613e66",
                 name:"wg"
             }, // 请求携带的数据
         },
@@ -67,7 +68,10 @@ window.mockData = [
             // 请求携带的信息
             headers: {},
             timeout: 2000,
-            data: {}, // 请求携带的数据
+            data: {
+                data:{},
+                token:"3a02a919-e44b-c3bd-cf33-f92c02613e66"
+            }, // 请求携带的数据
         },
         response: {
             data: {

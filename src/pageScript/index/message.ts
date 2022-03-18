@@ -1,19 +1,21 @@
+//import {startXhr} from './proxyXhr'
 // 处理接受消息的行为
+
 window.addEventListener('message', (e) => {
+    console.log(e,'ee')
     if (e.data.action === 'start') actionMap.start(e.data.mockData);
 });
 
-const startXhr = (mockData: any) => {
-    refreshMockAction(mockData);
-};
-const actionMap = {
-    start: startXhr,
-};
+
+
 
 export const refreshMockAction = (mockData: Array<any>) => {
     // 重新用mockjs 执行一遍对应数据的拦截逻辑
     console.log(mockData,'mock列表')
   
+};
+const actionMap = {
+    start: refreshMockAction,
 };
 
 export const deleteMockUrl = (url: string) => {
@@ -21,7 +23,7 @@ export const deleteMockUrl = (url: string) => {
    console.log(url)
 };
 
-export const MockUrl = [
+export const mockUrl = [
     {
         statu: 200, // 状态
         switch: true, // 是否开启拦截
@@ -33,7 +35,7 @@ export const MockUrl = [
             timeout: 2000,
             data: {
                 data:{},
-                token:"3a028a07-bb7b-6dab-87d8-dad64f29ddd3",
+                token:"3a02a919-e44b-c3bd-cf33-f92c02613e66",
                 name:"wg"
             }, // 请求携带的数据
         },
@@ -74,7 +76,10 @@ export const MockUrl = [
             // 请求携带的信息
             headers: {},
             timeout: 2000,
-            data: {}, // 请求携带的数据
+            data:{
+                data:{},
+                token: "3a02a919-e44b-c3bd-cf33-f92c02613e66"
+            } , // 请求携带的数据
         },
         response: {
             data: {

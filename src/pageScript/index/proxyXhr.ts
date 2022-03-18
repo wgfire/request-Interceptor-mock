@@ -1,5 +1,5 @@
 import { BaseXhr, hooksProps } from './baseXhr';
-import { MockUrl } from './message';
+import { mockUrl } from './message';
 
 //@ts-nocheck
 interface configProps {
@@ -17,6 +17,7 @@ interface reqListItem {
         data: any;
     };
 }
+//let mockUrl:any = null
 class ProxyXhr extends BaseXhr {
     static config: configProps = {
         url: '',
@@ -94,55 +95,61 @@ class ProxyXhr extends BaseXhr {
 /**
  * 先执行open 随后触发onreadystatechange一次 最后 执行send
  */
-const xhr = new ProxyXhr({
-    send: function (body: any) {
-      try {
-        ProxyXhr.config.data = body?JSON.parse(body[0]):null
-        xhr.setResponseData(ProxyXhr.config, this);
-        const data = xhr.setRequestData(ProxyXhr.config)
-        console.log(data, '数据data');
-        // this.resetConfig();
-        // 修改请求信息
-       
-        return data;
-      } catch (error) {
-          console.log(error)
-      }
-    },
-    open: function (data: any) {
-        console.log(new Date().getTime(), '打开链接');
-        const [, url] = data;
-        ProxyXhr.config.url = url;
-    },
-    onreadystatechange: function () {
-        if (this.readyState === 1) {
-            // this.setRequestHeader('x-wg','x')
-            xhr.setRequestInfo(ProxyXhr.config, this); // 等于1的时候修改请求信息
-            console.log('等于1的时候', this);
-        }
-        console.log('监听链接', new Date().getTime(), this.responseURL, this.readyState);
-    },
-    onload: function (event: any) {
-        console.log('插件监听-获取完成', event);
-    },
-    onerror: function (event: any) {
-        console.log('插件监听-错误', event);
-    },
-});
 
 
 const findUrlBuyMock = (config: configProps) => {
-    const  mockData = MockUrl || []
-    const index = mockData.findIndex((el) => {
+    const  mockData = mockUrl || []
+    const index = mockData.findIndex((el:any) => {
         return el.url === config.url;
     });
-    return index > -1 ? MockUrl[index] : false;
+    return index > -1 ? mockUrl[index] : false;
 };
 
-const hocFindUrl = (config: configProps,fn:(data:typeof MockUrl[number])=>any)=>{
+const hocFindUrl = (config: configProps,fn:(data:typeof mockUrl[number])=>any)=>{
     const data = findUrlBuyMock(config);
     if(data && data.switch) {
         fn(data)
     }
 }
-console.log(xhr, '替换的对象', xhr.getInstance());
+
+
+    const xhr = new ProxyXhr({
+        send: function (body: any) {
+          try {
+            ProxyXhr.config.data = body?JSON.parse(body[0]):null
+            xhr.setResponseData(ProxyXhr.config, this);
+            const data = xhr.setRequestData(ProxyXhr.config)
+            console.log(data, '数据data');
+            // this.resetConfig();
+            // 修改请求信息
+           
+            return data;
+          } catch (error) {
+              console.log(error)
+          }
+        },
+        open: function (data: any) {
+            console.log(new Date().getTime(), '打开链接');
+            const [, url] = data;
+            ProxyXhr.config.url = url;
+        },
+        onreadystatechange: function () {
+            if (this.readyState === 1) {
+                // this.setRequestHeader('x-wg','x')
+                xhr.setRequestInfo(ProxyXhr.config, this); // 等于1的时候修改请求信息
+                console.log('等于1的时候', this);
+            }
+            console.log('监听链接', new Date().getTime(), this.responseURL, this.readyState);
+        },
+        onload: function (event: any) {
+            console.log('插件监听-获取完成', event);
+        },
+        onerror: function (event: any) {
+            console.log('插件监听-错误', event);
+        },
+    });
+    console.log(xhr, '替换的对象', xhr.getInstance());
+    
+
+
+
