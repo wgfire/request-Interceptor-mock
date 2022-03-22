@@ -1,6 +1,6 @@
 //import {startXhr} from './proxyXhr'
 // 处理接受消息的行为
-
+import {mockDataItem} from './utils'
 window.addEventListener('message', (e) => {
     console.log(e,'ee')
     if (e.data.action === 'start') actionMap.start(e.data.mockData);
@@ -23,7 +23,7 @@ export const deleteMockUrl = (url: string) => {
    console.log(url)
 };
 
-export const mockUrl = [
+export const mockUrl:mockDataItem[] = [
     {
         statu: 200, // 状态
         switch: true, // 是否开启拦截

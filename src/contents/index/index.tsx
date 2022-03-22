@@ -44,8 +44,20 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         if (sendResponse) sendResponse();
     }
 });
+document.onreadystatechange = function () {
+    // 有document的时候 准备插入交互界面
+    if (document.readyState === 'complete') {
+        console.log('开始插入popup')
+        popup.setAttribute('id', 'popup');
+        document.body.appendChild(popup);
+        ReactDOM.render(<Iframe mockData={mockData} />, popup);
+        popup.style.setProperty('transform', 'translateX(450px)', 'important');
+    }
+};
 
-injectCustomJs('js/pageScript.js').then(() => {});
+injectCustomJs('js/pageScript.js').then(() => {
+    
+});
 
 chrome.runtime.sendMessage({ action: 'getMock', to: 'background' }, function (response) {
     if (response) {
@@ -58,14 +70,6 @@ chrome.runtime.sendMessage({ action: 'getMock', to: 'background' }, function (re
         });
     }
 });
-document.onreadystatechange = function () {
-    // 有document的时候 准备插入交互界面
-    if (document.readyState === 'complete') {
-        popup.setAttribute('id', 'popup');
-        document.body.appendChild(popup);
-        ReactDOM.render(<Iframe mockData={mockData} />, popup);
-        popup.style.setProperty('transform', 'translateX(450px)', 'important');
-    }
-};
+
 
 

@@ -1,22 +1,9 @@
 import { BaseXhr, hooksProps } from './baseXhr';
 import { mockUrl } from './message';
-
+import type { configProps, mockDataItem } from './utils';
+import { switchFindUrl, findUrlBuyMock } from './utils';
 //@ts-nocheck
-interface configProps {
-    url: string;
-    data: any;
-    header: any;
-}
-interface reqListItem {
-    url: string;
-    status: 200;
-    request: {
-        data: any;
-    };
-    response: {
-        data: any;
-    };
-}
+
 //let mockUrl:any = null
 class ProxyXhr extends BaseXhr {
     static config: configProps = {
@@ -24,7 +11,7 @@ class ProxyXhr extends BaseXhr {
         header: {},
         data: {},
     }; // 当前请求的信息文件
-    reqListData: reqListItem[] = [];
+    reqListData: mockDataItem[] = [];
     constructor(hooks: hooksProps) {
         super();
         if (this.instance) {
@@ -56,7 +43,7 @@ class ProxyXhr extends BaseXhr {
     }
 
     setRequestHeader(header: object, xhr: any) {
-       Object.keys(header).forEach((el) => {
+        Object.keys(header).forEach((el) => {
             /// @ts-ignore
             xhr.setRequestHeader(el, header[el]);
         });
@@ -64,17 +51,20 @@ class ProxyXhr extends BaseXhr {
     setRequestInfo(config: configProps, xhr: any) {
         // 主要利用config里的url 找寻 需要修改的请求对象 // 可修改请求头,一些请求属性
         // const data = findUrlBuyMock(config);
-        hocFindUrl(config,(data)=>{
+        switchFindUrl(
+            config,
+            (data) => {
                 const { request } = data;
-                Object.keys(request.headers).length > 0 && this.setRequestHeader(request.headers, xhr);
+                Object.keys(request.headers).length > 0 &&
+                    this.setRequestHeader(request.headers, xhr);
                 xhr.timeout = request.timeout; //  用户如果设置的话 会覆盖当前的属性
                 console.log(request.timeout, '设置了超时时间');
-            
-        })
-      
+            },
+            mockUrl,
+        );
     }
     setRequestData(config: configProps) {
-        const data = findUrlBuyMock(config);
+        const data = findUrlBuyMock(config, mockUrl);
         if (data && data.switch) {
             const { request } = data;
             return request.data;
@@ -84,72 +74,48 @@ class ProxyXhr extends BaseXhr {
     }
     setResponseData(config: configProps, xhr: any) {
         // 修改返回的reponse数据
-        hocFindUrl(config,(data)=>{
+        switchFindUrl(config, (data) => {
             console.log(config, data, '找到修改的地方');
             xhr.responseText = data.response;
-        })
-      
-        
+        },mockUrl);
     }
 }
 /**
  * 先执行open 随后触发onreadystatechange一次 最后 执行send
  */
 
-
-const findUrlBuyMock = (config: configProps) => {
-    const  mockData = mockUrl || []
-    const index = mockData.findIndex((el:any) => {
-        return el.url === config.url;
-    });
-    return index > -1 ? mockUrl[index] : false;
-};
-
-const hocFindUrl = (config: configProps,fn:(data:typeof mockUrl[number])=>any)=>{
-    const data = findUrlBuyMock(config);
-    if(data && data.switch) {
-        fn(data)
-    }
-}
-
-
-    const xhr = new ProxyXhr({
-        send: function (body: any) {
-          try {
-            ProxyXhr.config.data = body?JSON.parse(body[0]):null
+const xhr = new ProxyXhr({
+    send: function (body: any) {
+        try {
+            ProxyXhr.config.data = body ? JSON.parse(body[0]) : null;
             xhr.setResponseData(ProxyXhr.config, this);
-            const data = xhr.setRequestData(ProxyXhr.config)
+            const data = xhr.setRequestData(ProxyXhr.config);
             console.log(data, '数据data');
             // this.resetConfig();
             // 修改请求信息
-           
             return data;
-          } catch (error) {
-              console.log(error)
-          }
-        },
-        open: function (data: any) {
-            console.log(new Date().getTime(), '打开链接');
-            const [, url] = data;
-            ProxyXhr.config.url = url;
-        },
-        onreadystatechange: function () {
-            if (this.readyState === 1) {
-                // this.setRequestHeader('x-wg','x')
-                xhr.setRequestInfo(ProxyXhr.config, this); // 等于1的时候修改请求信息
-                console.log('等于1的时候', this);
-            }
-            console.log('监听链接', new Date().getTime(), this.responseURL, this.readyState);
-        },
-        onload: function (event: any) {
-            console.log('插件监听-获取完成', event);
-        },
-        onerror: function (event: any) {
-            console.log('插件监听-错误', event);
-        },
-    });
-    console.log(xhr, '替换的对象', xhr.getInstance());
-    
-
-
-
+        } catch (error) {
+            console.log(error);
+        }
+    },
+    open: function (data: any) {
+        console.log(new Date().getTime(), '打开链接');
+        const [, url] = data;
+        ProxyXhr.config.url = url;
+    },
+    onreadystatechange: function () {
+        if (this.readyState === 1) {
+            // this.setRequestHeader('x-wg','x')
+            xhr.setRequestInfo(ProxyXhr.config, this); // 等于1的时候修改请求信息
+            console.log('等于1的时候', this);
+        }
+        console.log('监听链接', new Date().getTime(), this.responseURL, this.readyState);
+    },
+    onload: function (event: any) {
+        console.log('插件监听-获取完成', event);
+    },
+    onerror: function (event: any) {
+        console.log('插件监听-错误', event);
+    },
+});
+console.log(xhr, '替换的对象', xhr.getInstance());
