@@ -5,7 +5,7 @@ export class BaseXhr {
     public hooks: hooksProps = {};
     public instance: any;
     public originXhr = window.XMLHttpRequest;
-
+    reqListData: Array<any> = [];
     /**
      * 添加勾子
      * @param {*} key
@@ -81,17 +81,23 @@ export class BaseXhr {
         let hooks = this.hooks;
         proxyXHR[key] = (...args: any[]) => {
             // 拦截的方法
-            let hooksResult:boolean|any[] = false;
+            let hooksResult: boolean | any[] = false;
             if (hooks[key]) {
                 hooksResult = hooks[key].call(proxyXHR, args);
-             //  return;
-             if(hooksResult===false)return false
+                //  return;
+                if (hooksResult === false) return false;
             }
 
-            if(key=='send' && typeof hooksResult ==='object') {
-             //   args= [...hooksResult]
-                console.log( typeof hooksResult ==='object',[JSON.stringify(hooksResult)],args,'hooks')
-                args = [JSON.stringify(hooksResult)]
+            if (key == 'send' && typeof hooksResult === 'object') {
+                //   args= [...hooksResult]
+                console.log(
+                    typeof hooksResult === 'object',
+                    [JSON.stringify(hooksResult)],
+                    args,
+                    'hooks',
+                    proxyXHR,
+                );
+                args = [JSON.stringify(hooksResult)];
             }
             //console.log(key,'方法',args)
 
@@ -132,7 +138,7 @@ export class BaseXhr {
 
         // 对用户设置的属性，挂载一份到自己的实例上
         obj.set = function (val: any) {
-         //   console.log(key, 'set属性', val); // 用户设置的属性将会在此拦截
+            //   console.log(key, 'set属性', val); // 用户设置的属性将会在此拦截
             // 如果不是on打头的属性
             if (!key.startsWith('on')) {
                 proxyXHR['__' + key] = val;
@@ -155,7 +161,7 @@ export class BaseXhr {
 
         obj.get = function () {
             const result = proxyXHR['__' + key] || this._xhr[key];
-           // console.log(key, 'get属性', proxyXHR['__' + key], this._xhr[key]);
+            // console.log(key, 'get属性', proxyXHR['__' + key], this._xhr[key]);
             // 此时用户访问这个对象上的其他属性通过拦截get 返回_xhr原生上的属性
             return result;
         };

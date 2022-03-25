@@ -1,10 +1,11 @@
 import { BaseXhr, hooksProps } from './baseXhr';
-import { mockUrl } from './message';
+// import { mockUrl } from './message';
 import type { configProps, mockDataItem } from './utils';
 import { switchFindUrl, findUrlBuyMock } from './utils';
 //@ts-nocheck
 
-//let mockUrl:any = null
+let mockUrl: any = null;
+let xhr: ProxyXhr | null = null;
 class ProxyXhr extends BaseXhr {
     static config: configProps = {
         url: '',
@@ -14,10 +15,6 @@ class ProxyXhr extends BaseXhr {
     reqListData: mockDataItem[] = [];
     constructor(hooks: hooksProps) {
         super();
-        if (this.instance) {
-            return this.instance;
-        }
-
         this.originXhr = window.XMLHttpRequest;
         this.hooks = hooks;
         this.instance = this;
@@ -74,48 +71,64 @@ class ProxyXhr extends BaseXhr {
     }
     setResponseData(config: configProps, xhr: any) {
         // 修改返回的reponse数据
-        switchFindUrl(config, (data) => {
-            console.log(config, data, '找到修改的地方');
-            xhr.responseText = data.response;
-        },mockUrl);
+        switchFindUrl(
+            config,
+            (data) => {
+                console.log(config, data, '找到修改的地方');
+                xhr.responseText = data.response;
+            },
+            mockUrl,
+        );
     }
 }
 /**
  * 先执行open 随后触发onreadystatechange一次 最后 执行send
  */
 
-const xhr = new ProxyXhr({
-    send: function (body: any) {
-        try {
-            ProxyXhr.config.data = body ? JSON.parse(body[0]) : null;
-            xhr.setResponseData(ProxyXhr.config, this);
-            const data = xhr.setRequestData(ProxyXhr.config);
-            console.log(data, '数据data');
-            // this.resetConfig();
-            // 修改请求信息
-            return data;
-        } catch (error) {
-            console.log(error);
-        }
-    },
-    open: function (data: any) {
-        console.log(new Date().getTime(), '打开链接');
-        const [, url] = data;
-        ProxyXhr.config.url = url;
-    },
-    onreadystatechange: function () {
-        if (this.readyState === 1) {
-            // this.setRequestHeader('x-wg','x')
-            xhr.setRequestInfo(ProxyXhr.config, this); // 等于1的时候修改请求信息
-            console.log('等于1的时候', this);
-        }
-        console.log('监听链接', new Date().getTime(), this.responseURL, this.readyState);
-    },
-    onload: function (event: any) {
-        console.log('插件监听-获取完成', event);
-    },
-    onerror: function (event: any) {
-        console.log('插件监听-错误', event);
-    },
-});
-console.log(xhr, '替换的对象', xhr.getInstance());
+export const setMockData = (mockData: mockDataItem[]) => {
+    mockUrl = mockData;
+    console.log('xhr里的mockData数据', mockUrl);
+};
+export const initXhr = (): ProxyXhr => {
+    if (xhr) {
+        return xhr;
+    }
+    xhr = new ProxyXhr({
+        send: function (body: any) {
+            try {
+                ProxyXhr.config.data = body ? JSON.parse(body[0]) : null;
+                xhr!.setResponseData(ProxyXhr.config, this);
+                const data = xhr!.setRequestData(ProxyXhr.config);
+                console.log(data, '数据data');
+                //    xhr.reqListData.push(ProxyXhr.config)
+                // this.resetConfig();
+                // 修改请求信息
+                return data;
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        open: function (data: any) {
+            console.log(new Date().getTime(), '打开链接');
+            const [, url] = data;
+            ProxyXhr.config.url = url;
+        },
+        onreadystatechange: function () {
+            if (this.readyState === 1) {
+                // this.setRequestHeader('x-wg','x')
+                xhr!.setRequestInfo(ProxyXhr.config, this); // 等于1的时候修改请求信息
+                console.log('等于1的时候', this);
+            }
+            console.log('监听链接', new Date().getTime(), this.responseURL, this.readyState);
+        },
+        onload: function (event: any) {
+            console.log('插件监听-获取完成', event);
+        },
+        onerror: function (event: any) {
+            console.log('插件监听-错误', event);
+        },
+    });
+
+    console.log(xhr, '替换的对象', xhr.getInstance());
+    return xhr;
+};

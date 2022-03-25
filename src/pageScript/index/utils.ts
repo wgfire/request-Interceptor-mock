@@ -16,7 +16,7 @@ export interface mockDataItem {
     response:any;
     [key:string]:any
    }
-
+/**当前config 下 是否存在与mockUrl里 */
 export const findUrlBuyMock = (config: configProps,mockUrl:mockDataItem[]) => {
     const  mockData = mockUrl || []
     const index = mockData.findIndex((el:any) => {

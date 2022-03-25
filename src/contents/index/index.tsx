@@ -17,14 +17,7 @@ let show: boolean = false;
 const actionMap: {
     [key: string]: (data?: any) => void;
 } = {
-    start: (request: any) => {
-        // 执行或者刷新mock拦截数据
-        window.postMessage({
-            action: 'start',
-            to: 'pageScript',
-            mockData: request.mockData,
-        });
-    },
+    start: postMockDataToScript,
     toggle: () => {
         show = !show;
         popup.style.setProperty(
@@ -33,6 +26,48 @@ const actionMap: {
             'important',
         );
     },
+};
+
+
+
+export function postMockDataToScript(mockData: any) {
+    console.log(mockData, '发送的mock数据');
+    window.postMessage({
+        action: 'start',
+        to: 'pageScript',
+        mockData: mockData,
+    });
+}
+
+function getMockData(fn: (arg: any) => void): void {
+    chrome.runtime.sendMessage({ action: 'getMock', to: 'background' }, function (response) {
+        if (response) {
+            fn(response);
+        }
+    });
+}
+
+
+
+
+injectCustomJs('js/pageScript.js').then(() => {
+    // postMockDataToScript 需要在js挂载成功之后 再去发送消息
+    getMockData((response) => {
+        console.log('获取mock数据',response)
+        mockData = response; //这个mockData 给 popup界面使用
+        postMockDataToScript(mockData);
+    });
+});
+
+document.onreadystatechange = function () {
+    // 有document的时候 准备插入交互界面
+    if (document.readyState === 'complete') {
+        console.log('开始插入popup',mockData);
+        popup.setAttribute('id', 'popup');
+        document.body.appendChild(popup);
+        ReactDOM.render(<Iframe mockData={mockData} />, popup);
+        popup.style.setProperty('transform', 'translateX(450px)', 'important');
+    }
 };
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
@@ -44,32 +79,4 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         if (sendResponse) sendResponse();
     }
 });
-document.onreadystatechange = function () {
-    // 有document的时候 准备插入交互界面
-    if (document.readyState === 'complete') {
-        console.log('开始插入popup')
-        popup.setAttribute('id', 'popup');
-        document.body.appendChild(popup);
-        ReactDOM.render(<Iframe mockData={mockData} />, popup);
-        popup.style.setProperty('transform', 'translateX(450px)', 'important');
-    }
-};
-
-injectCustomJs('js/pageScript.js').then(() => {
-    
-});
-
-chrome.runtime.sendMessage({ action: 'getMock', to: 'background' }, function (response) {
-    if (response) {
-        mockData = response;
-        console.log(mockData, '获取到的mock数据');
-        window.postMessage({
-            action: 'start',
-            to: 'pageScript',
-            mockData: mockData,
-        });
-    }
-});
-
-
 
