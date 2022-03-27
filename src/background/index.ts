@@ -2,19 +2,7 @@ console.log('This is background page!');
 import { observerProxy } from '../utils/common';
 import './webRequest';
 // 数据通过webRequest 存起来
-export interface mockDataInterfaceItem {
-    statu: number;
-    switch: boolean;
-    cancel: boolean;
-    url: string;
-    request: {
-        headers: any;
-        timeout: number;
-        data: any;
-    };
-    response: any;
-    [key: string]: any;
-}
+
 chrome.storage.sync.get('mockData', (res) => {
     console.log(res, '读取的本地数据');
     const mockData = res['mockData'];
@@ -29,10 +17,13 @@ const mockDataChange = (target: any) => {
 
 const actionMap: { [key: string]: Function } = {
     getMock: (fn: (arg: any) => void) => {
+        console.log('收到来自content-script的消息：发送mock数据', window.mockData);
         fn(window.mockData);
     },
-    setMock: (fn: (arg: any) => void, arg: any) => {
-        window.mockData = arg;
+    setMock: (fn: (arg: any) => void, arg: any[]) => {
+        window.mockData = arg.filter(el=>{
+            return el.switch ===true
+        });
         fn(arg);
         chrome.storage.sync.set({ mockData: window.mockData }, () => {
             console.log('更新background mockData 成功');
@@ -48,11 +39,10 @@ const actionMap: { [key: string]: Function } = {
 };
 const start = (data: any) => {
     console.log(data);
-
     window.mockData = data.length > 0 ? data : [];
     window.mockData = observerProxy(window.mockData, mockDataChange);
     chrome.runtime.onMessage.addListener(function (request, _sender, sendResponse) {
-        console.log('收到来自content-script的消息：发送mock数据', window.mockData);
+      
         actionMap[request.action](sendResponse, request.data);
     });
 };

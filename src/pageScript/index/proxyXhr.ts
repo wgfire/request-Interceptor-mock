@@ -62,7 +62,7 @@ class ProxyXhr extends BaseXhr {
         );
     }
     setRequestData(config: configProps) {
-        const data = findUrlBuyMock(config, mockUrl);
+        const data = findUrlBuyMock(config.url, mockUrl);
         if (data && data.switch) {
             const { request } = data;
             return request.data;
@@ -127,7 +127,7 @@ export const initXhr = (): ProxyXhr => {
             onload: function (event: any) {
                 console.log('插件监听-获取完成', event, this['responseText']);
                 //@ts-ignore
-                let item = createMockItem({ xhr: this });
+                let item = createMockItem({ xhr: this },mockUrl);
                 console.log(item, '创建的item');
                 window.postMessage({
                     to: 'iframe',

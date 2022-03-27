@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, Switch, Input, Collapse } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
-import type { mockDataInterfaceItem } from '../../../background/index';
 const { Panel } = Collapse;
 import './index.scss';
 import { debounce } from '../../../utils/common';
@@ -17,7 +16,7 @@ const Cardtitle: React.FC<{ url: string }> = (props) => {
     );
 };
 
-export const Iframe: React.FC<{ mockData: mockDataInterfaceItem[] }> = (props) => {
+export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     const [mockData, setMockData] = useState(props.mockData);
     const [ready, setReady] = useState(false);
     // const setMockDataProps = function (target:any,index:number) {
