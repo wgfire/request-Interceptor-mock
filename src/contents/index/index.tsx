@@ -4,6 +4,7 @@
 1.接受popup里的事件 刷新mock的数据列表
 2.当页面加载完成之后，自动执行开启了mock的url-像background发送消息获取mock列表
 */
+//@ts-nocheck
 import './style.scss';
 import { injectCustomJs } from '../../utils/common';
 import ReactDOM from 'react-dom';
@@ -28,8 +29,6 @@ const actionMap: {
     },
 };
 
-
-
 export function postMockDataToScript(mockData: any) {
     console.log(mockData, '发送的mock数据');
     window.postMessage({
@@ -46,29 +45,34 @@ function getMockData(fn: (arg: any) => void): void {
         }
     });
 }
-
-
-
+function createPopup(mockData:any) {
+    console.log('开始插入popup', mockData);
+    popup.setAttribute('id', 'popup');
+    document.body.appendChild(popup);
+    ReactDOM.render(<Iframe mockData={mockData} />, popup);
+    popup.style.setProperty('transform', 'translateX(450px)', 'important');
+}
 
 injectCustomJs('js/pageScript.js').then(() => {
     // postMockDataToScript 需要在js挂载成功之后 再去发送消息
     getMockData((response) => {
-        console.log('获取mock数据',response)
+        console.log('获取mock数据', response);
         mockData = response; //这个mockData 给 popup界面使用
+        createPopup(response)
         postMockDataToScript(mockData);
     });
 });
 
-document.onreadystatechange = function () {
-    // 有document的时候 准备插入交互界面
-    if (document.readyState === 'complete') {
-        console.log('开始插入popup',mockData);
-        popup.setAttribute('id', 'popup');
-        document.body.appendChild(popup);
-        ReactDOM.render(<Iframe mockData={mockData} />, popup);
-        popup.style.setProperty('transform', 'translateX(450px)', 'important');
-    }
-};
+// document.onreadystatechange = function () {
+//     // 有document的时候 准备插入交互界面
+//     if (document.readyState === 'complete') {
+//         console.log('开始插入popup',mockData);
+//         popup.setAttribute('id', 'popup');
+//         document.body.appendChild(popup);
+//         ReactDOM.render(<Iframe mockData={mockData} />, popup);
+//         popup.style.setProperty('transform', 'translateX(450px)', 'important');
+//     }
+// };
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.to === 'content') {
@@ -79,4 +83,3 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         if (sendResponse) sendResponse();
     }
 });
-

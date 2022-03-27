@@ -6,6 +6,7 @@ const { Panel } = Collapse;
 import './index.scss';
 import { debounce } from '../../../utils/common';
 import { postMockDataToScript } from '../index';
+import { mockDataItem } from '../../../pageScript/index/utils';
 console.log('我是准备拦截器交互的界面');
 
 const Cardtitle: React.FC<{ url: string }> = (props) => {
@@ -19,20 +20,24 @@ const Cardtitle: React.FC<{ url: string }> = (props) => {
 export const Iframe: React.FC<{ mockData: mockDataInterfaceItem[] }> = (props) => {
     const [mockData, setMockData] = useState(props.mockData);
     const [ready, setReady] = useState(false);
-    // const switchClickHandel = (open: boolean) => {
-    //     // 发送通知 告诉content,由content在转发给pagescript
-    //     console.log('x');
-    //     mockData[0].switch = open;
-    //     // window.postMessage({
-    //     //     action: 'start',
-    //     //     to: 'pageScript',
-    //     //     mockData: mockData,
-    //     // });
-    // };
+    // const setMockDataProps = function (target:any,index:number) {
+
+    //     return  (...arg:any) => {
+    //       console.log(arg,'x')
+    //       if(arg.length===2){
+    //         console.log('调用完成',target)
+    //         target[arg[0]] = arg[1]
+    //         return target
+    //       }else {
+    //         return setMockDataProps.call(null,target[arg],index)
+    //       }
+    //     }
+    //  }
     const setMockDataProps = (value: any, index: number, key: string) => {
         const mock = [...mockData];
         mock[index][key] = value;
         setMockData(mock);
+        return;
     };
     const refreshMockData = debounce(
         () => {
@@ -51,15 +56,41 @@ export const Iframe: React.FC<{ mockData: mockDataInterfaceItem[] }> = (props) =
         1000,
         false,
     );
+    const updateMockData = (item: mockDataItem) => {
+        setMockData((mockData) => {
+            const mock = [...mockData];
+            const index = mock.findIndex((el) => {
+                return el.url === item.url;
+            });
+            if (index > -1) {
+                console.log(item, '更新列表');
+                mock[index] = item;
+            } else {
+                mock.push(item);
+            }
+
+            console.log(mock, '更新数据');
+            return mock;
+        });
+    };
+    const getRefreshMockData = () => {
+        window.addEventListener('message', (event: MessageEvent<any>) => {
+            const { to, action, data } = event.data;
+            if (to === 'iframe' && action === 'update') {
+                updateMockData(data);
+            }
+        });
+    };
     useEffect(() => {
         setReady(true);
+        getRefreshMockData();
     }, []);
     useEffect(() => {
         // 为了解决第一次加载也触发 refreshMockData
         if (ready) refreshMockData();
     }, [mockData]);
     return (
-        <div className="popup-box">
+        <div className="popup-box scrollbar">
             <h1 className="title">mt插件┗|｀O′|┛ 嗷~~</h1>
             {mockData &&
                 mockData.map((el, index) => {
@@ -82,6 +113,16 @@ export const Iframe: React.FC<{ mockData: mockDataInterfaceItem[] }> = (props) =
                                 <Panel header="RequestHeader" key="1">
                                     <p>{'修改请求头地方'}</p>
                                     <TextArea
+                                        onChange={(event) => {
+                                            setMockData((mockData) => {
+                                                const data = [...mockData];
+                                                const el = data[index];
+                                                el['request']['headers'] = JSON.parse(
+                                                    event.target.value,
+                                                );
+                                                return data;
+                                            });
+                                        }}
                                         defaultValue={JSON.stringify(el.request.headers)}
                                     ></TextArea>
                                 </Panel>
@@ -90,6 +131,17 @@ export const Iframe: React.FC<{ mockData: mockDataInterfaceItem[] }> = (props) =
                                 <Panel header="RequestData" key="1">
                                     <p>{'修改请求数据的地方'}</p>
                                     <TextArea
+                                        onChange={(event) => {
+                                            setMockData((mockData) => {
+                                                const data = [...mockData];
+                                                const el = data[index];
+                                                el['request']['data'] = JSON.parse(
+                                                    event.target.value,
+                                                );
+                                                return data;
+                                            });
+                                            // setMockDataProps(el,index)('request')('data',event.target.value)
+                                        }}
                                         defaultValue={JSON.stringify(el.request.data)}
                                     ></TextArea>
                                 </Panel>

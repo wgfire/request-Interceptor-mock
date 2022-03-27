@@ -3,6 +3,7 @@ export interface hooksProps {
 }
 export class BaseXhr {
     public hooks: hooksProps = {};
+    public afterHooks:hooksProps ={} // 执行完hooks后的一些回调
     public instance: any;
     public originXhr = window.XMLHttpRequest;
     reqListData: Array<any> = [];
@@ -79,30 +80,31 @@ export class BaseXhr {
      */
     overwriteMethod(key: string, proxyXHR: any) {
         let hooks = this.hooks;
+        let orginResult = null
         proxyXHR[key] = (...args: any[]) => {
             // 拦截的方法
             let hooksResult: boolean | any[] = false;
+            orginResult = args
             if (hooks[key]) {
                 hooksResult = hooks[key].call(proxyXHR, args);
-                //  return;
                 if (hooksResult === false) return false;
             }
-
             if (key == 'send' && typeof hooksResult === 'object') {
-                //   args= [...hooksResult]
-                console.log(
-                    typeof hooksResult === 'object',
-                    [JSON.stringify(hooksResult)],
-                    args,
-                    'hooks',
-                    proxyXHR,
-                );
                 args = [JSON.stringify(hooksResult)];
+                proxyXHR['__orginSendData'] = JSON.parse(orginResult[0]) // 原生的发送data的参数
+                proxyXHR['__realitySendData'] = hooksResult  // 实际发送的参数
             }
             //console.log(key,'方法',args)
-
             // 执行方法本体
             const res = proxyXHR._xhr[key].apply(proxyXHR._xhr, args);
+            // 执行回调
+          
+        
+            if(this.afterHooks[key]) {
+            this.afterHooks[key].call(proxyXHR, orginResult,args);
+            }
+           
+
 
             return res;
         };
