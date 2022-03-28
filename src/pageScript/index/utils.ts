@@ -45,7 +45,6 @@ export const createMockItem = ({
     xhr: any;
     mockUrl: mockDataItem[];
 }): mockDataItem => {
-    
         const obj: mockDataItem = {
             statu: 200,
             switch: false,
@@ -55,7 +54,7 @@ export const createMockItem = ({
                 headers: {},
                 timeout: 200,
                 data: xhr['__realitySendData'],
-                originData: xhr['__orginSendData'],
+                originData: xhr['__originSendData'],
             },
             response: xhr['responseText'],
             originResponse: xhr._xhr['responseText'],

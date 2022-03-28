@@ -26,7 +26,7 @@ const actionMap: { [key: string]: Function } = {
         });
         fn(arg);
         chrome.storage.sync.set({ mockData: window.mockData }, () => {
-            console.log('更新background mockData 成功');
+            console.log('更新background mockData 成功',window.mockData);
         });
         // 发送给content 消息，将popup里更新的好的数据传递过去。
     },
@@ -53,3 +53,5 @@ chrome.browserAction.onClicked.addListener(function () {
         chrome.tabs.sendMessage(tabs[0].id!, { to: 'content', action: 'toggle' });
     });
 });
+
+export const mockData  = window.mockData

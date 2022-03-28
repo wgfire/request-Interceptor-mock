@@ -40,11 +40,16 @@ class ProxyXhr extends BaseXhr {
         this.instance = new ProxyXhr(this.hooks, this.afterHooks);
     }
 
-    setRequestHeader(header: object, xhr: any) {
-        Object.keys(header).forEach((el) => {
-            /// @ts-ignore
-            xhr.setRequestHeader(el, header[el]);
-        });
+    setRequestHeader(header: any, xhr: any) {
+        try {
+            if (typeof header === 'string') {
+                header = JSON.parse(header);
+            }
+            Object.keys(header).forEach((el) => {
+                /// @ts-ignore
+                xhr.setRequestHeader(el, header[el]);
+            });
+        } catch (error) {}
     }
     setRequestInfo(config: configProps, xhr: any) {
         // 主要利用config里的url 找寻 需要修改的请求对象 // 可修改请求头,一些请求属性
@@ -98,7 +103,7 @@ export const initXhr = (): ProxyXhr => {
         {
             send: function (body: any) {
                 try {
-                    ProxyXhr.config.data = body ? JSON.parse(body[0]) : null;
+                    ProxyXhr.config.data = body ? body[0] : null;
                     xhr!.setResponseData(ProxyXhr.config, this);
                     const data = xhr!.setRequestData(ProxyXhr.config);
                     console.log(data, '数据data');
@@ -127,7 +132,7 @@ export const initXhr = (): ProxyXhr => {
             onload: function (event: any) {
                 console.log('插件监听-获取完成', event, this['responseText']);
                 //@ts-ignore
-                let item = createMockItem({ xhr: this },mockUrl);
+                let item = createMockItem({ xhr: this }, mockUrl);
                 console.log(item, '创建的item');
                 window.postMessage({
                     to: 'iframe',

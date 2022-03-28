@@ -80,19 +80,19 @@ export class BaseXhr {
      */
     overwriteMethod(key: string, proxyXHR: any) {
         let hooks = this.hooks;
-        let orginResult = null
+        let originResult = null
         proxyXHR[key] = (...args: any[]) => {
             // 拦截的方法
             let hooksResult: boolean | any[] = false;
-            orginResult = args
+            originResult = args
             if (hooks[key]) {
                 hooksResult = hooks[key].call(proxyXHR, args);
                 if (hooksResult === false) return false;
             }
-            if (key == 'send' && typeof hooksResult === 'object') {
-                args = [JSON.stringify(hooksResult)];
-                proxyXHR['__orginSendData'] = JSON.parse(orginResult[0]) // 原生的发送data的参数
-                proxyXHR['__realitySendData'] = hooksResult  // 实际发送的参数
+            if (key == 'send') {
+                args = [hooksResult];
+                proxyXHR['__originSendData'] = originResult[0] // 原生的发送data的参数
+                proxyXHR['__realitySendData'] = args[0]  // 实际发送的参数
             }
             //console.log(key,'方法',args)
             // 执行方法本体
@@ -100,9 +100,9 @@ export class BaseXhr {
             // 执行回调
           
         
-            if(this.afterHooks[key]) {
-            this.afterHooks[key].call(proxyXHR, orginResult,args);
-            }
+            // if(this.afterHooks[key]) {
+            // this.afterHooks[key].call(proxyXHR, originResult,args);
+            // }
            
 
 

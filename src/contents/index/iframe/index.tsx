@@ -4,6 +4,7 @@ import TextArea from 'antd/lib/input/TextArea';
 const { Panel } = Collapse;
 import './index.scss';
 import { debounce } from '../../../utils/common';
+import  ReactJson  from  'react-json-view'
 import { postMockDataToScript } from '../index';
 import { mockDataItem } from '../../../pageScript/index/utils';
 console.log('我是准备拦截器交互的界面');
@@ -19,19 +20,6 @@ const Cardtitle: React.FC<{ url: string }> = (props) => {
 export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     const [mockData, setMockData] = useState(props.mockData);
     const [ready, setReady] = useState(false);
-    // const setMockDataProps = function (target:any,index:number) {
-
-    //     return  (...arg:any) => {
-    //       console.log(arg,'x')
-    //       if(arg.length===2){
-    //         console.log('调用完成',target)
-    //         target[arg[0]] = arg[1]
-    //         return target
-    //       }else {
-    //         return setMockDataProps.call(null,target[arg],index)
-    //       }
-    //     }
-    //  }
     const setMockDataProps = (value: any, index: number, key: string) => {
         const mock = [...mockData];
         mock[index][key] = value;
@@ -61,11 +49,11 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
             const index = mock.findIndex((el) => {
                 return el.url === item.url;
             });
-            if (index > -1) {
-                console.log(item, '更新列表');
-                mock[index] = item;
-            } else {
+            if (index == -1) {
+                console.log(item, '新增列表');
+                // mock[index] = item;
                 mock.push(item);
+            } else {
             }
 
             console.log(mock, '更新数据');
@@ -80,6 +68,11 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
             }
         });
     };
+    const checkJson = (json:any)=> {
+      if(!json)return {}
+      if(typeof json === 'string') return JSON.parse(json)
+      return json
+    }
     useEffect(() => {
         setReady(true);
         getRefreshMockData();
@@ -116,9 +109,7 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                             setMockData((mockData) => {
                                                 const data = [...mockData];
                                                 const el = data[index];
-                                                el['request']['headers'] = JSON.parse(
-                                                    event.target.value,
-                                                );
+                                                el['request']['headers'] = event.target.value;
                                                 return data;
                                             });
                                         }}
@@ -129,29 +120,32 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                             <Collapse>
                                 <Panel header="RequestData" key="1">
                                     <p>{'修改请求数据的地方'}</p>
-                                    <TextArea
+                                  
+                                    {/* <TextArea
                                         onChange={(event) => {
                                             setMockData((mockData) => {
                                                 const data = [...mockData];
                                                 const el = data[index];
-                                                el['request']['data'] = JSON.parse(
-                                                    event.target.value,
-                                                );
+                                                el['request']['data'] = event.target.value.toString();
+
                                                 return data;
                                             });
                                             // setMockDataProps(el,index)('request')('data',event.target.value)
                                         }}
-                                        defaultValue={JSON.stringify(el.request.data)}
-                                    ></TextArea>
+                                        defaultValue={el.request.data}
+                                    ></TextArea> */}
+                                    <ReactJson src={checkJson(el.request.data)} onEdit={(value)=>{
+                                        console.log(value)
+                                    }} name={false} theme="monokai" validationMessage="JSON格式错误"></ReactJson>
                                 </Panel>
                             </Collapse>
                             <Collapse>
                                 <Panel header="ReponsetData" key="1">
                                     <p>{'修改返回数据的地方'}</p>
                                     <TextArea
-                                        defaultValue={JSON.stringify(el.response)}
+                                        defaultValue={el.response}
                                         onChange={(event) => {
-                                            setMockDataProps(event.target.value, index, 'response');
+                                            setMockDataProps(event.target.value.toString(), index, 'response');
                                         }}
                                     ></TextArea>
                                 </Panel>
