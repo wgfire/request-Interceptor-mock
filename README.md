@@ -8,6 +8,7 @@
   - 通信时机如何设计，需要background content pagescript 三方通信以及数据交互来满足一些需求
   - popup的交互需要改变pageScript执行的代码数据
 + 替换状态码、响应头、body数据
+  - 如果接口报404 那么要支持手动改成200
 + mock数据
 + 支持多个项目管理
 

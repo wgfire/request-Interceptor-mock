@@ -123,6 +123,7 @@ export const initXhr = (): ProxyXhr => {
             onreadystatechange: function () {
                 if (this.readyState === 1) {
                     // this.setRequestHeader('x-wg','x')
+                    this.status = 200
                     xhr!.setRequestInfo(ProxyXhr.config, this); // 等于1的时候修改请求信息
                     console.log('等于1的时候', this);
                 } else if (this.readyState === 2) {
@@ -130,7 +131,7 @@ export const initXhr = (): ProxyXhr => {
                 console.log('监听链接', new Date().getTime(), this.responseURL, this.readyState);
             },
             onload: function (event: any) {
-                console.log('插件监听-获取完成', event, this['responseText']);
+                console.log('插件监听-获取完成', event, this);
                 //@ts-ignore
                 let item = createMockItem({ xhr: this }, mockUrl);
                 console.log(item, '创建的item');
