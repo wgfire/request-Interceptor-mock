@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Card, Switch, Input, Collapse } from 'antd';
-import TextArea from 'antd/lib/input/TextArea';
-const { Panel } = Collapse;
+// import TextArea from 'antd/lib/input/TextArea';
+
 import './index.scss';
 import { debounce } from '../../../utils/common';
-import  ReactJson  from  'react-json-view'
 import { postMockDataToScript } from '../index';
 import { mockDataItem } from '../../../pageScript/index/utils';
+import JSONInput from 'react-json-editor-ajrm';
+//@ts-ignore
+import locale from 'react-json-editor-ajrm/locale/en';
+const { Panel } = Collapse;
 console.log('我是准备拦截器交互的界面');
 
 const Cardtitle: React.FC<{ url: string }> = (props) => {
@@ -68,11 +71,21 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
             }
         });
     };
-    const checkJson = (json:any)=> {
-      if(!json)return {}
-      if(typeof json === 'string') return JSON.parse(json)
-      return json
-    }
+    const checkJson = (json: any) => {
+        if (!json) return {};
+        if (typeof json === 'string') return JSON.parse(json);
+        return json;
+    };
+    const changeHandel = debounce(
+        (value: { json: any }, index: number, key: string = 'data') => {
+            const data = [...mockData];
+            const el = data[index];
+            el['request'][key] = value.json;
+            setMockData(data);
+        },
+        1000,
+        false,
+    );
     useEffect(() => {
         setReady(true);
         getRefreshMockData();
@@ -104,7 +117,17 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                             <Collapse>
                                 <Panel header="RequestHeader" key="1">
                                     <p>{'修改请求头地方'}</p>
-                                    <TextArea
+                                    <JSONInput
+                                        width="100%"
+                                        id={`${index}+jsonInput`}
+                                        placeholder={checkJson(el.request.headers)}
+                                        onBlur={(value: Object) => {
+                                            changeHandel(value, index, 'headers');
+                                        }}
+                                        locale={locale}
+                                        height="150px"
+                                    />
+                                    {/* <TextArea
                                         onChange={(event) => {
                                             setMockData((mockData) => {
                                                 const data = [...mockData];
@@ -114,13 +137,13 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                             });
                                         }}
                                         defaultValue={JSON.stringify(el.request.headers)}
-                                    ></TextArea>
+                                    ></TextArea> */}
                                 </Panel>
                             </Collapse>
                             <Collapse>
                                 <Panel header="RequestData" key="1">
                                     <p>{'修改请求数据的地方'}</p>
-                                  
+
                                     {/* <TextArea
                                         onChange={(event) => {
                                             setMockData((mockData) => {
@@ -134,20 +157,44 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                         }}
                                         defaultValue={el.request.data}
                                     ></TextArea> */}
-                                    <ReactJson src={checkJson(el.request.data)} onEdit={(value)=>{
+                                    {/* <ReactJson src={{}} defaultValue={{}} onEdit={(value)=>{
                                         console.log(value)
-                                    }} name={false} theme="monokai" validationMessage="JSON格式错误"></ReactJson>
+                                    }} name={false} theme="monokai" validationMessage="JSON格式错误"></ReactJson> */}
+                                    <JSONInput
+                                        width="100%"
+                                        id={`${index}+jsonInput`}
+                                        placeholder={checkJson(el.request.data)}
+                                        onBlur={(value: Object) => {
+                                            changeHandel(value, index);
+                                        }}
+                                        locale={locale}
+                                        height="150px"
+                                    />
                                 </Panel>
                             </Collapse>
                             <Collapse>
                                 <Panel header="ReponsetData" key="1">
                                     <p>{'修改返回数据的地方'}</p>
-                                    <TextArea
+                                    <JSONInput
+                                        width="100%"
+                                        id={`${index}+jsonInput`}
+                                        placeholder={checkJson(el.response)}
+                                        onBlur={(value: any) => {
+                                            setMockDataProps(value.json, index, 'response');
+                                        }}
+                                        locale={locale}
+                                        height="450px"
+                                    />
+                                    {/* <TextArea
                                         defaultValue={el.response}
                                         onChange={(event) => {
-                                            setMockDataProps(event.target.value.toString(), index, 'response');
+                                            setMockDataProps(
+                                                event.target.value.toString(),
+                                                index,
+                                                'response',
+                                            );
                                         }}
-                                    ></TextArea>
+                                    ></TextArea> */}
                                 </Panel>
                             </Collapse>
                         </Card>

@@ -40,14 +40,14 @@ class ProxyXhr extends BaseXhr {
         this.instance = new ProxyXhr(this.hooks, this.afterHooks);
     }
 
-    setRequestHeader(header: any, xhr: any) {
+    setRequestHeader(headers: any, xhr: any) {
         try {
-            if (typeof header === 'string') {
-                header = JSON.parse(header);
+            if (typeof headers === 'string') {
+                headers = JSON.parse(headers);
             }
-            Object.keys(header).forEach((el) => {
+            Object.keys(headers).forEach((el) => {
                 /// @ts-ignore
-                xhr.setRequestHeader(el, header[el]);
+                xhr.setRequestHeader(el, headers[el]);
             });
         } catch (error) {}
     }

@@ -44,10 +44,10 @@ export function observerProxy(obj: object, onchange: (target: any) => void): any
  */
  export function debounce(func:Function, wait:number, immediate:boolean) {
     let timeout:number | null;
-    return  () => {
+    return  (...args:any[]) => {
       //@ts-ignore
       const context:any = this;
-      const args = [...arguments];
+      //const args = [...arguments];
       if (timeout) clearTimeout(timeout);
       if (immediate) {
         const callNow = !timeout;
