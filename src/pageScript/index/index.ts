@@ -1,2 +1,2 @@
-import './proxyXhr'
 import './message'
+import './proxyXhr'

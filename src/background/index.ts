@@ -3,7 +3,7 @@ import { observerProxy } from '../utils/common';
 import './webRequest';
 // 数据通过webRequest 存起来
 
-chrome.storage.sync.get('mockData', (res) => {
+chrome.storage.local.get('mockData', (res) => {
     console.log(res, '读取的本地数据');
     const mockData = res['mockData'];
     start(Array.isArray(mockData)?mockData:[]);
@@ -25,13 +25,13 @@ const actionMap: { [key: string]: Function } = {
             return el.switch ===true
         });
         fn(arg);
-        chrome.storage.sync.set({ mockData: window.mockData }, () => {
+        chrome.storage.local.set({ mockData: window.mockData }, () => {
             console.log('更新background mockData 成功',window.mockData);
         });
         // 发送给content 消息，将popup里更新的好的数据传递过去。
     },
     clearMock: (fn: (arg: any) => void, arg: any) => {
-        chrome.storage.sync.clear().then((res) => {
+        chrome.storage.local.clear().then((res) => {
             console.log('清除后台数据', res);
             fn(arg);
         });

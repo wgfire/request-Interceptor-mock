@@ -1,19 +1,18 @@
-import {initXhr,setMockData} from './proxyXhr'
+import {initXhr} from './proxyXhr'
 // 处理接受消息的行为
  // import {mockDataItem} from './utils'
 
 window.addEventListener('message', (e) => {
     console.log(e,'pagescript接受到消息')
-    if (e.data.action === 'start') actionMap.start(e.data.mockData);
+    if (e.data.action === 'start') actionMap.start();
 });
 
 
 
-export const refreshMockAction = (mockData: Array<any>) => {
-    // 重新用mockjs 执行一遍对应数据的拦截逻辑
-    setMockData(mockData)
+export const refreshMockAction = () => {
+    // 重新设置mock数据
     initXhr()
-  
+ 
 };
 const actionMap = {
     start: refreshMockAction,

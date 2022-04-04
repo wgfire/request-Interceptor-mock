@@ -17,9 +17,20 @@
   }
 .popup-box{
     padding: 0px 10px;
+    padding-left: 25px;
     overflow: auto;
     height: 100%;
 }
 .card-box {
     margin: 10px 0px;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 0px 15px 2px !important;
+}
+.show-icon {
+  position: fixed;
+  left: 0px;
+  top: 50%;
+  font-size: 20px;
+  color: #0090f5;
+  transform: translateY(-50%);
+  cursor: pointer;
 }

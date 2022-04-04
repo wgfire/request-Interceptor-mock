@@ -1,5 +1,4 @@
 import { BaseXhr, hooksProps } from './baseXhr';
-// import { mockUrl } from './message';
 import type { configProps, mockDataItem } from './utils';
 import { switchFindUrl, findUrlBuyMock, createMockItem } from './utils';
 //@ts-nocheck
@@ -80,7 +79,7 @@ class ProxyXhr extends BaseXhr {
         switchFindUrl(
             config,
             (data) => {
-                console.log(config, data, '找到修改的地方');
+                console.log(config, data, '找到修改的地方',mockUrl);
                 xhr.responseText = data.response;
             },
             mockUrl,
@@ -91,11 +90,14 @@ class ProxyXhr extends BaseXhr {
  * 先执行open 随后触发onreadystatechange一次 最后 执行send
  */
 
-export const setMockData = (mockData: mockDataItem[]) => {
+export const setMockData = () => {
+    // 拿到dom上挂载的mock数据
+    const mockData = JSON.parse(document.querySelector('#popup > div > textarea')?.innerHTML!) 
     mockUrl = mockData;
     console.log('xhr里的mockData数据', mockUrl);
 };
 export const initXhr = (): ProxyXhr => {
+    setMockData()
     if (xhr) {
         return xhr;
     }
@@ -106,7 +108,7 @@ export const initXhr = (): ProxyXhr => {
                     ProxyXhr.config.data = body ? body[0] : null;
                     xhr!.setResponseData(ProxyXhr.config, this);
                     const data = xhr!.setRequestData(ProxyXhr.config);
-                    console.log(data, '数据data');
+                    console.log(data, 'send数据data');
                     //    xhr.reqListData.push(ProxyXhr.config)
                     // this.resetConfig();
                     // 修改请求信息
@@ -116,8 +118,8 @@ export const initXhr = (): ProxyXhr => {
                 }
             },
             open: function (data: any) {
-                console.log(new Date().getTime(), '打开链接');
                 const [, url] = data;
+                console.log(new Date().getTime(), '打开链接',url);
                 ProxyXhr.config.url = url;
             },
             onreadystatechange: function () {
@@ -162,3 +164,5 @@ export const initXhr = (): ProxyXhr => {
     console.log(xhr, '替换的对象', xhr.getInstance());
     return xhr;
 };
+
+ initXhr()

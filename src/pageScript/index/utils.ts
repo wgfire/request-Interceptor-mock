@@ -22,6 +22,7 @@ export interface mockDataItem {
 /**当前config 下 是否存在与mockUrl里 */
 export const findUrlBuyMock = (url: string, mockUrl: mockDataItem[]) => {
     const mockData = mockUrl || [];
+    console.log(url,'找寻链接',mockData)
     const index = mockData.findIndex((el: any) => {
         return el.url === url;
     });

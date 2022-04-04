@@ -9,8 +9,8 @@ import { mockDataItem } from '../../../pageScript/index/utils';
 import JSONInput from 'react-json-editor-ajrm';
 //@ts-ignore
 import locale from 'react-json-editor-ajrm/locale/en';
+import { DoubleRightOutlined,DoubleLeftOutlined  } from '@ant-design/icons';
 const { Panel } = Collapse;
-console.log('我是准备拦截器交互的界面');
 
 const Cardtitle: React.FC<{ url: string }> = (props) => {
     return (
@@ -23,6 +23,8 @@ const Cardtitle: React.FC<{ url: string }> = (props) => {
 export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     const [mockData, setMockData] = useState(props.mockData);
     const [ready, setReady] = useState(false);
+    const [show,setShow]=useState(false) // 是否展开状态
+    const [popup,setPopup]=useState<HTMLElement|null>(null) // 外层容器
     const setMockDataProps = (value: any, index: number, key: string) => {
         const mock = [...mockData];
         mock[index][key] = value;
@@ -32,7 +34,7 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     const refreshMockData = debounce(
         () => {
             console.log(mockData, '拦截数据变化');
-            // 将现有的数据重新发送个background，background也需要更新，然后在转发给pagescript
+            // 将现有的数据重新发送个background，background也需要更新，然后在转发给pagescript更新mock
             chrome.runtime.sendMessage(
                 { action: 'setMock', to: 'background', data: mockData },
                 function (response) {
@@ -76,6 +78,14 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         if (typeof json === 'string') return JSON.parse(json);
         return json;
     };
+    const showClickHandel = () =>{
+       popup!.style.setProperty(
+        'transform',
+        show ? 'translateX(455px)' : 'translateX(0px)',
+        'important',
+    );
+        setShow(!show)
+    }
     const changeHandel = debounce(
         (value: { json: any }, index: number, key: string = 'data') => {
             const data = [...mockData];
@@ -87,6 +97,7 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         false,
     );
     useEffect(() => {
+        setPopup(document.getElementById('popup'))
         setReady(true);
         getRefreshMockData();
     }, []);
@@ -96,7 +107,11 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     }, [mockData]);
     return (
         <div className="popup-box scrollbar">
+            <textarea name="" defaultValue={JSON.stringify(mockData)} style={{display:'none'}}></textarea>
             <h1 className="title">mt插件┗|｀O′|┛ 嗷~~</h1>
+            <div onClick={showClickHandel} className="show-icon">
+                {show?<DoubleRightOutlined></DoubleRightOutlined>:<DoubleLeftOutlined></DoubleLeftOutlined> }
+            </div>
             {mockData &&
                 mockData.map((el, index) => {
                     return (
