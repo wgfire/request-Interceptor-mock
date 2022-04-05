@@ -21,7 +21,7 @@ const Cardtitle: React.FC<{ url: string }> = (props) => {
 };
 
 export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
-    const [mockData, setMockData] = useState(props.mockData);
+    const [mockData, setMockData] = useState(props.mockData || []);
     const [ready, setReady] = useState(false);
     const [show,setShow]=useState(false) // 是否展开状态
     const [popup,setPopup]=useState<HTMLElement|null>(null) // 外层容器

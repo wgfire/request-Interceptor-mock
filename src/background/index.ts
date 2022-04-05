@@ -47,11 +47,11 @@ const start = (data: any) => {
     });
 };
 
-chrome.browserAction.onClicked.addListener(function () {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        console.log('发送消息');
-        chrome.tabs.sendMessage(tabs[0].id!, { to: 'content', action: 'toggle' });
-    });
-});
+// chrome.browserAction.onClicked.addListener(function () {
+//     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+//         console.log('发送消息');
+//         chrome.tabs.sendMessage(tabs[0].id!, { to: 'content', action: 'toggle' });
+//     });
+// });
 
 export const mockData  = window.mockData
