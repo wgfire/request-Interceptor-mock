@@ -5,6 +5,7 @@ import {initXhr} from './proxyXhr'
 window.addEventListener('message', (e) => {
     console.log(e,'pagescript接受到消息')
     if (e.data.action === 'start') actionMap.start();
+    // if (e.data.action === 'start') actionMap.start(e.data.mockData);
 });
 
 

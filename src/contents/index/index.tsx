@@ -10,7 +10,6 @@ import { injectCustomJs } from '../../utils/common';
 import ReactDOM from 'react-dom';
 import { Iframe } from './iframe';
 
-
 // import { useEffect, useState } from 'react';
 console.log(`Current page show`);
 
@@ -39,7 +38,7 @@ export function postMockDataToScript(mockData: any) {
         mockData: mockData,
     });
 }
-/**发送消息给后台获取mockdata */
+/**发送消息给后台获取mockdata 通信由于是异步的很费时间，所以在content直接取*/
 function getMockData(fn: (arg: any) => void): void {
     chrome.runtime.sendMessage({ action: 'getMock', to: 'background' }, function (response) {
         if (response) {
@@ -54,15 +53,20 @@ function createPopup(mockData: any) {
     ReactDOM.render(<Iframe mockData={mockData} />, popup);
 }
 
-getMockData((response) => {
-    console.log('获取mock数据', response);
-    mockData = response; //这个mockData 给 popup界面使用
-    createPopup(response);
+chrome.storage.local.get('mockData', (res) => {
+    console.log(res, '读取的本地数据');
+    mockData = res.mockData; //这个mockData 给 popup界面使用
+    createPopup(mockData);
+    //  postMockDataToScript(mockData)
     injectCustomJs('js/pageScript.js').then(() => {
-        //postMockDataToScript 需要在js挂载成功之后 再去发送消息
-        postMockDataToScript(mockData);
+        //postMockDataToScript   需要在js挂载成功之后 再去发送消息
     });
 });
+
+// getMockData((response) => {
+//     console.log('获取mock数据', response);
+
+// });
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.to === 'content') {

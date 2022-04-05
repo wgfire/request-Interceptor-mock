@@ -3,14 +3,14 @@ export function injectCustomJs(jsPath: string = 'lib/mock.js') {
         jsPath = jsPath;
         var temp = document.createElement('script');
         temp.setAttribute('type', 'text/javascript');
-        temp.setAttribute('async', 'true');
         // 获得的地址类似：chrome-extension://ihcokhadfjfchaeagdoclpnjdiokfakg/js/inject.js
         temp.src = chrome.extension.getURL(jsPath);
         document.documentElement.appendChild(temp);
-
+        resolve(true);
+        console.log('注入完成',new Date().getTime())
         temp.onload = function () {
-            resolve(true);
-            console.log('注入完成',new Date().getTime())// 这里的window 和 页面上的window 除了document对象共享之外，其他变量不共享。
+           
+           // console.log('注入完成',new Date().getTime())// 这里的window 和 页面上的window 除了document对象共享之外，其他变量不共享。
         };
  
     });
