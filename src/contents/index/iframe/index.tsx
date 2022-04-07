@@ -9,9 +9,8 @@ import { mockDataItem } from '../../../pageScript/index/utils';
 import JSONInput from 'react-json-editor-ajrm';
 //@ts-ignore
 import locale from 'react-json-editor-ajrm/locale/en';
-import { DoubleRightOutlined,DoubleLeftOutlined  } from '@ant-design/icons';
+import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
 const { Panel } = Collapse;
-
 const Cardtitle: React.FC<{ url: string }> = (props) => {
     return (
         <div style={{ marginRight: '10px' }}>
@@ -23,13 +22,14 @@ const Cardtitle: React.FC<{ url: string }> = (props) => {
 export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     const [mockData, setMockData] = useState(props.mockData || []);
     const [ready, setReady] = useState(false);
-    const [show,setShow]=useState(false) // 是否展开状态
-    const [popup,setPopup]=useState<HTMLElement|null>(null) // 外层容器
+    const [show, setShow] = useState(false); // 是否展开状态
+    const [popup, setPopup] = useState<HTMLElement | null>(null); // 外层容器
+    const [ruleInput, setRuleInput] = useState('https?://'); // 过滤规则
+
     const setMockDataProps = (value: any, index: number, key: string) => {
         const mock = [...mockData];
         mock[index][key] = value;
         setMockData(mock);
-        return;
     };
     const refreshMockData = debounce(
         () => {
@@ -56,9 +56,7 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
             });
             if (index == -1) {
                 console.log(item, '新增列表');
-                // mock[index] = item;
                 mock.push(item);
-            } else {
             }
 
             console.log(mock, '更新数据');
@@ -74,18 +72,23 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         });
     };
     const checkJson = (json: any) => {
-        if (!json) return {};
-        if (typeof json === 'string') return JSON.parse(json);
-        return json;
+        try {
+            if (!json) return {};
+            // 用户404 或者报错 会返回html文档导致解析失败
+            if (typeof json === 'string') return JSON.parse(json);
+            return json;
+        } catch (error) {
+            console.log(error);
+        }
     };
-    const showClickHandel = () =>{
-       popup!.style.setProperty(
-        'transform',
-        show ? 'translateX(455px)' : 'translateX(0px)',
-        'important',
-    );
-        setShow(!show)
-    }
+    const showClickHandel = () => {
+        popup!.style.setProperty(
+            'transform',
+            show ? 'translateX(455px)' : 'translateX(0px)',
+            'important',
+        );
+        setShow(!show);
+    };
     const changeHandel = debounce(
         (value: { json: any }, index: number, key: string = 'data') => {
             const data = [...mockData];
@@ -96,125 +99,144 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         1000,
         false,
     );
+    const ruleChangeHandel = debounce(
+        (value: string) => {
+            chrome.storage.local.set({ rule: value });
+            setRuleInput(value);
+            console.log(ruleInput, 'x');
+        },
+        100,
+        false,
+    );
+    const findMockBuyUrl = (url: string, fn: (index: number) => void) => {
+        // 根据url 找到列表数据
+        const indexSwitch = mockData.findIndex((item) => {
+            return url === item.url;
+        });
+        if (indexSwitch > -1) {
+            fn(indexSwitch);
+        }
+    };
     useEffect(() => {
-        setPopup(document.getElementById('popup'))
+        chrome.storage.local.get('rule', (res) => {
+            setRuleInput(res['rule']);
+        });
+        setPopup(document.getElementById('popup'));
         setReady(true);
         getRefreshMockData();
     }, []);
     useEffect(() => {
         // 为了解决第一次加载也触发 refreshMockData
-        if (ready) refreshMockData();
+        if (ready) {
+            refreshMockData();
+        }
     }, [mockData]);
     return (
         <div className="popup-box scrollbar">
-            <textarea name="" defaultValue={JSON.stringify(mockData)} style={{display:'none'}}></textarea>
-            <h1 className="title">mt插件┗|｀O′|┛ 嗷~~</h1>
+            <textarea
+                name=""
+                defaultValue={JSON.stringify(mockData)}
+                style={{ display: 'none' }}
+            ></textarea>
+            <h1 className="title">mT插件┗|｀O′|┛ 嗷~~</h1>
             <div onClick={showClickHandel} className="show-icon">
-                {show?<DoubleRightOutlined></DoubleRightOutlined>:<DoubleLeftOutlined></DoubleLeftOutlined> }
+                {show ? (
+                    <DoubleRightOutlined></DoubleRightOutlined>
+                ) : (
+                    <DoubleLeftOutlined></DoubleLeftOutlined>
+                )}
             </div>
+            <Input
+                addonBefore="过滤URL"
+                addonAfter="支持正则"
+                onChange={(e) => {
+                    ruleChangeHandel(e.currentTarget.value);
+                }}
+                value={ruleInput}
+                defaultValue={ruleInput}
+                className="card-box"
+            />
             {mockData &&
-                mockData.map((el, index) => {
-                    return (
-                        <Card
-                            key={index}
-                            className="card-box"
-                            title={<Cardtitle url={el.url}></Cardtitle>}
-                            extra={
-                                <Switch
-                                    checked={el.switch}
-                                    onChange={(value) => {
-                                        setMockDataProps(value, index, 'switch');
-                                    }}
-                                ></Switch>
-                            }
-                            size="small"
-                        >
-                            <Collapse>
-                                <Panel header="RequestHeader" key="1">
-                                    <p>{'修改请求头地方'}</p>
-                                    <JSONInput
-                                        width="100%"
-                                        id={`${index}+jsonInput`}
-                                        placeholder={checkJson(el.request.headers)}
-                                        onBlur={(value: Object) => {
-                                            changeHandel(value, index, 'headers');
-                                        }}
-                                        locale={locale}
-                                        height="150px"
-                                    />
-                                    {/* <TextArea
-                                        onChange={(event) => {
-                                            setMockData((mockData) => {
-                                                const data = [...mockData];
-                                                const el = data[index];
-                                                el['request']['headers'] = event.target.value;
-                                                return data;
+                mockData
+                    .filter((el) => {
+                        const rule = new RegExp(ruleInput);
+                        const result = ruleInput !== '' ? rule.test(el.url) : true;
+                        return result;
+                    })
+                    .map((el, index) => {
+                        return (
+                            <Card
+                                key={el.url}
+                                className="card-box"
+                                title={<Cardtitle url={el.url}></Cardtitle>}
+                                extra={
+                                    <Switch
+                                        key={el.url}
+                                        checked={el.switch}
+                                        onChange={(value) => {
+                                            console.log(value);
+                                            findMockBuyUrl(el.url, (indexSwitch: number) => {
+                                                setMockDataProps(value, indexSwitch, 'switch');
                                             });
                                         }}
-                                        defaultValue={JSON.stringify(el.request.headers)}
-                                    ></TextArea> */}
-                                </Panel>
-                            </Collapse>
-                            <Collapse>
-                                <Panel header="RequestData" key="1">
-                                    <p>{'修改请求数据的地方'}</p>
-
-                                    {/* <TextArea
-                                        onChange={(event) => {
-                                            setMockData((mockData) => {
-                                                const data = [...mockData];
-                                                const el = data[index];
-                                                el['request']['data'] = event.target.value.toString();
-
-                                                return data;
-                                            });
-                                            // setMockDataProps(el,index)('request')('data',event.target.value)
-                                        }}
-                                        defaultValue={el.request.data}
-                                    ></TextArea> */}
-                                    {/* <ReactJson src={{}} defaultValue={{}} onEdit={(value)=>{
-                                        console.log(value)
-                                    }} name={false} theme="monokai" validationMessage="JSON格式错误"></ReactJson> */}
-                                    <JSONInput
-                                        width="100%"
-                                        id={`${index}+jsonInput`}
-                                        placeholder={checkJson(el.request.data)}
-                                        onBlur={(value: Object) => {
-                                            changeHandel(value, index);
-                                        }}
-                                        locale={locale}
-                                        height="150px"
-                                    />
-                                </Panel>
-                            </Collapse>
-                            <Collapse>
-                                <Panel header="ReponsetData" key="1">
-                                    <p>{'修改返回数据的地方'}</p>
-                                    <JSONInput
-                                        width="100%"
-                                        id={`${index}+jsonInput`}
-                                        placeholder={checkJson(el.response)}
-                                        onBlur={(value: any) => {
-                                            setMockDataProps(value.json, index, 'response');
-                                        }}
-                                        locale={locale}
-                                        height="450px"
-                                    />
-                                    {/* <TextArea
-                                        defaultValue={el.response}
-                                        onChange={(event) => {
-                                            setMockDataProps(
-                                                event.target.value.toString(),
-                                                index,
-                                                'response',
-                                            );
-                                        }}
-                                    ></TextArea> */}
-                                </Panel>
-                            </Collapse>
-                        </Card>
-                    );
-                })}
+                                    ></Switch>
+                                }
+                                size="small"
+                            >
+                                <Collapse>
+                                    <Panel header="RequestHeader" key="1">
+                                        <p>{'修改请求头地方'}</p>
+                                        <JSONInput
+                                            width="100%"
+                                            id={`${index}+jsonInput`}
+                                            placeholder={checkJson(el.request.headers)}
+                                            onBlur={(value: Object) => {
+                                                changeHandel(value, index, 'headers');
+                                            }}
+                                            locale={locale}
+                                            height="150px"
+                                        />
+                                    </Panel>
+                                </Collapse>
+                                <Collapse>
+                                    <Panel header="RequestData" key="1">
+                                        <p>{'修改请求数据的地方'}</p>
+                                        <JSONInput
+                                            width="100%"
+                                            id={`${index}+jsonInput`}
+                                            placeholder={checkJson(el.request.data)}
+                                            onBlur={(value: Object) => {
+                                                changeHandel(value, index);
+                                            }}
+                                            locale={locale}
+                                            height="150px"
+                                        />
+                                    </Panel>
+                                </Collapse>
+                                <Collapse>
+                                    <Panel header="ResponseData" key="1">
+                                        <p>{'修改返回数据的地方'}</p>
+                                        <JSONInput
+                                            width="100%"
+                                            id={`${index}+jsonInput`}
+                                            placeholder={checkJson(el.response)}
+                                            onBlur={(value: any) => {
+                                                findMockBuyUrl(el.url, (indexSwitch: number) => {
+                                                    setMockDataProps(
+                                                        value.json,
+                                                        indexSwitch,
+                                                        'response',
+                                                    );
+                                                });
+                                            }}
+                                            locale={locale}
+                                            height="450px"
+                                        />
+                                    </Panel>
+                                </Collapse>
+                            </Card>
+                        );
+                    })}
         </div>
     );
 };
