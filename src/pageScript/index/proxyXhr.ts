@@ -90,14 +90,14 @@ class ProxyXhr extends BaseXhr {
  * 先执行open 随后触发onreadystatechange一次 最后 执行send
  */
 
-export const setMockData = () => {
+export const setMockData = (data:any) => {
     // 拿到dom上挂载的mock数据
-    const mockData = JSON.parse(document.querySelector('#popup > div > textarea')?.innerHTML!) 
+    const mockData = data  //JSON.parse(document.querySelector('#popup > div > textarea')?.innerHTML!) 
     mockUrl = mockData;
     console.log('xhr里的mockData数据', mockUrl);
 };
-export const initXhr = (): ProxyXhr => {
-    setMockData()
+export const initXhr = (data:any): ProxyXhr => {
+    setMockData(data)
     if (xhr) {
         return xhr;
     }
@@ -108,10 +108,6 @@ export const initXhr = (): ProxyXhr => {
                     ProxyXhr.config.data = body ? body[0] : null;
                     xhr!.setResponseData(ProxyXhr.config, this);
                     const data = xhr!.setRequestData(ProxyXhr.config);
-                    console.log(data, 'send数据data');
-                    //    xhr.reqListData.push(ProxyXhr.config)
-                    // this.resetConfig();
-                    // 修改请求信息
                     return data;
                 } catch (error) {
                     console.log(error);
@@ -124,10 +120,8 @@ export const initXhr = (): ProxyXhr => {
             },
             onreadystatechange: function () {
                 if (this.readyState === 1) {
-                    // this.setRequestHeader('x-wg','x')
                     this.status = 200
                     xhr!.setRequestInfo(ProxyXhr.config, this); // 等于1的时候修改请求信息
-                    console.log('等于1的时候', this);
                 } else if (this.readyState === 2) {
                 }
                 console.log('监听链接', new Date().getTime(), this.responseURL, this.readyState);
@@ -152,7 +146,6 @@ export const initXhr = (): ProxyXhr => {
                 try {
                     // 用来进行通信
                     console.log(originData, newData, this, 'after回调');
-
                     //   let item = createMockItem({xhr:this,originData,newData})
                 } catch (error) {
                     console.log(error);
@@ -165,4 +158,4 @@ export const initXhr = (): ProxyXhr => {
     return xhr;
 };
 
- initXhr()
+ //initXhr()

@@ -133,11 +133,6 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     }, [mockData]);
     return (
         <div className="popup-box scrollbar">
-            <textarea
-                name=""
-                defaultValue={JSON.stringify(mockData)}
-                style={{ display: 'none' }}
-            ></textarea>
             <h1 className="title">mT插件┗|｀O′|┛ 嗷~~</h1>
             <div onClick={showClickHandel} className="show-icon">
                 {show ? (

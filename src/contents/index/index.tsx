@@ -20,14 +20,9 @@ const actionMap: {
     [key: string]: (data?: any) => void;
 } = {
     start: postMockDataToScript,
-    // toggle: () => {
-    //     show = !show;
-    //     popup.style.setProperty(
-    //         'transform',
-    //         show ? 'translateX(0)' : 'translateX(450px)',
-    //         'important',
-    //     );
-    // },
+    getMock: (request, sendResponse) => {
+        sendResponse(mockData);
+    },
 };
 
 export function postMockDataToScript(mockData: any) {
@@ -47,19 +42,21 @@ function getMockData(fn: (arg: any) => void): void {
     });
 }
 function createPopup(mockData: any) {
-    console.log('开始插入popup', mockData);
-    popup.setAttribute('id', 'popup');
-    document.body.appendChild(popup);
-    ReactDOM.render(<Iframe mockData={mockData} />, popup);
+    // 有些网站可能加载的数据比较多，所以还是要在一个回调函数里等document有了在插入
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('开始插入popup', mockData);
+        popup.setAttribute('id', 'popup');
+        document.body.appendChild(popup);
+        ReactDOM.render(<Iframe mockData={mockData} />, popup);
+    });
 }
 
 chrome.storage.local.get('mockData', (res) => {
     console.log(res, '读取的本地数据');
     mockData = res.mockData; //这个mockData 给 popup界面使用
     createPopup(mockData);
-    //  postMockDataToScript(mockData)
     injectCustomJs('js/pageScript.js').then(() => {
-        //postMockDataToScript   需要在js挂载成功之后 再去发送消息
+        postMockDataToScript(mockData); //  需要在js挂载成功之后 再去发送消息
     });
 });
 
@@ -73,7 +70,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         console.log(request, sender, 'content收到消息');
         // 转发给pagescript内容
         const name = request.action as string;
-        actionMap[name] && actionMap[name](request);
-        if (sendResponse) sendResponse();
+        actionMap[name] && actionMap[name](request, sendResponse);
     }
 });

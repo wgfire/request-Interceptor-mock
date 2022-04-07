@@ -6,10 +6,10 @@ export function injectCustomJs(jsPath: string = 'lib/mock.js') {
         // 获得的地址类似：chrome-extension://ihcokhadfjfchaeagdoclpnjdiokfakg/js/inject.js
         temp.src = chrome.extension.getURL(jsPath);
         document.documentElement.appendChild(temp);
-        resolve(true);
-        console.log('注入完成',new Date().getTime())
+   
         temp.onload = function () {
-           
+          resolve(true);
+          console.log('注入完成',new Date().getTime())
            // console.log('注入完成',new Date().getTime())// 这里的window 和 页面上的window 除了document对象共享之外，其他变量不共享。
         };
  
