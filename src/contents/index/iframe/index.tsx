@@ -8,12 +8,13 @@ import JSONInput from 'react-json-editor-ajrm';
 //@ts-ignore
 import locale from 'react-json-editor-ajrm/locale/en';
 import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
+import { ActionBar } from './components/ActionBar';
 // import { useCopyHook } from './hooks/useCopyHoos';
 const { Panel } = Collapse;
 const Cardtitle: React.FC<{ url: string }> = (props) => {
     return (
         <div style={{ marginRight: '10px' }}>
-            <Input value={props.url}   addonBefore="URL:" ></Input>
+            <Input value={props.url} addonBefore="URL:"></Input>
         </div>
     );
 };
@@ -24,7 +25,7 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     const [show, setShow] = useState(false); // 是否展开状态
     const [popup, setPopup] = useState<HTMLElement | null>(null); // 外层容器
     const [ruleInput, setRuleInput] = useState('https?://'); // 过滤规则
- //   const copy = useCopyHook({ onSuccess: () => message.success('复制成功') });
+    //   const copy = useCopyHook({ onSuccess: () => message.success('复制成功') });
 
     const setMockDataProps = (value: any, index: number, key: string) => {
         const mock = [...mockData];
@@ -180,9 +181,13 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                             >
                                 <Collapse>
                                     <Panel header="RequestHeader" key="1">
+                                        <ActionBar
+                                            name="修改请求头"
+                                            onclick={(type) => {
+                                                console.log(type);
+                                            }}
+                                        ></ActionBar>
 
-                                        <p>{'修改请求头'}</p>
-                               
                                         <JSONInput
                                             width="100%"
                                             id={`${index}+jsonInput`}

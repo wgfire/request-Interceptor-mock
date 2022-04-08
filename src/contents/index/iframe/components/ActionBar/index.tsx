@@ -4,19 +4,30 @@
 1.用户对返回数据的操作按钮
 */
 import './index.scss';
-import { CopyOutlined } from '@ant-design/icons';
+import { CopyTwoTone, ExpandOutlined } from '@ant-design/icons';
 export interface ActionBarProps {
     onclick: (type: string) => void;
+    name: string;
 }
 export const ActionBar: React.FC<ActionBarProps> = (data: ActionBarProps) => {
-    const { onclick } = data;
+    const { name, onclick } = data;
     return (
         <div className="action-bar">
-            <CopyOutlined
+            <span>{name}</span>
+            <CopyTwoTone
+                color="#0090f5"
+                title="复制"
                 onClick={() => {
                     onclick('copy');
                 }}
-            ></CopyOutlined>
+            ></CopyTwoTone>
+            <ExpandOutlined
+                style={{ color: '#0090f5' }}
+                title="放大"
+                onClick={() => {
+                    onclick('expand');
+                }}
+            />
         </div>
     );
 };
