@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Card, Switch, Input, Collapse } from 'antd';
-// import TextArea from 'antd/lib/input/TextArea';
-
 import './index.scss';
 import { debounce } from '../../../utils/common';
 import { postMockDataToScript } from '../index';
@@ -10,11 +8,12 @@ import JSONInput from 'react-json-editor-ajrm';
 //@ts-ignore
 import locale from 'react-json-editor-ajrm/locale/en';
 import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
+// import { useCopyHook } from './hooks/useCopyHoos';
 const { Panel } = Collapse;
 const Cardtitle: React.FC<{ url: string }> = (props) => {
     return (
         <div style={{ marginRight: '10px' }}>
-            <Input value={props.url} prefix="URL:"></Input>
+            <Input value={props.url}   addonBefore="URL:" ></Input>
         </div>
     );
 };
@@ -25,6 +24,7 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     const [show, setShow] = useState(false); // 是否展开状态
     const [popup, setPopup] = useState<HTMLElement | null>(null); // 外层容器
     const [ruleInput, setRuleInput] = useState('https?://'); // 过滤规则
+ //   const copy = useCopyHook({ onSuccess: () => message.success('复制成功') });
 
     const setMockDataProps = (value: any, index: number, key: string) => {
         const mock = [...mockData];
@@ -180,7 +180,9 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                             >
                                 <Collapse>
                                     <Panel header="RequestHeader" key="1">
-                                        <p>{'修改请求头地方'}</p>
+
+                                        <p>{'修改请求头'}</p>
+                               
                                         <JSONInput
                                             width="100%"
                                             id={`${index}+jsonInput`}
@@ -195,7 +197,7 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                 </Collapse>
                                 <Collapse>
                                     <Panel header="RequestData" key="1">
-                                        <p>{'修改请求数据的地方'}</p>
+                                        <p>{'修改请求数据'}</p>
                                         <JSONInput
                                             width="100%"
                                             id={`${index}+jsonInput`}
@@ -210,7 +212,7 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                 </Collapse>
                                 <Collapse>
                                     <Panel header="ResponseData" key="1">
-                                        <p>{'修改返回数据的地方'}</p>
+                                        <p>{'修改返回数据'}</p>
                                         <JSONInput
                                             width="100%"
                                             id={`${index}+jsonInput`}
