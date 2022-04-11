@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Card, Switch, Input, Collapse } from 'antd';
+import { Card, Switch, Input, Collapse, message } from 'antd';
 import './index.scss';
 import { debounce } from '../../../utils/common';
 import { postMockDataToScript } from '../index';
@@ -9,7 +9,8 @@ import JSONInput from 'react-json-editor-ajrm';
 import locale from 'react-json-editor-ajrm/locale/en';
 import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
 import { ActionBar } from './components/ActionBar';
-// import { useCopyHook } from './hooks/useCopyHoos';
+import { useCopy } from './hooks/useCopy';
+import { useDomFullRequest } from './hooks/useFullScreen';
 const { Panel } = Collapse;
 const Cardtitle: React.FC<{ url: string }> = (props) => {
     return (
@@ -25,47 +26,58 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     const [show, setShow] = useState(false); // 是否展开状态
     const [popup, setPopup] = useState<HTMLElement | null>(null); // 外层容器
     const [ruleInput, setRuleInput] = useState('https?://'); // 过滤规则
-    //   const copy = useCopyHook({ onSuccess: () => message.success('复制成功') });
+    const copy = useCopy({
+        onSuccess: () => {
+            message.success('复制成功');
+        },
+    });
+    const domFullRequest = useDomFullRequest({});
+    const actionBarList: {
+        [key: string]: (data: string) => void;
+    } = {
+        copy: useCopy({
+            onSuccess: () => {
+                message.success('复制成功');
+            },
+        }),
+        expand: useDomFullRequest({}),
+    };
 
     const setMockDataProps = (value: any, index: number, key: string) => {
+        // 根据索引设置某个key的值
         const mock = [...mockData];
         mock[index][key] = value;
         setMockData(mock);
     };
     const refreshMockData = debounce(
         () => {
-            console.log(mockData, '拦截数据变化');
             // 将现有的数据重新发送个background，background也需要更新，然后在转发给pagescript更新mock
-            chrome.runtime.sendMessage(
-                { action: 'setMock', to: 'background', data: mockData },
-                function (response) {
-                    if (response) {
-                        console.log('发送成功');
-                        postMockDataToScript(response);
-                    }
-                },
-            );
+            chrome.runtime.sendMessage({ action: 'setMock', to: 'background', data: mockData }, function (response) {
+                if (response) {
+                    postMockDataToScript(response);
+                }
+            });
         },
         1000,
         false,
     );
     const updateMockData = (item: mockDataItem) => {
+        // 更新界面上的mockData数量
         setMockData((mockData) => {
             const mock = [...mockData];
             const index = mock.findIndex((el) => {
                 return el.url === item.url;
             });
             if (index == -1) {
-                console.log(item, '新增列表');
                 mock.push(item);
             }
 
-            console.log(mock, '更新数据');
             return mock;
         });
     };
     const getRefreshMockData = () => {
         window.addEventListener('message', (event: MessageEvent<any>) => {
+            // 获取xhr拦截到的推送列表
             const { to, action, data } = event.data;
             if (to === 'iframe' && action === 'update') {
                 updateMockData(data);
@@ -79,23 +91,24 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
             if (typeof json === 'string') return JSON.parse(json);
             return json;
         } catch (error) {
-            console.log(error);
+            return false;
         }
     };
     const showClickHandel = () => {
-        popup!.style.setProperty(
-            'transform',
-            show ? 'translateX(455px)' : 'translateX(0px)',
-            'important',
-        );
+        popup!.style.setProperty('transform', show ? 'translateX(475px)' : 'translateX(0px)', 'important');
         setShow(!show);
     };
     const changeHandel = debounce(
         (value: { json: any }, index: number, key: string = 'data') => {
-            const data = [...mockData];
-            const el = data[index];
-            el['request'][key] = value.json;
-            setMockData(data);
+            try {
+                if (JSON.parse(value.json)) {
+                    // 当用户改变的值是合法的json string 才去更新
+                    const data = [...mockData];
+                    const el = data[index];
+                    el['request'][key] = value.json;
+                    setMockData(data);
+                }
+            } catch (error) {}
         },
         1000,
         false,
@@ -104,11 +117,11 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         (value: string) => {
             chrome.storage.local.set({ rule: value });
             setRuleInput(value);
-            console.log(ruleInput, 'x');
         },
         100,
         false,
     );
+
     const findMockBuyUrl = (url: string, fn: (index: number) => void) => {
         // 根据url 找到列表数据
         const indexSwitch = mockData.findIndex((item) => {
@@ -118,6 +131,7 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
             fn(indexSwitch);
         }
     };
+
     useEffect(() => {
         chrome.storage.local.get('rule', (res) => {
             setRuleInput(res['rule']);
@@ -136,11 +150,7 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         <div className="popup-box scrollbar">
             <h1 className="title">mT插件┗|｀O′|┛ 嗷~~</h1>
             <div onClick={showClickHandel} className="show-icon">
-                {show ? (
-                    <DoubleRightOutlined></DoubleRightOutlined>
-                ) : (
-                    <DoubleLeftOutlined></DoubleLeftOutlined>
-                )}
+                {show ? <DoubleRightOutlined></DoubleRightOutlined> : <DoubleLeftOutlined></DoubleLeftOutlined>}
             </div>
             <Input
                 addonBefore="过滤URL"
@@ -170,7 +180,6 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                         key={el.url}
                                         checked={el.switch}
                                         onChange={(value) => {
-                                            console.log(value);
                                             findMockBuyUrl(el.url, (indexSwitch: number) => {
                                                 setMockDataProps(value, indexSwitch, 'switch');
                                             });
@@ -182,18 +191,25 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                 <Collapse>
                                     <Panel header="RequestHeader" key="1">
                                         <ActionBar
-                                            name="修改请求头"
+                                            name="新增请求头"
                                             onclick={(type) => {
-                                                console.log(type);
+                                                if (type == 'copy') {
+                                                    copy(el.request.headers);
+                                                } else if (type == 'expand') {
+                                                    domFullRequest(`#s-${index}-1-jsonInput-body`);
+                                                }
+                                                //    actionBarList[type]()
                                             }}
                                         ></ActionBar>
 
                                         <JSONInput
                                             width="100%"
-                                            id={`${index}+jsonInput`}
+                                            id={`s-${index}-1-jsonInput`}
                                             placeholder={checkJson(el.request.headers)}
-                                            onBlur={(value: Object) => {
-                                                changeHandel(value, index, 'headers');
+                                            onChange={(value: Object) => {
+                                                findMockBuyUrl(el.url, (indexSwitch: number) => {
+                                                    changeHandel(value, indexSwitch, 'headers');
+                                                });
                                             }}
                                             locale={locale}
                                             height="150px"
@@ -202,13 +218,25 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                 </Collapse>
                                 <Collapse>
                                     <Panel header="RequestData" key="1">
-                                        <p>{'修改请求数据'}</p>
+                                        <ActionBar
+                                            name="修改请求数据"
+                                            onclick={(type) => {
+                                                if (type == 'copy') {
+                                                    copy(el.request.data);
+                                                } else if (type == 'expand') {
+                                                    domFullRequest(`#s-${index}-2-jsonInput-body`);
+                                                }
+                                                //    actionBarList[type]()
+                                            }}
+                                        ></ActionBar>
                                         <JSONInput
                                             width="100%"
-                                            id={`${index}+jsonInput`}
+                                            id={`s-${index}-2-jsonInput`}
                                             placeholder={checkJson(el.request.data)}
-                                            onBlur={(value: Object) => {
-                                                changeHandel(value, index);
+                                            onChange={(value: Object) => {
+                                                findMockBuyUrl(el.url, (indexSwitch: number) => {
+                                                    changeHandel(value, indexSwitch);
+                                                });
                                             }}
                                             locale={locale}
                                             height="150px"
@@ -217,18 +245,26 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                 </Collapse>
                                 <Collapse>
                                     <Panel header="ResponseData" key="1">
-                                        <p>{'修改返回数据'}</p>
+                                        <ActionBar
+                                            name="修改返回数据"
+                                            onclick={(type) => {
+                                                if (type == 'copy') {
+                                                    copy(el.response);
+                                                } else if (type == 'expand') {
+                                                    domFullRequest(`#s-${index}-3-jsonInput-body`);
+                                                }
+                                            }}
+                                        ></ActionBar>
                                         <JSONInput
+                                            confirmGood
                                             width="100%"
-                                            id={`${index}+jsonInput`}
+                                            id={`s-${index}-3-jsonInput`}
                                             placeholder={checkJson(el.response)}
-                                            onBlur={(value: any) => {
+                                            onChange={(value: any) => {
                                                 findMockBuyUrl(el.url, (indexSwitch: number) => {
-                                                    setMockDataProps(
-                                                        value.json,
-                                                        indexSwitch,
-                                                        'response',
-                                                    );
+                                                    if (checkJson(value.json)) {
+                                                        setMockDataProps(value.json, indexSwitch, 'response');
+                                                    }
                                                 });
                                             }}
                                             locale={locale}

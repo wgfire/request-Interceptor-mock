@@ -1,7 +1,7 @@
 export interface FullRequestProps {
     onSuccess?: () => void; 
 }
-export const domFullRequest = (data: FullRequestProps) => {
+export const useDomFullRequest = (data: FullRequestProps) => {
     const { onSuccess } = data;
     const openFull = (selector: string) => {
         try {

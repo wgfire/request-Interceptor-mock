@@ -5,9 +5,7 @@ import {initXhr} from './proxyXhr'
 window.addEventListener('message', (e) => {
     console.log(e,'pagescript接受到消息')
     if (e.data.action === 'start') actionMap.start(e.data.mockData);
-    // if (e.data.action === 'start') actionMap.start(e.data.mockData);
 });
-
 
 
 export const refreshMockAction = (data:any) => {
@@ -19,7 +17,3 @@ const actionMap = {
     start: refreshMockAction,
 };
 
-export const deleteMockUrl = (url: string) => {
-    // 关闭后需要删除mock的拦截的url
-   console.log(url)
-};

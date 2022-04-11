@@ -1,7 +1,6 @@
 import { BaseXhr, hooksProps } from './baseXhr';
 import type { configProps, mockDataItem } from './utils';
 import { switchFindUrl, findUrlBuyMock, createMockItem } from './utils';
-//@ts-nocheck
 
 let mockUrl: any = null;
 let xhr: ProxyXhr | null = null;
@@ -52,7 +51,6 @@ class ProxyXhr extends BaseXhr {
     }
     setRequestInfo(config: configProps, xhr: any) {
         // 主要利用config里的url 找寻 需要修改的请求对象 // 可修改请求头,一些请求属性
-        // const data = findUrlBuyMock(config);
         switchFindUrl(
             config,
             (data) => {

@@ -32,24 +32,32 @@ const prodConfig = merge(commonConfig, {
         new CssMinimizerPlugin(),
     ],
     optimization: {
-        // splitChunks: {
-        //     minSize: 20000,
-        //     name: "vendor",
-        //     minChunks:2,
-        //     cacheGroups: {
-        //         vendor: {
-        //             test: /[/\\]node_modules[/\\](react|react-dom)[/\\]/,
-        //             name: 'vendor',
-        //             priority: -10
-        //         },
-        //     },
-        //     chunks: 'all',
-        // },
+        splitChunks: {
+            minSize: 20000,
+            name:"vendor",
+            minChunks:1,
+            cacheGroups: {
+                vendor: { // 项目基本框架等
+                    test: /[/\\]node_modules[/\\](react|react-dom|antd)[/\\]/,
+                    name: 'vendor',
+                    priority: 100,
+                    chunks: 'all',
+                },
+            
+            },
+           
+        },
         minimize: true,
         minimizer: [
             new TerserPlugin({
                 parallel: true,
                 extractComments: false,
+                terserOptions:{
+                    compress:{
+                        drop_console:true
+                    }
+                }
+                
             }),
         ],
     },

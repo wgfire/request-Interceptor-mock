@@ -7,7 +7,7 @@ export interface CopyHooksProps {
     onSuccess: () => void; // 复制成功后的回调
 }
 
-export const useCopyHook = (data: CopyHooksProps) => {
+export const useCopy = (data: CopyHooksProps) => {
     const { onSuccess } = data;
     const copy = function (value:string) {
         // 动态创建 textarea 标签

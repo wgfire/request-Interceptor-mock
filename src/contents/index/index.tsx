@@ -15,7 +15,6 @@ console.log(`Current page show`);
 
 let mockData: any = null;
 let popup: HTMLDivElement = document.createElement('div');
-let show: boolean = false;
 const actionMap: {
     [key: string]: (data?: any) => void;
 } = {
