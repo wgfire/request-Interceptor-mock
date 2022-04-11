@@ -1,17 +1,17 @@
 {
-  "name": "awesome-chrome-extension",
+  "name": "xhr-chrome-extension",
   "version": "1.0.0",
-  "description": "an awesome boilerplate for chrome extension development!",
+  "description": "拦截xhr请求，并对响应值其进行修改",
   "private": true,
-  "author": "YuTengjing",
+  "author": "wg",
   "license": "MIT",
-  "homepage": "https://github.com/tjx666/awesome-chrome-extension-boilerplate#readme",
+  "homepage": "https://github.com/wgfire/xhr-Interceptor-mock.git",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/tjx666/awesome-chrome-extension-boilerplate.git"
+    "url": "git+ssh://git@github.com:wgfire/xhr-Interceptor-mock.git"
   },
   "bugs": {
-    "url": "https://github.com/tjx666/awesome-chrome-extension-boilerplate/issues"
+    "url": "https://github.com/wgfire/xhr-Interceptor-mock.git"
   },
   "scripts": {
     "start": "cross-env-shell NODE_ENV=development ts-node --files -P ./server/tsconfig.json ./server",
@@ -138,7 +138,7 @@
     "webpack": "^5.52.1",
     "webpack-bundle-analyzer": "^4.4.2",
     "webpack-dev-middleware": "^5.1.0",
-    "webpack-hot-middleware": "git+https://github.com/lukeapage/webpack-hot-middleware#2cdfe0d0111dab6432b8683112fd2d17a5e80572",
+    "webpack-hot-middleware": "2.25.1",
     "webpack-merge": "^5.8.0",
     "webpackbar": "^5.0.0-3",
     "yargs": "^17.1.1"
