@@ -115,6 +115,7 @@ const commonConfig: Configuration = {
                                 modifyVars: {
                                     // 修改 antd 主题
                                     // '@primary-color': '#1DA57A',
+                                    '@ant-prefix': 'xhr-wg',
                                 },
                             },
                         },

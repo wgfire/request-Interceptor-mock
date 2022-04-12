@@ -20,7 +20,7 @@ const Cardtitle: React.FC<{ url: string }> = (props) => {
     );
 };
 
-export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
+export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     const [mockData, setMockData] = useState(props.mockData || []);
     const [ready, setReady] = useState(false);
     const [show, setShow] = useState(false); // 是否展开状态
@@ -279,6 +279,6 @@ export const Iframe: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     );
 };
 
-Iframe.defaultProps = {
+Popup.defaultProps = {
     mockData: [],
 };
