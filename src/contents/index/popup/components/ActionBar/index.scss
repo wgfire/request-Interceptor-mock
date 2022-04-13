@@ -1,7 +1,7 @@
 .action-bar {
     display: grid;
     margin-bottom: 12px;
-    grid-template-columns: 90px repeat(auto-fill,minmax(16px,auto));
+    grid-template-columns: minmax(max-content, 90px) repeat(auto-fill,minmax(16px,auto));
     grid-auto-flow: 45px;
     column-gap: 8px;
     justify-items: left;

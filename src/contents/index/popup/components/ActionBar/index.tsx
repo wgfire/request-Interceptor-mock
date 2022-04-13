@@ -4,7 +4,7 @@
 1.用户对返回数据的操作按钮
 */
 import './index.scss';
-import { CopyTwoTone, ExpandOutlined } from '@ant-design/icons';
+import { CopyTwoTone, ExpandOutlined, SwapOutlined } from '@ant-design/icons';
 export interface ActionBarProps {
     onclick: (type: string) => void;
     name: string;
@@ -26,6 +26,13 @@ export const ActionBar: React.FC<ActionBarProps> = (data: ActionBarProps) => {
                 title="放大"
                 onClick={() => {
                     onclick('expand');
+                }}
+            />
+            <SwapOutlined
+                style={{ color: '#0090f5', transform: 'rotate(90deg)' }}
+                title="切换数据"
+                onClick={() => {
+                    onclick('change');
                 }}
             />
         </div>
