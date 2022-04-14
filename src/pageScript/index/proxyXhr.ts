@@ -2,8 +2,8 @@ import { BaseXhr, hooksProps } from './baseXhr';
 import type { configProps, mockDataItem } from './utils';
 import { switchFindUrl, findUrlBuyMock, createMockItem } from './utils';
 
-let mockUrl: any ;
-let xhr: ProxyXhr | null ;
+let mockUrl: any;
+let xhr: ProxyXhr | null;
 class ProxyXhr extends BaseXhr {
     static config: configProps = {
         url: '',
@@ -38,7 +38,7 @@ class ProxyXhr extends BaseXhr {
         this.instance = new ProxyXhr(this.hooks, this.afterHooks);
     }
 
-    setRequestHeaderData(headers: any,proxy:any) {
+    setRequestHeaderData(headers: any, proxy: any) {
         try {
             if (typeof headers === 'string') {
                 headers = JSON.parse(headers);
@@ -65,9 +65,9 @@ class ProxyXhr extends BaseXhr {
         const data = findUrlBuyMock(config.url, mockUrl);
         if (data && data.switch) {
             const { request } = data;
-            if(data.showOriginData){
+            if (data.showOriginData) {
                 // 如果用户设置了显示原始数据,那么就发送原生请求数据
-                return request.originData
+                return request.originData;
             }
             return request.data;
         }
@@ -79,13 +79,12 @@ class ProxyXhr extends BaseXhr {
             config,
             (data) => {
                 console.log(config, data, '找到修改的地方', mockUrl);
-                if(data.shwoOrginRespon){
+                if (data.showOriginResponse) {
                     // 如果用户显示原生响应数据
-                    xhr.responseText = data.originResponse
-                }else {
+                    xhr.responseText = data.originResponse;
+                } else {
                     xhr.responseText = data.response;
                 }
-                
             },
             mockUrl,
         );

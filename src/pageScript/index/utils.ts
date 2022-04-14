@@ -17,8 +17,8 @@ export interface mockDataItem {
     };
     response: any;
     originResponse: any;
-    showOriginData:false,
-    shwoOrginRespon:false, // 默认显示代理的数据
+    showOriginData: false;
+    showOriginResponse: false; // 默认显示代理的数据
     [key: string]: any;
 }
 /** 当前config 下 是否存在与mockUrl里 */
@@ -66,8 +66,8 @@ export const createMockItem = ({ xhr }: { xhr: any }): mockDataItem => {
         },
         response: xhr.responseText,
         originResponse: xhr._xhr.responseText,
-        showOriginData:false,
-        shwoOrginRespon:false,
+        showOriginData: false,
+        showOriginResponse: false,
     };
     return obj;
 };
