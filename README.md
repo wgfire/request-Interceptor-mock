@@ -16,6 +16,9 @@
 # Bugs
  - 由于popup界面 没有使用iframe 导致百度首页没有滚动条
 
+ # 效果图
+ !['效果图'](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/496ffa26226e4857a1b78d79d8a21fb1~tplv-k3u1fbpfcp-zoom-in-crop-mark:1304:0:0:0.awebp)
+
  # 待更新
  - 手动请求
  - 请求代理 - （到其他地址拿数据过来）
