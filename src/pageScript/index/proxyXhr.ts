@@ -51,7 +51,7 @@ class ProxyXhr extends BaseXhr {
     setRequestInfo(config: configProps, proxy: any) {
         // 主要利用config里的url 找寻 需要修改的请求对象 // 可修改请求头,一些请求属性
         switchFindUrl(
-            config,
+            config.url,
             (data) => {
                 const { request } = data;
                 Object.keys(request.headers).length > 0 && this.setRequestHeaderData(request.headers, xhr);
@@ -76,7 +76,7 @@ class ProxyXhr extends BaseXhr {
     setResponseData(config: configProps, xhr: any) {
         // 修改返回的reponse数据
         switchFindUrl(
-            config,
+            config.url,
             (data) => {
                 console.log(config, data, '找到修改的地方', mockUrl);
                 if (data.showOriginResponse) {
@@ -124,7 +124,7 @@ export const initXhr = (data: any): ProxyXhr => {
             },
             onreadystatechange() {
                 if (this.readyState === 1) {
-                    this.status = 200;
+                    this.status = 200; // 开启代理的默认状态都是200 ，这样404的时候客户端不会报错，能够拿到模拟的数据
                     xhr!.setRequestInfo(ProxyXhr.config, this); // 等于1的时候修改请求信息
                 } else if (this.readyState === 2) {
                 }

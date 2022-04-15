@@ -4,7 +4,7 @@ export interface configProps {
     header: any;
 }
 export interface mockDataItem {
-    statu: number;
+    status: number;
     switch: boolean;
     cancel: boolean;
     url: string;
@@ -29,8 +29,8 @@ export const findUrlBuyMock = (url: string, mockUrl: mockDataItem[]) => {
     return index > -1 ? mockUrl[index] : false;
 };
 
-export const switchFindUrl = (config: configProps, fn: (data: mockDataItem) => any, mockUrl: mockDataItem[]) => {
-    const data = findUrlBuyMock(config.url, mockUrl);
+export const switchFindUrl = (url:string, fn: (data: mockDataItem) => any, mockUrl: mockDataItem[]) => {
+    const data = findUrlBuyMock(url, mockUrl);
     if (data && data.switch) {
         fn(data);
     }
@@ -52,9 +52,9 @@ export const parseResponseHeaders = (xhr: any) => {
     return headerMap;
 };
 
-export const createMockItem = ({ xhr }: { xhr: any }): mockDataItem => {
+export const createMockItem = ({xhr }: {xhr:any}): mockDataItem => {
     const obj: mockDataItem = {
-        statu: 200,
+        status: 200,
         switch: false,
         cancel: false,
         url: xhr.responseURL,
@@ -71,3 +71,75 @@ export const createMockItem = ({ xhr }: { xhr: any }): mockDataItem => {
     };
     return obj;
 };
+export const createMockItemForProxy = ({url,data,originData,response,originResponse}:{[key:string]:string}): mockDataItem => {
+    const obj: mockDataItem = {
+        status: 200,
+        switch: false,
+        cancel: false,
+        url,
+        request: {
+            headers: {},
+            timeout: 200,
+            data,
+            originData,
+        },
+        response,
+        originResponse,
+        showOriginData: false,
+        showOriginResponse: false,
+    };
+    return obj;
+};
+
+export function createReadStream(text: string) {
+    // 将文件字符，创建一个可读流对象，返回给response 对象的body
+    const stream = new ReadableStream({
+        start(controller) {
+            controller.enqueue(new TextEncoder().encode(text));
+            controller.close();
+        },
+    });
+    return stream;
+}
+export function createHeaders(headers: { [key: string]: any }) {
+    // 根据对象返回一个headers 对象
+    const myHeaders = new Headers();
+    Object.keys(headers).forEach((el) => {
+        myHeaders.append(el, headers[el]);
+    });
+    return myHeaders;
+}
+
+interface ResponsePar extends Response {
+    [key:string|symbol]:any
+}
+export function createProxy(newResponse: Response, response: Response) {
+    const proxy = new Proxy(newResponse, {
+        get: function (target:ResponsePar, name) {
+            switch (name) {
+                case 'redirected':
+                case 'type':
+                case 'url':
+                case 'useFinalURL':
+                case 'body':
+                case 'bodyUsed':
+                    //@ts-ignore
+                return response[name];
+            }
+            // headers status ok 主要的字段信息走新的response对象
+            console.log(name, '获取代理response的值');
+            return target[name];
+        },
+        set: function (target, name, value) {
+            //console.log(name,value,'被设置的值',target,proxy);
+            return (target[name] = value);
+        },
+    });
+
+    for (let key in proxy) {
+        if (typeof proxy[key] === 'function') {
+            proxy[key] = proxy[key].bind(newResponse);
+        }
+    }
+    return proxy;
+}
