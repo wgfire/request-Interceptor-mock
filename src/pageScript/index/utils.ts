@@ -19,17 +19,19 @@ export interface mockDataItem {
     originResponse: any;
     showOriginData: false;
     showOriginResponse: false; // 默认显示代理的数据
+    id: string; //根据url和请求body生成唯一id
+    type: string; // 代理的类型
     [key: string]: any;
 }
 /** 当前config 下 是否存在与mockUrl里 */
-export const findUrlBuyMock = (url: string, mockUrl: mockDataItem[]) => {
+export const findUrlBuyMock = (url: string, mockUrl: mockDataItem[],key='url') => {
     const mockData = mockUrl || [];
     console.log(url, '找寻链接', mockData);
-    const index = mockData.findIndex((el: any) => el.url === url);
+    const index = mockData.findIndex((el: any) => el[key] === url);
     return index > -1 ? mockUrl[index] : false;
 };
 
-export const switchFindUrl = (url:string, fn: (data: mockDataItem) => any, mockUrl: mockDataItem[]) => {
+export const switchFindUrl = (url: string, fn: (data: mockDataItem) => any, mockUrl: mockDataItem[]) => {
     const data = findUrlBuyMock(url, mockUrl);
     if (data && data.switch) {
         fn(data);
@@ -51,8 +53,13 @@ export const parseResponseHeaders = (xhr: any) => {
     console.log(headerMap, '响应头解析');
     return headerMap;
 };
+const createId = (item:{url:string,data:string}) => {
+    const { url, data } = item;
+    const id = `${url}${JSON.stringify(data)}`;
+    return id;
+};
 
-export const createMockItem = ({xhr }: {xhr:any}): mockDataItem => {
+export const createMockItem = ({ xhr }: { xhr: any }): mockDataItem => {
     const obj: mockDataItem = {
         status: 200,
         switch: false,
@@ -68,10 +75,12 @@ export const createMockItem = ({xhr }: {xhr:any}): mockDataItem => {
         originResponse: xhr._xhr.responseText,
         showOriginData: false,
         showOriginResponse: false,
+        id: createId({ url: xhr.responseURL, data: xhr.__originSendData }),
+        type: 'X',
     };
     return obj;
 };
-export const createMockItemForProxy = ({url,data,originData,response,originResponse}:{[key:string]:string}): mockDataItem => {
+export const createMockItemForFetch = ({ url, data, originData, response, originResponse }: { [key: string]: string }): mockDataItem => {
     const obj: mockDataItem = {
         status: 200,
         switch: false,
@@ -87,6 +96,8 @@ export const createMockItemForProxy = ({url,data,originData,response,originRespo
         originResponse,
         showOriginData: false,
         showOriginResponse: false,
+        id:createId({ url, data:originData }),
+        type: 'F',
     };
     return obj;
 };
@@ -101,30 +112,30 @@ export function createReadStream(text: string) {
     });
     return stream;
 }
-export function createHeaders(headers: { [key: string]: any }) {
+export function createHeaders(headers:string) {
     // 根据对象返回一个headers 对象
+    const objHeader = JSON.parse(headers)
     const myHeaders = new Headers();
-    Object.keys(headers).forEach((el) => {
-        myHeaders.append(el, headers[el]);
+    Object.keys(objHeader).forEach((el) => {
+        myHeaders.append(el, objHeader[el]);
     });
     return myHeaders;
 }
 
 interface ResponsePar extends Response {
-    [key:string|symbol]:any
+    [key: string | symbol]: any;
 }
 export function createProxy(newResponse: Response, response: Response) {
     const proxy = new Proxy(newResponse, {
-        get: function (target:ResponsePar, name) {
+        get: function (target: ResponsePar, name) {
             switch (name) {
                 case 'redirected':
                 case 'type':
                 case 'url':
                 case 'useFinalURL':
-                case 'body':
                 case 'bodyUsed':
                     //@ts-ignore
-                return response[name];
+                    return response[name];
             }
             // headers status ok 主要的字段信息走新的response对象
             console.log(name, '获取代理response的值');

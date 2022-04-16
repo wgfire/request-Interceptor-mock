@@ -12,10 +12,10 @@ import { ActionBar } from './components/ActionBar';
 import { useCopy } from './hooks/useCopy';
 import { useDomFullRequest } from './hooks/useFullScreen';
 const { Panel } = Collapse;
-const Cardtitle: React.FC<{ url: string }> = (props) => {
+const Cardtitle: React.FC<{ url: string,type:string }> = (props) => {
     return (
         <div style={{ marginRight: '10px' }}>
-            <Input value={props.url} addonBefore="URL:"></Input>
+            <Input value={props.url} addonBefore={`${props.type}-URL:`}></Input>
         </div>
     );
 };
@@ -32,17 +32,6 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         },
     });
     const domFullRequest = useDomFullRequest({});
-    const actionBarList: {
-        [key: string]: (data: string) => void;
-    } = {
-        copy: useCopy({
-            onSuccess: () => {
-                message.success('复制成功');
-            },
-        }),
-        expand: useDomFullRequest({}),
-    };
-
     const setMockDataProps = (value: any, index: number, key: string) => {
         // 根据索引设置某个key的值
         const mock = [...mockData];
@@ -126,10 +115,10 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         false,
     );
 
-    const findMockBuyUrl = (url: string, fn: (index: number) => void) => {
+    const findMockBuyUrl = (id: string, fn: (index: number) => void) => {
         // 根据url 找到列表数据
         const indexSwitch = mockData.findIndex((item) => {
-            return url === item.url;
+            return id === item.id;
         });
         if (indexSwitch > -1) {
             fn(indexSwitch);
@@ -176,15 +165,15 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                     .map((el, index) => {
                         return (
                             <Card
-                                key={el.url}
+                                key={el.id}
                                 className="card-box"
-                                title={<Cardtitle url={el.url}></Cardtitle>}
+                                title={<Cardtitle url={el.url} type={el.type}></Cardtitle>}
                                 extra={
                                     <Switch
-                                        key={el.url}
+                                        key={el.id}
                                         checked={el.switch}
                                         onChange={(value) => {
-                                            findMockBuyUrl(el.url, (indexSwitch: number) => {
+                                            findMockBuyUrl(el.id, (indexSwitch: number) => {
                                                 setMockDataProps(value, indexSwitch, 'switch');
                                             });
                                         }}
@@ -202,7 +191,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                                 } else if (type == 'expand') {
                                                     domFullRequest(`#s-${index}-1-jsonInput-body`);
                                                 }
-                                                //    actionBarList[type]()
+                                                
                                             }}
                                         ></ActionBar>
 
@@ -211,7 +200,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                             id={`s-${index}-1-jsonInput`}
                                             placeholder={checkJson(el.request.headers)}
                                             onChange={(value: Object) => {
-                                                findMockBuyUrl(el.url, (indexSwitch: number) => {
+                                                findMockBuyUrl(el.id, (indexSwitch: number) => {
                                                     changeHandel(value, indexSwitch, 'headers');
                                                 });
                                             }}
@@ -221,7 +210,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                     </Panel>
                                 </Collapse>
                                 <Collapse>
-                                    <Panel header="RequestData" key="1">
+                                    <Panel header="RequestData" key="2">
                                         <ActionBar
                                             name={`请求数据${el.showOriginData ? '(只读)' : ''}`}
                                             onclick={(type) => {
@@ -230,7 +219,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                                 } else if (type == 'expand') {
                                                     domFullRequest(`#s-${index}-2-jsonInput-body`);
                                                 } else if (type === 'change') {
-                                                    findMockBuyUrl(el.url, (indexSwitch: number) => {
+                                                    findMockBuyUrl(el.id, (indexSwitch: number) => {
                                                         setMockDataProps(!el.showOriginData, indexSwitch, 'showOriginData');
                                                     });
                                                 }
@@ -243,7 +232,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                             viewOnly={el.showOriginData}
                                             placeholder={checkJson(el.showOriginData ? el.request.originData : el.request.data)}
                                             onChange={(value: Object) => {
-                                                findMockBuyUrl(el.url, (indexSwitch: number) => {
+                                                findMockBuyUrl(el.id, (indexSwitch: number) => {
                                                     changeHandel(value, indexSwitch);
                                                 });
                                             }}
@@ -253,7 +242,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                     </Panel>
                                 </Collapse>
                                 <Collapse>
-                                    <Panel header="ResponseData" key="1">
+                                    <Panel header="ResponseData" key="3">
                                         <ActionBar
                                             name={`返回数据${el.showOriginResponse ? '(只读)' : ''}`}
                                             onclick={(type) => {
@@ -262,7 +251,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                                 } else if (type == 'expand') {
                                                     domFullRequest(`#s-${index}-3-jsonInput-body`);
                                                 } else if (type === 'change') {
-                                                    findMockBuyUrl(el.url, (indexSwitch: number) => {
+                                                    findMockBuyUrl(el.id, (indexSwitch: number) => {
                                                         setMockDataProps(!el.showOriginResponse, indexSwitch, 'showOriginResponse');
                                                     });
                                                 }
@@ -275,7 +264,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                             placeholder={checkJson(el.showOriginResponse ? el.originResponse : el.response)}
                                             viewOnly={el.showOriginResponse}
                                             onChange={(value: any) => {
-                                                findMockBuyUrl(el.url, (indexSwitch: number) => {
+                                                findMockBuyUrl(el.id, (indexSwitch: number) => {
                                                     if (checkJson(value.json)) {
                                                         setMockDataProps(value.json, indexSwitch, 'response');
                                                     }
