@@ -1,36 +1,42 @@
 .scrollbar {
     &::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+        width: 6px;
+        height: 6px;
     }
     &::-webkit-scrollbar-track {
-      border-radius: 3px;
-      background: rgba(0, 0, 0, 0.06);
-      -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.08);
+        border-radius: 3px;
+        background: rgba(0, 0, 0, 0.06);
+        -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.08);
     }
     /* 滚动条滑块 */
     &::-webkit-scrollbar-thumb {
-      border-radius: 3px;
-      background: rgba(0, 0, 0, 0.12);
-      -webkit-box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+        background: rgba(0, 0, 0, 0.12);
+        -webkit-box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
     }
-  }
-.popup-box{
+}
+.popup-box {
     padding: 0px 10px;
     padding-left: 25px;
     overflow: auto;
     height: 100%;
     & .card-box {
-      margin: 10px 0px;
-      box-shadow: rgba(0, 0, 0, 0.12) 0px 0px 15px 2px !important;
-  }
-    & .show-icon {
-      position: fixed;
-      left: 0px;
-      top: 50%;
-      font-size: 20px;
-      color: #0090f5;
-      transform: translateY(-50%);
-      cursor: pointer;
+        margin: 10px 0px;
+        box-shadow: rgba(0, 0, 0, 0.12) 0px 0px 15px 2px !important;
     }
+    & .show-icon {
+        position: fixed;
+        left: 0px;
+        top: 50%;
+        font-size: 20px;
+        color: #0090f5;
+        transform: translateY(-50%);
+        cursor: pointer;
+    }
+}
+.title-box {
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }

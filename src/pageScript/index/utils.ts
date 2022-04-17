@@ -9,26 +9,34 @@ export interface mockDataItem {
     cancel: boolean;
     url: string;
     request: {
-        headers: any;
+        headers?: any; //对于fetch 来说这就是个请求配置 包含了请求body
         timeout: number;
-        data: any;
-        originData: any;
+        data?: any;
+        originData?: any;
+        originHeaders?: any;
         [key: string]: any;
     };
     response: any;
     originResponse: any;
-    showOriginData: false;
+    showOriginData?: false;
     showOriginResponse: false; // 默认显示代理的数据
+    showOrginHeader?: false; // fetch 的请求body跟xhr不一样，可以在一个请求配置里获取到
     id: string; //根据url和请求body生成唯一id
     type: string; // 代理的类型
     [key: string]: any;
 }
 /** 当前config 下 是否存在与mockUrl里 */
-export const findUrlBuyMock = (url: string, mockUrl: mockDataItem[],key='url') => {
+export const findUrlBuyMock = (url: string, mockUrl: mockDataItem[], key = 'url') => {
     const mockData = mockUrl || [];
     console.log(url, '找寻链接', mockData);
     const index = mockData.findIndex((el: any) => el[key] === url);
     return index > -1 ? mockUrl[index] : false;
+};
+// 有些api在生产环境是不带域名前缀的是相对地址,所以需要用包含的判断去找，找到就需要拦截
+export const IsIncludeUrlBuyMock = (url: string, mockUrl: mockDataItem[]) => {
+    const result = mockUrl.find((el: any) => el.url.includes(url));
+    console.log(url, '找寻链接', result);
+    return result;
 };
 
 export const switchFindUrl = (url: string, fn: (data: mockDataItem) => any, mockUrl: mockDataItem[]) => {
@@ -53,7 +61,7 @@ export const parseResponseHeaders = (xhr: any) => {
     console.log(headerMap, '响应头解析');
     return headerMap;
 };
-const createId = (item:{url:string,data:string}) => {
+const createId = (item: { url: string; data: string }) => {
     const { url, data } = item;
     const id = `${url}${JSON.stringify(data)}`;
     return id;
@@ -80,23 +88,34 @@ export const createMockItem = ({ xhr }: { xhr: any }): mockDataItem => {
     };
     return obj;
 };
-export const createMockItemForFetch = ({ url, data, originData, response, originResponse }: { [key: string]: string }): mockDataItem => {
+export const createMockItemForFetch = ({
+    url,
+    data,
+    originData,
+    response,
+    originResponse,
+    headers,
+    originHeaders,
+}: {
+    [key: string]: string;
+}): mockDataItem => {
     const obj: mockDataItem = {
         status: 200,
         switch: false,
         cancel: false,
         url,
         request: {
-            headers: {},
+            headers,
             timeout: 200,
             data,
             originData,
+            originHeaders,
         },
         response,
         originResponse,
         showOriginData: false,
         showOriginResponse: false,
-        id:createId({ url, data:originData }),
+        id: createId({ url, data: originData }),
         type: 'F',
     };
     return obj;
@@ -112,9 +131,9 @@ export function createReadStream(text: string) {
     });
     return stream;
 }
-export function createHeaders(headers:string) {
+export function createHeaders(headers: string) {
     // 根据对象返回一个headers 对象
-    const objHeader = JSON.parse(headers)
+    const objHeader = JSON.parse(headers);
     const myHeaders = new Headers();
     Object.keys(objHeader).forEach((el) => {
         myHeaders.append(el, objHeader[el]);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Card, Switch, Input, Collapse, message } from 'antd';
+import { Card, Switch, Input, Collapse, message, Button } from 'antd';
 import './index.scss';
 import { debounce } from '../../../utils/common';
 import { postMockDataToScript } from '../index';
@@ -11,8 +11,9 @@ import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
 import { ActionBar } from './components/ActionBar';
 import { useCopy } from './hooks/useCopy';
 import { useDomFullRequest } from './hooks/useFullScreen';
+import { CopyButton } from './components/CopyButton';
 const { Panel } = Collapse;
-const Cardtitle: React.FC<{ url: string,type:string }> = (props) => {
+const Cardtitle: React.FC<{ url: string; type: string }> = (props) => {
     return (
         <div style={{ marginRight: '10px' }}>
             <Input value={props.url} addonBefore={`${props.type}-URL:`}></Input>
@@ -28,7 +29,10 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     const [ruleInput, setRuleInput] = useState('https?://'); // 过滤规则
     const copy = useCopy({
         onSuccess: () => {
-            message.success('复制成功');
+            message.success('复制成功', 500);
+            setTimeout(() => {
+                message.destroy();
+            }, 500);
         },
     });
     const domFullRequest = useDomFullRequest({});
@@ -141,7 +145,18 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     }, [mockData]);
     return (
         <div className="popup-box scrollbar">
-            <h1 className="title">mT插件┗|｀O′|┛ 嗷~~</h1>
+            <div className="title-box">
+                <h1 className="title">mT插件┗|｀O′|┛ 嗷~~</h1>
+                <CopyButton
+                    onClick={() => {
+                        const noSwitchItem = mockData.find((el) => {
+                            return el.switch === false;
+                        });
+                        const data = JSON.parse(noSwitchItem?.request.originData);
+                        copy(data.token);
+                    }}
+                ></CopyButton>
+            </div>
             <div onClick={showClickHandel} className="show-icon">
                 {show ? <DoubleRightOutlined></DoubleRightOutlined> : <DoubleLeftOutlined></DoubleLeftOutlined>}
             </div>
@@ -184,21 +199,25 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                 <Collapse>
                                     <Panel header="RequestHeader" key="1">
                                         <ActionBar
-                                            name="请求头"
+                                            name={`请求头${el.showOrginHeader ? '(只读)' : ''}`}
                                             onclick={(type) => {
                                                 if (type == 'copy') {
                                                     copy(el.request.headers);
                                                 } else if (type == 'expand') {
                                                     domFullRequest(`#s-${index}-1-jsonInput-body`);
+                                                } else if (type === 'change') {
+                                                    findMockBuyUrl(el.id, (indexSwitch: number) => {
+                                                        setMockDataProps(!el.showOrginHeader, indexSwitch, 'showOrginHeader');
+                                                    });
                                                 }
-                                                
                                             }}
                                         ></ActionBar>
 
                                         <JSONInput
                                             width="100%"
                                             id={`s-${index}-1-jsonInput`}
-                                            placeholder={checkJson(el.request.headers)}
+                                            viewOnly={el.showOrginHeader}
+                                            placeholder={checkJson(el.showOrginHeader ? el.request.originHeaders : el.request.headers)}
                                             onChange={(value: Object) => {
                                                 findMockBuyUrl(el.id, (indexSwitch: number) => {
                                                     changeHandel(value, indexSwitch, 'headers');
