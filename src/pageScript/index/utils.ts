@@ -20,7 +20,7 @@ export interface mockDataItem {
     originResponse: any;
     showOriginData?: false;
     showOriginResponse: false; // 默认显示代理的数据
-    showOrginHeader?: false; // fetch 的请求body跟xhr不一样，可以在一个请求配置里获取到
+    showOriginHeader?: false; // fetch 的请求body跟xhr不一样，可以在一个请求配置里获取到
     id: string; //根据url和请求body生成唯一id
     type: string; // 代理的类型
     [key: string]: any;
@@ -157,7 +157,6 @@ export function createProxy(newResponse: Response, response: Response) {
                     return response[name];
             }
             // headers status ok 主要的字段信息走新的response对象
-            console.log(name, '获取代理response的值');
             return target[name];
         },
         set: function (target, name, value) {

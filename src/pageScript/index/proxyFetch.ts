@@ -24,9 +24,9 @@ const myFetch = function (...args) {
         //const sendHeaders = Object.assign(args[1].headers, item.request.headers);
         console.log(item.request.headers, '拦截请求头');
         const sendbody = item.showOriginData ? item.request.originData : item.request.data;
-        const snedHeader = item.showOrginHeader ? item.request.originHeaders : JSON.parse(item.request.headers);
+        const sendHeader = JSON.parse(item.showOriginHeader ? item.request.originHeaders : item.request.headers);
         args[1] = {
-            ...snedHeader,
+            ...sendHeader,
             // headers: sendHeaders,
             body: sendbody, // 发送原生数据还是模拟数据
         };
@@ -45,7 +45,20 @@ const myFetch = function (...args) {
             // 对一些属性进行代理 部分属性newResponse，部分response
             const proxy = createProxy(newResponse, response);
             const cloneResponse = response.clone();
-            // 这里要拿到response的原生返回的请求和响应数据,原生的请求数据暂时未{}
+            // 这里要拿到response的原生返回的请求和响应数据,进行更新
+            try {
+                cloneResponse.json().then((data) => {
+                    const sendItem = {
+                        ...item,
+                        originResponse: JSON.stringify(data),
+                    };
+                    window.postMessage({
+                        to: 'iframe',
+                        action: 'update',
+                        data: sendItem,
+                    });
+                });
+            } catch (error) {}
             newResponse
                 .clone()
                 .json()
@@ -60,7 +73,7 @@ const myFetch = function (...args) {
             // 为了跟xhr保持使用统一将body从请求配置里分离开来
             const sendData = copyArgs[1]?.body;
             delete copyArgs[1]?.body;
-            const originSnedHeader = { ...copyArgs[1] }; // 包含请求头信息和请求body
+            const originsendHeader = JSON.stringify({ ...copyArgs[1] }); // 包含请求头信息和请求body
             const cloneResponse = response.clone();
             try {
                 cloneResponse.json().then((data) => {
@@ -70,8 +83,8 @@ const myFetch = function (...args) {
                         originData: sendData,
                         response: JSON.stringify(data),
                         originResponse: JSON.stringify(data),
-                        headers: originSnedHeader,
-                        originHeaders: originSnedHeader,
+                        headers: originsendHeader,
+                        originHeaders: originsendHeader,
                     });
                     window.postMessage({
                         to: 'iframe',
@@ -84,13 +97,6 @@ const myFetch = function (...args) {
         });
     }
 
-    // switchFindUrl(
-    //     url,
-    //     (item) => {
-
-    //     },
-    //     mockData,
-    // );
 };
 export function proxyFetch(data) {
     mockData = data;
