@@ -10,6 +10,7 @@ import locale from 'react-json-editor-ajrm/locale/en';
 import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
 import { ActionBar } from './components/ActionBar';
 import { useCopy } from './hooks/useCopy';
+import { CopyButton } from './components/CopyButton';
 import { useDomFullRequest } from './hooks/useFullScreen';
 const { Panel } = Collapse;
 const Cardtitle: React.FC<{ url: string; type: string }> = (props) => {
@@ -146,6 +147,15 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         <div className="popup-box scrollbar">
             <div className="title-box">
                 <h1 className="title">mT插件┗|｀O′|┛ 嗷~~</h1>
+                <CopyButton
+                    onClick={() => {
+                        const noSwitchItem = mockData.find((el) => {
+                            return el.switch === false;
+                        });
+                        const data = JSON.parse(noSwitchItem?.request.originData);
+                        copy(data.token);
+                    }}
+                ></CopyButton>
             </div>
             <div onClick={showClickHandel} className="show-icon">
                 {show ? <DoubleRightOutlined></DoubleRightOutlined> : <DoubleLeftOutlined></DoubleLeftOutlined>}
