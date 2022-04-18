@@ -24,9 +24,9 @@ const myFetch = function (...args) {
         //const sendHeaders = Object.assign(args[1].headers, item.request.headers);
         console.log(item.request.headers, '拦截请求头');
         const sendbody = item.showOriginData ? item.request.originData : item.request.data;
-        const snedHeader = item.showOrginHeader ? item.request.originHeaders : JSON.parse(item.request.headers);
+        const sendHeader = item.showOriginHeader ? item.request.originHeaders : JSON.parse(JSON.stringify(item.request.headers));
         args[1] = {
-            ...snedHeader,
+            ...sendHeader,
             // headers: sendHeaders,
             body: sendbody, // 发送原生数据还是模拟数据
         };
@@ -60,7 +60,7 @@ const myFetch = function (...args) {
             // 为了跟xhr保持使用统一将body从请求配置里分离开来
             const sendData = copyArgs[1]?.body;
             delete copyArgs[1]?.body;
-            const originSnedHeader = { ...copyArgs[1] }; // 包含请求头信息和请求body
+            const originsendHeader = { ...copyArgs[1] }; // 包含请求头信息和请求body
             const cloneResponse = response.clone();
             try {
                 cloneResponse.json().then((data) => {
@@ -70,8 +70,8 @@ const myFetch = function (...args) {
                         originData: sendData,
                         response: JSON.stringify(data),
                         originResponse: JSON.stringify(data),
-                        headers: originSnedHeader,
-                        originHeaders: originSnedHeader,
+                        headers: originsendHeader,
+                        originHeaders: originsendHeader,
                     });
                     window.postMessage({
                         to: 'iframe',
