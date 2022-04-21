@@ -4,12 +4,12 @@
 1.复制内容到粘贴板hooks
 */
 export interface CopyHooksProps {
-    onSuccess: () => void; // 复制成功后的回调
+    onSuccess?: (value: string) => void; // 复制成功后的回调
 }
 
 export const useCopy = (data: CopyHooksProps) => {
     const { onSuccess } = data;
-    const copy = function (value:string) {
+    const copy = function (value: string) {
         // 动态创建 textarea 标签
         const textarea = document.createElement('textarea');
         // 将该 textarea 设为 readonly 防止 iOS 下自动唤起键盘，同时将 textarea 移出可视区域
@@ -24,7 +24,8 @@ export const useCopy = (data: CopyHooksProps) => {
         textarea.select();
         const result = document.execCommand('Copy');
         if (result) {
-            onSuccess();
+            document.body.removeChild(textarea);
+            onSuccess && onSuccess(value);
         }
     };
 
