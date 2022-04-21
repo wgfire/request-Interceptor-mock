@@ -12,7 +12,7 @@ const HMRClientScript = `webpack-hot-middleware/client?path=${HMR_URL}&reload=tr
 
 const backgroundPath = resolve(src, './background/index.ts');
 const optionsPath = resolve(src, './options/index.tsx');
-const popupPath = resolve(src, './popup/index.tsx');
+const popupPath = resolve(src, './popup/App.tsx');
 
 const devEntry: Record<string, string[]> = {
     background: [HMRClientScript, backgroundPath],

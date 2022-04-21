@@ -6,15 +6,16 @@
 */
 import './style.scss';
 import { injectCustomJs } from '../../utils/common';
-import ReactDOM from 'react-dom';
-import { Popup } from './popup';
+// import ReactDOM from 'react-dom';
+// import { Popup } from './popup';
 console.log(`Current page show`);
 
 let mockData: any = null;
-let popup: HTMLDivElement = document.createElement('div');
-const actionMap:any = {
+let show = false; // iframe是否展开的字段
+const iframe: HTMLIFrameElement = document.createElement('iframe');
+const actionMap: any = {
     start: postMockDataToScript,
-    getMock: (request:any, sendResponse:(mockData:any)=>void) => {
+    getMock: (request: any, sendResponse: (mockData: any) => void) => {
         sendResponse(mockData);
     },
 };
@@ -35,25 +36,36 @@ export function postMockDataToScript(mockData: any) {
 //         }
 //     });
 // }
-function createPopup(mockData: any) {
+function createPopup() {
     // 有些网站可能加载的数据比较多，所以还是要在一个回调函数里等document有了在插入
     document.addEventListener('DOMContentLoaded', () => {
-        console.log('开始插入popup', mockData);
-        popup.setAttribute('id', 'popup');
-        document.body.appendChild(popup);
-        ReactDOM.render(<Popup mockData={mockData} />, popup);
+        // 只在最顶层页面嵌入iframe
+        if (window.self === window.top) {
+            iframe.setAttribute('frameborder', 'none');
+            iframe.setAttribute('id', 'mt-chrome-extension-iframe');
+            iframe.src = chrome.extension.getURL('popup.html');
+            document.body.appendChild(iframe);
+            console.log('iframe插入成功', iframe);
+        }
     });
 }
-
+window.addEventListener('message', (event: any) => {
+    if (event.data.action === 'toggle') {
+        console.log('收到popup的toggle事件', show, document,iframe === document.getElementById('mt-chrome-extension-iframe'));
+        show = !show;
+        document
+            .getElementById('mt-chrome-extension-iframe')
+            ?.style.setProperty('transform', show ? 'translateX(0px)' : 'translateX(480px)', 'important');
+    }
+});
 chrome.storage.local.get('mockData', (res) => {
     console.log(res, '读取的本地数据');
     mockData = res.mockData; //这个mockData 给 popup界面使用
-    createPopup(mockData);
+    createPopup();
     injectCustomJs('js/pageScript.js').then(() => {
         postMockDataToScript(mockData); //  需要在js挂载成功之后 再去发送消息
     });
 });
-
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.to === 'content') {

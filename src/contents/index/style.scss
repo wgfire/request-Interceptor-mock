@@ -2,12 +2,11 @@
 .js-header-wrapper > header {
     background-color: lightseagreen;
 }
-#popup {
+#mt-chrome-extension-iframe {
     // background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
     background-color: #fbfbfb;
     height: 100% !important;
     width: 500px !important;
-    min-width: 1px !important;
     position: fixed !important;
     inset: 0px 0px auto auto !important;
     z-index: 9999 !important;
