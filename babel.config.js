@@ -15,14 +15,6 @@ module.exports = (api) => {
         },
     ];
 
-    const importPlugin = [
-        'import',
-        {
-            libraryName: 'antd',
-            libraryDirectory: 'es',
-            style: true,
-        },
-    ];
 
     return {
         presets: ['@babel/preset-typescript', envPreset],
@@ -30,7 +22,6 @@ module.exports = (api) => {
             '@babel/plugin-transform-runtime',
             ['@babel/plugin-proposal-decorators', { decoratorsBeforeExport: true }],
             'lodash',
-            importPlugin,
         ],
         env: {
             development: {

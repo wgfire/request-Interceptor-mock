@@ -40,3 +40,23 @@
     justify-content: space-between;
     align-items: center;
 }
+.rule-input {
+    background: white;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 0px 15px 2px !important;
+    & .semi-input-default {
+        background: white !important;
+    }
+}
+.semi-input-wrapper {
+    border: 1px solid #d9d9d9;
+    color: black;
+}
+.semi-input-default {
+    background: #f4f5f5 !important;
+}
+.semi-input-append {
+    background: #f4f5f5;
+}
+.semi-input-prepend {
+    background: #f4f5f5;
+}

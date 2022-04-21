@@ -8,7 +8,6 @@ import './style.scss';
 import { injectCustomJs } from '../../utils/common';
 import ReactDOM from 'react-dom';
 import { Popup } from './popup';
-import { ConfigProvider } from 'antd';
 console.log(`Current page show`);
 
 let mockData: any = null;
@@ -42,8 +41,7 @@ function createPopup(mockData: any) {
         console.log('开始插入popup', mockData);
         popup.setAttribute('id', 'popup');
         document.body.appendChild(popup);
-       
-        ReactDOM.render(<ConfigProvider prefixCls="xhr-wg"><Popup mockData={mockData} /></ConfigProvider>, popup);
+        ReactDOM.render(<Popup mockData={mockData} />, popup);
     });
 }
 

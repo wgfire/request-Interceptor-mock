@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Card, Switch, Input, Collapse, message, Button } from 'antd';
+import { Notification, Switch, Card, Input, Collapse } from '@douyinfe/semi-ui';
 import './index.scss';
 import { debounce } from '../../../utils/common';
 import { postMockDataToScript } from '../index';
@@ -7,7 +7,7 @@ import { mockDataItem } from '../../../pageScript/index/utils';
 import JSONInput from 'react-json-editor-ajrm';
 //@ts-ignore
 import locale from 'react-json-editor-ajrm/locale/en';
-import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
+import { IconDoubleChevronRight, IconDoubleChevronLeft } from '@douyinfe/semi-icons';
 import { ActionBar } from './components/ActionBar';
 import { useCopy } from './hooks/useCopy';
 import { CopyButton } from './components/CopyButton';
@@ -28,11 +28,12 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     const [popup, setPopup] = useState<HTMLElement | null>(null); // 外层容器
     const [ruleInput, setRuleInput] = useState('https?://'); // 过滤规则
     const copy = useCopy({
-        onSuccess: () => {
-            message.success('复制成功', 500);
-            setTimeout(() => {
-                message.destroy();
-            }, 500);
+        onSuccess: (value) => {
+            Notification.success({
+                content: `Copy Success: ${value.toString()}`,
+                duration: 3,
+                position: 'top',
+            });
         },
     });
     const domFullRequest = useDomFullRequest({});
@@ -92,7 +93,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         }
     };
     const showClickHandel = () => {
-        popup!.style.setProperty('transform', show ? 'translateX(475px)' : 'translateX(0px)', 'important');
+        popup!.style.setProperty('transform', show ? 'translateX(480px)' : 'translateX(0px)', 'important');
         setShow(!show);
     };
     const changeHandel = debounce(
@@ -153,22 +154,22 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                             return el.switch === false;
                         });
                         const data = JSON.parse(noSwitchItem?.request.originData);
-                        copy(data.token);
+                        data && data.token && copy(data.token);
                     }}
                 ></CopyButton>
             </div>
             <div onClick={showClickHandel} className="show-icon">
-                {show ? <DoubleRightOutlined></DoubleRightOutlined> : <DoubleLeftOutlined></DoubleLeftOutlined>}
+                {show ? <IconDoubleChevronRight /> : <IconDoubleChevronLeft />}
             </div>
             <Input
                 addonBefore="过滤URL"
                 addonAfter="支持正则"
-                onChange={(e) => {
-                    ruleChangeHandel(e.currentTarget.value);
+                onChange={(value: string) => {
+                    ruleChangeHandel(value);
                 }}
                 value={ruleInput}
                 defaultValue={ruleInput}
-                className="card-box"
+                className="rule-input"
             />
             {mockData &&
                 mockData
@@ -180,10 +181,11 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                     .map((el, index) => {
                         return (
                             <Card
+                                shadows="hover"
                                 key={el.id}
                                 className="card-box"
                                 title={<Cardtitle url={el.url} type={el.type}></Cardtitle>}
-                                extra={
+                                headerExtraContent={
                                     <Switch
                                         key={el.id}
                                         checked={el.switch}
@@ -194,10 +196,9 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                         }}
                                     ></Switch>
                                 }
-                                size="small"
                             >
                                 <Collapse>
-                                    <Panel header="RequestHeader" key="1">
+                                    <Panel header="RequestHeader" itemKey="1">
                                         <ActionBar
                                             name={`请求头${el.showOriginHeader ? '(只读)' : ''}`}
                                             onclick={(type) => {
@@ -218,7 +219,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                             id={`s-${index}-1-jsonInput`}
                                             viewOnly={el.showOriginHeader}
                                             placeholder={checkJson(el.showOriginHeader ? el.request.originHeaders : el.request.headers)}
-                                            onChange={(value: Object) => {
+                                            onBlur={(value: Object) => {
                                                 findMockBuyUrl(el.id, (indexSwitch: number) => {
                                                     changeHandel(value, indexSwitch, 'headers');
                                                 });
@@ -229,7 +230,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                     </Panel>
                                 </Collapse>
                                 <Collapse>
-                                    <Panel header="RequestData" key="2">
+                                    <Panel header="RequestData" itemKey="2">
                                         <ActionBar
                                             name={`请求数据${el.showOriginData ? '(只读)' : ''}`}
                                             onclick={(type) => {
@@ -246,11 +247,12 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                             }}
                                         ></ActionBar>
                                         <JSONInput
+                                            confirmGood={true}
                                             width="100%"
                                             id={`s-${index}-2-jsonInput`}
                                             viewOnly={el.showOriginData}
                                             placeholder={checkJson(el.showOriginData ? el.request.originData : el.request.data)}
-                                            onChange={(value: Object) => {
+                                            onBlur={(value: Object) => {
                                                 findMockBuyUrl(el.id, (indexSwitch: number) => {
                                                     changeHandel(value, indexSwitch);
                                                 });
@@ -261,7 +263,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                     </Panel>
                                 </Collapse>
                                 <Collapse>
-                                    <Panel header="ResponseData" key="3">
+                                    <Panel header="ResponseData" itemKey="3">
                                         <ActionBar
                                             name={`返回数据${el.showOriginResponse ? '(只读)' : ''}`}
                                             onclick={(type) => {
@@ -277,12 +279,11 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                             }}
                                         ></ActionBar>
                                         <JSONInput
-                                            confirmGood
                                             width="100%"
                                             id={`s-${index}-3-jsonInput`}
                                             placeholder={checkJson(el.showOriginResponse ? el.originResponse : el.response)}
                                             viewOnly={el.showOriginResponse}
-                                            onChange={(value: any) => {
+                                            onBlur={(value: any) => {
                                                 findMockBuyUrl(el.id, (indexSwitch: number) => {
                                                     if (checkJson(value.json)) {
                                                         setMockDataProps(value.json, indexSwitch, 'response');
