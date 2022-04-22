@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { Notification, Switch, Card, Input, Collapse } from '@douyinfe/semi-ui';
 import './index.scss';
 import { debounce } from '../utils/common';
-import { postMockDataToScript } from '../contents/index/index';
+import { postMockDataToScript } from '../utils/common';
 import { mockDataItem } from '../pageScript/index/utils';
 import JSONInput from 'react-json-editor-ajrm';
+import { IconCopy } from '@douyinfe/semi-icons';
 //@ts-ignore
 import locale from 'react-json-editor-ajrm/locale/en';
 import { IconDoubleChevronRight, IconDoubleChevronLeft } from '@douyinfe/semi-icons';
@@ -25,13 +26,12 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     const [mockData, setMockData] = useState(props.mockData || []);
     const [ready, setReady] = useState(false);
     const [show, setShow] = useState(false); // 是否展开状态
-    const [popup, setPopup] = useState<HTMLElement | null>(null); // 外层容器
     const [ruleInput, setRuleInput] = useState('https?://'); // 过滤规则
     const copy = useCopy({
         onSuccess: (value) => {
             Notification.success({
-                content: `Copy Success: ${value.toString()}`,
-                duration: 3,
+                content: `Copy Success: ${value.toString().substring(0, 100)}`,
+                duration: 1,
                 position: 'top',
             });
         },
@@ -45,7 +45,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
     };
     const refreshMockData = debounce(
         () => {
-            // 将现有的数据重新发送个background，background也需要更新，然后在转发给pagescript更新mock
+            // 将现有的数据重新发送个background，background也需要更新，然后在转发给content 在发到pagescript更新mock
             chrome.runtime.sendMessage({ action: 'setMock', to: 'background', data: mockData }, function (response) {
                 if (response) {
                     postMockDataToScript(response);
@@ -74,11 +74,11 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         });
     };
     const getRefreshMockData = () => {
-        window.addEventListener('message', (event: MessageEvent<any>) => {
-            // 获取xhr拦截到的推送列表
-            const { to, action, data } = event.data;
-            if (to === 'iframe' && action === 'update') {
-                updateMockData(data);
+        chrome.runtime.onMessage.addListener((request) => {
+            // 这里也会监听到发给content里的消息毕竟是一个content域
+            if (request.action === 'update' && request.to === 'popup') {
+                console.log('popup收到更新数据', request);
+                updateMockData(request.data);
             }
         });
     };
@@ -93,11 +93,8 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         }
     };
     const showClickHandel = () => {
-        chrome.runtime.sendMessage({ to: 'content' });
-        window.postMessage({
-            action: 'toggle',
-            to: 'content',
-        });
+        setShow(!show);
+        chrome.runtime.sendMessage({ to: 'background', action: 'toggle' });
     };
     const changeHandel = debounce(
         (value: { json: any }, index: number, key: string = 'data') => {
@@ -137,8 +134,6 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         chrome.storage.local.get('rule', (res) => {
             setRuleInput(res['rule']);
         });
-        console.log(document.getElementById('root'), '拿到的iframe');
-        setPopup(document.getElementById('root'));
         setReady(true);
         getRefreshMockData();
     }, []);

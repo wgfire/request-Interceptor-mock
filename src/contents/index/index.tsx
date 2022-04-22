@@ -6,36 +6,28 @@
 */
 import './style.scss';
 import { injectCustomJs } from '../../utils/common';
-// import ReactDOM from 'react-dom';
-// import { Popup } from './popup';
+import { postMockDataToScript } from '../../utils/common';
 console.log(`Current page show`);
 
 let mockData: any = null;
 let show = false; // iframe是否展开的字段
 const iframe: HTMLIFrameElement = document.createElement('iframe');
 const actionMap: any = {
-    start: postMockDataToScript,
-    getMock: (request: any, sendResponse: (mockData: any) => void) => {
-        sendResponse(mockData);
+    toggle: (request: any, sendResponse: Function) => {
+        console.log('收到popup的toggle事件');
+        show = !show;
+        iframe?.style.setProperty('transform', show ? 'translateX(0px)' : 'translateX(480px)', 'important');
+    },
+    setMock: (request: any, sendResponse: Function) => {
+        console.log('收到popup的setMock事件,转发给pagescript');
+        postMockDataToScript(request.data);
+    },
+    update: (data: any, sendResponse: Function) => {
+        console.log('收到pagescript的update事件,转发给background到popup', data);
+        chrome.runtime.sendMessage({ to: 'background', action: 'update', data });
     },
 };
 
-export function postMockDataToScript(mockData: any) {
-    console.log(mockData, '发送的mock数据');
-    window.postMessage({
-        action: 'start',
-        to: 'pageScript',
-        mockData: mockData,
-    });
-}
-/**发送消息给后台获取mockdata 通信由于是异步的很费时间，所以在content直接取*/
-// function getMockData(fn: (arg: any) => void): void {
-//     chrome.runtime.sendMessage({ action: 'getMock', to: 'background' }, function (response) {
-//         if (response) {
-//             fn(response);
-//         }
-//     });
-// }
 function createPopup() {
     // 有些网站可能加载的数据比较多，所以还是要在一个回调函数里等document有了在插入
     document.addEventListener('DOMContentLoaded', () => {
@@ -49,15 +41,7 @@ function createPopup() {
         }
     });
 }
-window.addEventListener('message', (event: any) => {
-    if (event.data.action === 'toggle') {
-        console.log('收到popup的toggle事件', show, document,iframe === document.getElementById('mt-chrome-extension-iframe'));
-        show = !show;
-        document
-            .getElementById('mt-chrome-extension-iframe')
-            ?.style.setProperty('transform', show ? 'translateX(0px)' : 'translateX(480px)', 'important');
-    }
-});
+/**发送消息给后台获取mockdata 通信由于是异步的很费时间，所以在content直接取*/
 chrome.storage.local.get('mockData', (res) => {
     console.log(res, '读取的本地数据');
     mockData = res.mockData; //这个mockData 给 popup界面使用
@@ -67,10 +51,17 @@ chrome.storage.local.get('mockData', (res) => {
     });
 });
 
+window.addEventListener('message', (event) => {
+    // 接受pagescript的消息的
+    const { action, data } = event.data;
+    if (actionMap[action]) {
+        actionMap[action](data);
+    }
+});
+
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.to === 'content') {
         console.log(request, sender, 'content收到消息');
-        // 转发给pagescript内容
         const name = request.action as string;
         actionMap[name] && actionMap[name](request, sendResponse);
     }

@@ -63,3 +63,11 @@ export function observerProxy(obj: object, onchange: (target: any) => void): any
     }
   }
   
+  export function postMockDataToScript(mockData: any) {
+    console.log(mockData, '发送的mock数据');
+    window.postMessage({
+        action: 'start',
+        to: 'pageScript',
+        mockData: mockData,
+    });
+}

@@ -157,6 +157,7 @@ export class BaseXhr {
                 return;
             }
             // 其他的属性
+           
 
             this._xhr[key] = val;
         };

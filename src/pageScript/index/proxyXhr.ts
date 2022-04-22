@@ -56,6 +56,7 @@ class ProxyXhr extends BaseXhr {
                 const { request } = data;
                 Object.keys(request.headers).length > 0 && this.setRequestHeaderData(request.headers, xhr);
                 proxy.timeout = request.timeout; //  用户如果设置的话 会覆盖当前的属性
+                proxy.withCredentials = true; // 开启拦截默认允许跨域cookie
                 console.log(request.timeout, '设置了超时时间');
             },
             mockUrl,
@@ -135,8 +136,9 @@ export const initXhr = (data: any): ProxyXhr => {
                 // 更新原始数据
                 const item = createMockItem({ xhr: this });
                 console.log(item, '创建的item');
+                // 将popup界面改成iframe加载后 通信链路巨长
                 window.postMessage({
-                    to: 'iframe',
+                    to: 'content',
                     action: 'update',
                     data: item,
                 });

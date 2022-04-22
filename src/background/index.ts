@@ -6,7 +6,7 @@ import './webRequest';
 chrome.storage.local.get('mockData', (res) => {
     console.log(res, '读取的本地数据');
     const mockData = res['mockData'];
-    start(Array.isArray(mockData)?mockData:[]);
+    start(Array.isArray(mockData) ? mockData : []);
 });
 const mockDataChange = (target: any) => {
     // 当在popup改变mockdata时 触发改变
@@ -21,19 +21,35 @@ const actionMap: { [key: string]: Function } = {
         fn(window.mockData);
     },
     setMock: (fn: (arg: any) => void, arg: any[]) => {
-        window.mockData = arg.filter(el=>{
-            return el.switch ===true
+        window.mockData = arg.filter((el) => {
+            return el.switch === true;
         });
         fn(arg);
         chrome.storage.local.set({ mockData: window.mockData }, () => {
-            console.log('更新background mockData 成功',window.mockData);
+            console.log('更新background mockData 成功', window.mockData);
         });
-        // 发送给content 消息，将popup里更新的好的数据传递过去。
+        // 发送给content 消息，将popup里更新的好的数据通过content在传到pagescript里。
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            chrome.tabs.sendMessage(tabs[0].id!, { action: 'setMock', to: 'content', data: arg });
+        });
     },
     clearMock: (fn: (arg: any) => void, arg: any) => {
         chrome.storage.local.clear().then((res) => {
             console.log('清除后台数据', res);
             fn(arg);
+        });
+    },
+    toggle: (fn: (arg: any) => void, arg: any) => {
+        // 在转发给content-script进行切换展开。
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            chrome.tabs.sendMessage(tabs[0].id!, { action: 'toggle', to: 'content', data: '' });
+        });
+    },
+    update: (fn: (arg: any) => void, arg: any) => {
+        // 将实时拦截的请求发送给popup
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            console.log('background更新mock数据到popup', arg);
+            chrome.tabs.sendMessage(tabs[0].id!, { action: 'update', to: 'popup', data: arg });
         });
     },
 };
@@ -42,8 +58,10 @@ const start = (data: any) => {
     window.mockData = data.length > 0 ? data : [];
     window.mockData = observerProxy(window.mockData, mockDataChange);
     chrome.runtime.onMessage.addListener(function (request, _sender, sendResponse) {
-      
-        actionMap[request.action](sendResponse, request.data);
+        if (request.to === 'background') {
+            console.log('后台收到来自content-script的消息：', request);
+            actionMap[request.action](sendResponse, request.data);
+        }
     });
 };
 
@@ -54,4 +72,4 @@ const start = (data: any) => {
 //     });
 // });
 
-export const mockData  = window.mockData
+export const mockData = window.mockData;
