@@ -75,6 +75,7 @@ export const createMockItem = ({ xhr }: { xhr: any }): mockDataItem => {
         url: xhr.responseURL,
         request: {
             headers: {},
+            originHeaders: {},
             timeout: 200,
             data: xhr.__realitySendData,
             originData: xhr.__originSendData,
@@ -83,6 +84,7 @@ export const createMockItem = ({ xhr }: { xhr: any }): mockDataItem => {
         originResponse: xhr._xhr.responseText,
         showOriginData: false,
         showOriginResponse: false,
+        showOriginHeader: false,
         id: createId({ url: xhr.responseURL, data: xhr.__originSendData }),
         type: 'X',
     };

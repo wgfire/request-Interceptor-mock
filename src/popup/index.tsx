@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Notification, Switch, Card, Input, Collapse } from '@douyinfe/semi-ui';
+import { Notification, Card, Input, Collapse } from '@douyinfe/semi-ui';
 import './index.scss';
 import { debounce } from '../utils/common';
 import { postMockDataToScript } from '../utils/common';
+import { copyAction } from '../utils/popup';
 import { mockDataItem } from '../pageScript/index/utils';
 import JSONInput from 'react-json-editor-ajrm';
-import { IconCopy } from '@douyinfe/semi-icons';
 //@ts-ignore
 import locale from 'react-json-editor-ajrm/locale/en';
 import { IconDoubleChevronRight, IconDoubleChevronLeft } from '@douyinfe/semi-icons';
@@ -13,6 +13,7 @@ import { ActionBar } from './components/ActionBar';
 import { useCopy } from './hooks/useCopy';
 import { CopyButton } from './components/CopyButton';
 import { useDomFullRequest } from './hooks/useFullScreen';
+import { HeaderExtraContent } from './components/HeaderExtraContent';
 const { Panel } = Collapse;
 const Cardtitle: React.FC<{ url: string; type: string }> = (props) => {
     return (
@@ -43,6 +44,22 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         mock[index][key] = value;
         setMockData(mock);
     };
+    // 请求数据和请求头的更新回调
+    const changeHandel = debounce(
+        (value: { json: any }, index: number, key: string = 'data') => {
+            try {
+                if (JSON.parse(value.json)) {
+                    // 当用户改变的值是合法的json string 才去更新
+                    const data = [...mockData];
+                    const el = data[index];
+                    el['request'][key] = value.json;
+                    setMockData(data);
+                }
+            } catch (error) {}
+        },
+        1000,
+        false,
+    );
     const refreshMockData = debounce(
         () => {
             // 将现有的数据重新发送个background，background也需要更新，然后在转发给content 在发到pagescript更新mock
@@ -60,12 +77,12 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         setMockData((mockData) => {
             const mock = [...mockData];
             const index = mock.findIndex((el) => {
-                return el.url === item.url;
+                return el.id === item.id;
             });
             if (index == -1) {
                 mock.push(item);
             } else {
-                // 只更新原生请求数据和响应数据
+                //更新原生请求数据和响应数据
                 mock[index].request.originData = item.request.originData;
                 mock[index].originResponse = item.originResponse;
             }
@@ -96,21 +113,8 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
         setShow(!show);
         chrome.runtime.sendMessage({ to: 'background', action: 'toggle' });
     };
-    const changeHandel = debounce(
-        (value: { json: any }, index: number, key: string = 'data') => {
-            try {
-                if (JSON.parse(value.json)) {
-                    // 当用户改变的值是合法的json string 才去更新
-                    const data = [...mockData];
-                    const el = data[index];
-                    el['request'][key] = value.json;
-                    setMockData(data);
-                }
-            } catch (error) {}
-        },
-        1000,
-        false,
-    );
+
+    // 匹配规则保存到后台
     const ruleChangeHandel = debounce(
         (value: string) => {
             chrome.storage.local.set({ rule: value });
@@ -184,15 +188,19 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                 className="card-box"
                                 title={<Cardtitle url={el.url} type={el.type}></Cardtitle>}
                                 headerExtraContent={
-                                    <Switch
-                                        key={el.id}
-                                        checked={el.switch}
-                                        onChange={(value) => {
+                                    <HeaderExtraContent
+                                        switchCheck={el.switch}
+                                        switchChange={(value) => {
                                             findMockBuyUrl(el.id, (indexSwitch: number) => {
                                                 setMockDataProps(value, indexSwitch, 'switch');
                                             });
                                         }}
-                                    ></Switch>
+                                        dropdownClick={(value) => {
+                                            console.log(value);
+                                            const data = copyAction(value.type, el);
+                                            data && copy(data);
+                                        }}
+                                    ></HeaderExtraContent>
                                 }
                             >
                                 <Collapse>
@@ -200,9 +208,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                         <ActionBar
                                             name={`请求头${el.showOriginHeader ? '(只读)' : ''}`}
                                             onclick={(type) => {
-                                                if (type == 'copy') {
-                                                    copy(el.request.headers);
-                                                } else if (type == 'expand') {
+                                                if (type == 'expand') {
                                                     domFullRequest(`#s-${index}-1-jsonInput-body`);
                                                 } else if (type === 'change') {
                                                     findMockBuyUrl(el.id, (indexSwitch: number) => {
@@ -232,9 +238,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                         <ActionBar
                                             name={`请求数据${el.showOriginData ? '(只读)' : ''}`}
                                             onclick={(type) => {
-                                                if (type == 'copy') {
-                                                    copy(el.request.data);
-                                                } else if (type == 'expand') {
+                                                if (type == 'expand') {
                                                     domFullRequest(`#s-${index}-2-jsonInput-body`);
                                                 } else if (type === 'change') {
                                                     findMockBuyUrl(el.id, (indexSwitch: number) => {
@@ -265,9 +269,7 @@ export const Popup: React.FC<{ mockData: mockDataItem[] }> = (props) => {
                                         <ActionBar
                                             name={`返回数据${el.showOriginResponse ? '(只读)' : ''}`}
                                             onclick={(type) => {
-                                                if (type == 'copy') {
-                                                    copy(el.response);
-                                                } else if (type == 'expand') {
+                                                if (type == 'expand') {
                                                     domFullRequest(`#s-${index}-3-jsonInput-body`);
                                                 } else if (type === 'change') {
                                                     findMockBuyUrl(el.id, (indexSwitch: number) => {

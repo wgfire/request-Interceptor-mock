@@ -4,7 +4,7 @@
 1.用户对返回数据的操作按钮
 */
 import './index.scss';
-import { IconCopy, IconExpand, IconSourceControl } from '@douyinfe/semi-icons';
+import { IconExpand, IconSourceControl } from '@douyinfe/semi-icons';
 export interface ActionBarProps {
     onclick: (type: string) => void;
     name: string;
@@ -14,13 +14,6 @@ export const ActionBar: React.FC<ActionBarProps> = (data: ActionBarProps) => {
     return (
         <div className="action-bar">
             <span>{name}</span>
-            <IconCopy
-                className="action-bar_icon"
-                title="复制"
-                onClick={() => {
-                    onclick('copy');
-                }}
-            />
             <IconExpand
                 className="action-bar_icon"
                 title="放大"

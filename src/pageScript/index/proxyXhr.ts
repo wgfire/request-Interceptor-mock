@@ -44,19 +44,21 @@ class ProxyXhr extends BaseXhr {
                 headers = JSON.parse(headers);
             }
             Object.keys(headers).forEach((el) => {
+                console.log(headers[el], '设置了请求头');
                 proxy.setRequestHeader(el, headers[el]);
             });
         } catch {}
     }
-    setRequestInfo(config: configProps, proxy: any) {
+    setRequestInfo(config: configProps, xhr: any) {
         // 主要利用config里的url 找寻 需要修改的请求对象 // 可修改请求头,一些请求属性
         switchFindUrl(
             config.url,
             (data) => {
                 const { request } = data;
-                Object.keys(request.headers).length > 0 && this.setRequestHeaderData(request.headers, xhr);
-                proxy.timeout = request.timeout; //  用户如果设置的话 会覆盖当前的属性
-                proxy.withCredentials = true; // 开启拦截默认允许跨域cookie
+                const headers = data.showOriginHeader ? request.originHeaders : request.headers;
+                Object.keys(headers).length > 0 && this.setRequestHeaderData(headers, xhr);
+                xhr.timeout = request.timeout; //  用户如果设置的话 会覆盖当前的属性
+                xhr.withCredentials = true; // 开启拦截默认允许跨域cookie
                 console.log(request.timeout, '设置了超时时间');
             },
             mockUrl,
