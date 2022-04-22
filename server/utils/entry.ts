@@ -11,23 +11,23 @@ const HMR_URL = encodeURIComponent(`http://${HOST}:${PORT}${HRM_PATH}`);
 const HMRClientScript = `webpack-hot-middleware/client?path=${HMR_URL}&reload=true&overlay=true`;
 
 const backgroundPath = resolve(src, './background/index.ts');
-const optionsPath = resolve(src, './options/index.tsx');
+const devtoolsPath = resolve(src, './devtools/index.tsx');
 const popupPath = resolve(src, './popup/App.tsx');
 
 const devEntry: Record<string, string[]> = {
     background: [HMRClientScript, backgroundPath],
-    options: [HMRClientScript, optionsPath],
+    devtools: [HMRClientScript, devtoolsPath],
     popup: [HMRClientScript, popupPath],
 };
 const prodEntry: Record<string, string[]> = {
     background: [backgroundPath],
-    options: [optionsPath],
+    devtools: [devtoolsPath],
     popup: [popupPath],
 };
 const entry = __DEV__ ? devEntry : prodEntry;
 
 if (ENABLE_DEVTOOLS) {
-    entry.options.unshift('react-devtools');
+    entry.devtools.unshift('react-devtools');
     entry.popup.unshift('react-devtools');
     execa.command('npx react-devtools').catch((error) => {
         console.error('Startup react-devtools occur error');

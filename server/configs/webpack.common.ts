@@ -74,10 +74,10 @@ const commonConfig: Configuration = {
         }),
         new FriendlyErrorsPlugin(),
         new HtmlWebpackPlugin({
-            chunks: ['options'],
-            filename: 'options.html',
-            title: 'options page',
-            template: resolve(PROJECT_ROOT, 'public/options.html'),
+            chunks: ['devtools'],
+            filename: 'devtools.html',
+            title: 'devtools page',
+            template: resolve(PROJECT_ROOT, 'public/devtools.html'),
         }),
         new HtmlWebpackPlugin({
             chunks: ['popup'],
