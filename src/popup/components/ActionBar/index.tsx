@@ -1,10 +1,12 @@
+import { IconExpand, IconSourceControl } from '@douyinfe/semi-icons';
+
 /** 2022年/April/08日/Friday
 *@reviewType.Perf
 *@reviewContent 王港
 1.用户对返回数据的操作按钮
 */
 import './index.scss';
-import { IconExpand, IconSourceControl } from '@douyinfe/semi-icons';
+
 export interface ActionBarProps {
     onclick: (type: string) => void;
     name: string;

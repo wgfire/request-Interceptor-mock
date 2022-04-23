@@ -4,13 +4,12 @@
  1.Card组件右侧操作栏
  */
 
-import React from 'react';
-import './index.scss';
-
-import { SplitButtonGroup, Dropdown, Button, Switch } from '@douyinfe/semi-ui';
-
-import { IconTreeTriangleDown, IconCopy } from '@douyinfe/semi-icons';
+import { IconCopy } from '@douyinfe/semi-icons';
+import { Button, Dropdown, Switch } from '@douyinfe/semi-ui';
 import { DropDownMenuItem } from '@douyinfe/semi-ui/lib/es/dropdown';
+import React from 'react';
+
+import './index.scss';
 
 export interface HeaderExtraContentProps {
     switchCheck: boolean;
@@ -18,7 +17,6 @@ export interface HeaderExtraContentProps {
     dropdownClick: (value: { type: string }) => void;
 }
 export const HeaderExtraContent: React.FC<HeaderExtraContentProps> = (props: HeaderExtraContentProps) => {
-    const handleVisibleChange = (v: boolean) => {};
     const { switchCheck, switchChange, dropdownClick } = props;
     const menu: DropDownMenuItem[] = [
         { node: 'item', name: '复制URL', icon: <IconCopy />, onClick: () => dropdownClick({ type: 'url' }) },
@@ -28,9 +26,9 @@ export const HeaderExtraContent: React.FC<HeaderExtraContentProps> = (props: Hea
     ];
     return (
         <div className="HeaderExtraContent">
-            <Switch checked={switchCheck} size="small" onChange={switchChange}></Switch>
-            <Dropdown onVisibleChange={(v) => handleVisibleChange(v)} menu={menu} trigger="hover" position="bottomRight">
-                <Button type="primary" icon={<IconCopy />} size="small" theme="light" style={{ color: '#00b3a1' }}></Button>
+            <Switch checked={switchCheck} size="small" onChange={switchChange} />
+            <Dropdown menu={menu} trigger="hover" position="bottomRight">
+                <Button type="primary" icon={<IconCopy />} size="small" theme="light" style={{ color: '#00b3a1' }} />
             </Dropdown>
         </div>
     );

@@ -153,9 +153,7 @@ export function createProxy(newResponse: Response, response: Response) {
                 case 'redirected':
                 case 'type':
                 case 'url':
-                case 'useFinalURL':
                 case 'bodyUsed':
-                    //@ts-ignore
                     return response[name];
             }
             // headers status ok 主要的字段信息走新的response对象

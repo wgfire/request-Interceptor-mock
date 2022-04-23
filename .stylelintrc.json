@@ -6,7 +6,8 @@
         "function-name-case": "lower",
         "no-invalid-double-slash-comments": null,
         "no-descending-specificity": null,
-        "declaration-empty-line-before": null
+        "declaration-empty-line-before": null,
+        "length-zero-no-unit": null
     },
     "ignoreFiles": ["node_modules/**/*", "extension/**/*", "public/**/*", "**/*.d.ts"]
 }

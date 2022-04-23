@@ -6,7 +6,7 @@
 */
 
 chrome.webRequest.onBeforeRequest.addListener(
-    function (detail) {
+    (detail) => {
         console.log(detail, '发送前结果');
     },
     { urls: ['*://*/*'], types: ['xmlhttprequest'] },
@@ -14,7 +14,7 @@ chrome.webRequest.onBeforeRequest.addListener(
 );
 
 chrome.webRequest.onResponseStarted.addListener(
-    function (detail) {
+    (detail) => {
         console.log(detail, '响应结果');
         return { responseHeaders: detail.responseHeaders };
     },
@@ -23,7 +23,7 @@ chrome.webRequest.onResponseStarted.addListener(
 );
 
 chrome.webRequest.onErrorOccurred.addListener(
-    function (detail) {
+    (detail) => {
         console.log(detail, '出错了');
         return { requestHeaders: detail.responseHeaders };
     },

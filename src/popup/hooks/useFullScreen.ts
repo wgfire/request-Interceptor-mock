@@ -1,5 +1,5 @@
 export interface FullRequestProps {
-    onSuccess?: () => void; 
+    onSuccess?: () => void;
 }
 export const useDomFullRequest = (data: FullRequestProps) => {
     const { onSuccess } = data;

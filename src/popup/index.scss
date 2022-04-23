@@ -21,8 +21,12 @@
     padding-left: 25px;
     overflow: auto;
     height: 100%;
+    animation: changeBackground 120s linear forwards infinite;
+    background-repeat-x: no-repeat;
+    background-size: 100% 100%;
     & .card-box {
         margin: 10px 0px;
+        background: rgba(242 242 242 / 77%);
         box-shadow: rgba(0, 0, 0, 0.12) 0px 0px 15px 2px !important;
     }
     & .show-icon {
@@ -48,6 +52,24 @@
         background: white !important;
     }
 }
+@keyframes changeBackground {
+    from {
+        background-image: url(./image/1.png);
+    }
+    25% {
+        background-image: url(./image/2.png);
+    }
+    50% {
+        background-image: url(./image/3.png);
+    }
+    75% {
+        background-image: url(./image/4.png);
+    }
+    100% {
+        background-image: url(./image/5.png);
+    }
+}
+
 .semi-input-wrapper {
     border: 1px solid #d9d9d9;
     color: black;

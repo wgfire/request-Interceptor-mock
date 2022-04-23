@@ -51,6 +51,13 @@ module.exports = {
         'eslint-comments/disable-enable-pair': [ERROR, { allowWholeFile: true }],
 
         'import/extensions': OFF,
+        'import/no-extraneous-dependencies': OFF,
+        'jsx-a11y/click-events-have-key-events': OFF,
+        'jsx-a11y/no-static-element-interactions': OFF,
+        'promise/catch-or-return': OFF,
+        'promise/always-return': OFF,
+        'promise/no-nesting': OFF,
+        '@typescript-eslint/ban-ts-comment': OFF,
 
         'react/jsx-indent': [ERROR, 4],
         'react/jsx-filename-extension': [ERROR, { extensions: ['.ts', '.tsx', '.json', '.js'] }],

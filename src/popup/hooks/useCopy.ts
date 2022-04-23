@@ -19,12 +19,12 @@ export const useCopy = (data: CopyHooksProps) => {
         // 将要 copy 的值赋给 textarea 标签的 value 属性
         textarea.value = value;
         // 将 textarea 插入到 body 中
-        document.body.appendChild(textarea);
+        document.body.append(textarea);
         // 选中值并复制
         textarea.select();
         const result = document.execCommand('Copy');
         if (result) {
-            document.body.removeChild(textarea);
+            textarea.remove();
             onSuccess && onSuccess(value);
         }
     };
