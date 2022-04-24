@@ -23,7 +23,7 @@
 
 # 效果图
 
-!['效果图'](https://cdn.nlark.com/yuque/0/2022/gif/1638822/1650785307402-48c05a3f-b023-46d2-8470-77a2cafd562b.gif)
+!['效果图'](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2fc9c595be504de4bc10618926ff7016~tplv-k3u1fbpfcp-watermark.image?)
 
 # 待更新
 
