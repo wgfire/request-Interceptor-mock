@@ -36,6 +36,7 @@ function createPopup() {
         if (window.self === window.top) {
             iframe.setAttribute('frameborder', 'none');
             iframe.setAttribute('id', 'mt-chrome-extension-iframe');
+            iframe.setAttribute('allowfullscreen', 'true'); // 允许iframe全屏
             iframe.src = chrome.extension.getURL('popup.html');
             document.body.append(iframe);
             console.log('iframe插入成功', iframe);

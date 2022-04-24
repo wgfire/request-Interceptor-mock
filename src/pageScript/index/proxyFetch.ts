@@ -8,7 +8,7 @@
 4.response的处理，先拿到原始的response，再构造一个新的response，替换原始的response,返回的body是一个文件流对象
 */
 
-import { createReadStream, createHeaders, createProxy, mockDataItem, createMockItemForFetch, IsIncludeUrlBuyMock } from './utils';
+import { createReadStream, createProxy, mockDataItem, createMockItemForFetch, IsIncludeUrlBuyMock } from './utils';
 const originFetch = fetch.bind(window);
 let mockData: mockDataItem = [{ url: '/api/user/login' }];
 let change = null; // 是否被替换过
@@ -22,7 +22,7 @@ const myFetch = function (...args) {
 
     if (item && item.switch) {
         //const sendHeaders = Object.assign(args[1].headers, item.request.headers);
-        console.log(item.request.headers, '拦截请求头');
+
         const sendbody = item.showOriginData ? item.request.originData : item.request.data;
         const sendHeader = JSON.parse(item.showOriginHeader ? item.request.originHeaders : item.request.headers);
         args[1] = {
@@ -30,6 +30,7 @@ const myFetch = function (...args) {
             // headers: sendHeaders,
             body: sendbody, // 发送原生数据还是模拟数据
         };
+        console.log(args, '拦截请求数据');
         return originFetch(...args).then((response) => {
             const responseData = item.showOriginResponse ? item.originResponse : item.response;
             // 判断是否要显示原始的请求数据更改请求数据和响应数据
@@ -96,7 +97,6 @@ const myFetch = function (...args) {
             return response;
         });
     }
-
 };
 export function proxyFetch(data) {
     mockData = data;
