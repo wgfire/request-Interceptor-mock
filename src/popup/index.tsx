@@ -143,14 +143,6 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[] }> = (props: { mock
         <div className="popup-box scrollbar">
             <div className="title-box">
                 <h1 className="title">mT插件┗|｀O′|┛ 嗷~~</h1>
-
-                <CopyButton
-                    onClick={() => {
-                        const noSwitchItem = mockData.find((el) => el.switch === false);
-                        const data = JSON.parse(noSwitchItem?.request.originData);
-                        data && data.token && copy(data.token);
-                    }}
-                />
             </div>
             <div onClick={showClickHandel} className="show-icon">
                 {show ? <IconDoubleChevronRight /> : <IconDoubleChevronLeft />}
