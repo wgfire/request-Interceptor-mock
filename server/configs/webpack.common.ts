@@ -7,7 +7,7 @@ import { resolve } from 'path';
 import { Configuration } from 'webpack';
 import WebpackBar from 'webpackbar';
 
-import { __DEV__, PROJECT_ROOT } from '../utils/constants';
+import { __DEV__, PROJECT_ROOT, EXTENSION } from '../utils/constants';
 import entry from '../utils/entry';
 
 function getCssLoaders(importLoaders: number) {
@@ -49,7 +49,7 @@ const commonConfig: Configuration = {
         },
     },
     plugins: [
-        new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
+        new CleanWebpackPlugin({ cleanStaleWebpackAssets: false, cleanOnceBeforeBuildPatterns: ['extension'] }),
         new CopyPlugin({
             patterns: [
                 {
@@ -65,6 +65,10 @@ const commonConfig: Configuration = {
                 {
                     from: resolve(PROJECT_ROOT, `src/lib`),
                     to: 'lib',
+                },
+                {
+                    from: resolve(EXTENSION, `js/background.js`),
+                    to: 'background.js',
                 },
             ],
         }),

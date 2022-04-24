@@ -1,10 +1,11 @@
-import './webRequest';
+// import './webRequest';
 
 import { observerProxy } from '../utils/common';
+import { mockDataItem } from '../pageScript/index/utils';
 
 console.log('This is background page!');
 // 数据通过webRequest 存起来
-
+let mockData: mockDataItem[];
 chrome.storage.local.get('mockData', (res) => {
     console.log(res, '读取的本地数据');
     const { mockData } = res;
@@ -19,14 +20,14 @@ const mockDataChange = (target: any) => {
 
 const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } = {
     getMock: (fn: (arg: any) => void) => {
-        console.log('收到来自content-script的消息：发送mock数据', window.mockData);
-        fn(window.mockData);
+        console.log('收到来自content-script的消息：发送mock数据', mockData);
+        fn(mockData);
     },
-    setMock: (fn: (arg: any) => void, arg: any[]) => {
-        window.mockData = arg.filter((el) => el.switch === true);
+    setMock: (fn: (arg: any) => void, arg: mockDataItem[]) => {
+        mockData = arg.filter((el) => el.switch === true);
         fn(arg);
-        chrome.storage.local.set({ mockData: window.mockData }, () => {
-            console.log('更新background mockData 成功', window.mockData);
+        chrome.storage.local.set({ mockData: mockData }, () => {
+            console.log('更新background mockData 成功', mockData);
         });
         // 发送给content 消息，将popup里更新的好的数据通过content在传到pagescript里。
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -55,8 +56,8 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
 };
 const start = (data: any) => {
     console.log(data);
-    window.mockData = data.length > 0 ? data : [];
-    window.mockData = observerProxy(window.mockData, mockDataChange);
+    mockData = data.length > 0 ? data : [];
+    mockData = observerProxy(mockData, mockDataChange);
     chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
         if (request.to === 'background') {
             console.log('后台收到来自content-script的消息：', request);

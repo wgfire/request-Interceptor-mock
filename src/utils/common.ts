@@ -4,15 +4,14 @@ export function injectCustomJs(jsPath: string = 'lib/mock.js') {
         var temp = document.createElement('script');
         temp.setAttribute('type', 'text/javascript');
         // 获得的地址类似：chrome-extension://ihcokhadfjfchaeagdoclpnjdiokfakg/js/inject.js
-        temp.src = chrome.extension.getURL(jsPath);
+        temp.src = chrome.runtime.getURL(jsPath);
         document.documentElement.appendChild(temp);
-   
+
         temp.onload = function () {
-          resolve(true);
-          console.log('注入完成',new Date().getTime())
-           // console.log('注入完成',new Date().getTime())// 这里的window 和 页面上的window 除了document对象共享之外，其他变量不共享。
+            resolve(true);
+            console.log('注入完成', new Date().getTime());
+            // console.log('注入完成',new Date().getTime())// 这里的window 和 页面上的window 除了document对象共享之外，其他变量不共享。
         };
- 
     });
 }
 
@@ -41,29 +40,28 @@ export function observerProxy(obj: object, onchange: (target: any) => void): any
  * @param wait 延迟执行毫秒数
  * @param immediate true 表立即执行，false 表非立即执行
  */
- export function debounce(func:Function, wait:number, immediate:boolean) {
-    let timeout:number | null;
-    return  (...args:any[]) => {
-      //@ts-ignore
-      const context:any = this;
-      //const args = [...arguments];
-      if (timeout) clearTimeout(timeout);
-      if (immediate) {
-        const callNow = !timeout;
-        timeout = setTimeout(() => {
-          timeout = null;
-        }, wait)
-        if (callNow) func.apply(context, args)
-      }
-      else {
-        timeout = setTimeout(() => {
-          func.apply(context, args)
-        }, wait);
-      }
-    }
-  }
-  
-  export function postMockDataToScript(mockData: any) {
+export function debounce(func: Function, wait: number, immediate: boolean) {
+    let timeout: number | null;
+    return (...args: any[]) => {
+        //@ts-ignore
+        const context: any = this;
+        //const args = [...arguments];
+        if (timeout) clearTimeout(timeout);
+        if (immediate) {
+            const callNow = !timeout;
+            timeout = setTimeout(() => {
+                timeout = null;
+            }, wait);
+            if (callNow) func.apply(context, args);
+        } else {
+            timeout = setTimeout(() => {
+                func.apply(context, args);
+            }, wait);
+        }
+    };
+}
+
+export function postMockDataToScript(mockData: any) {
     console.log(mockData, '发送的mock数据');
     window.postMessage({
         action: 'start',

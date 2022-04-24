@@ -2,26 +2,33 @@
     "name": "mt chrome extension ",
     "version": "1.0",
     "description": "拦截xhr请求，并对其进行mock数据将其返回",
-    "manifest_version": 2,
+    "manifest_version": 3,
     "minimum_chrome_version": "80",
-    "permissions": [
-        "webRequest",
-        "*://*/*",
-        "http://*/*",
-        "https://*/*",
-        "tabs",
-        "contextMenus",
-        "notifications",
-        "webRequestBlocking",
-        "storage",
-        "activeTab",
-        "declarativeContent"
+    "permissions": ["tabs", "contextMenus", "notifications", "storage", "activeTab", "declarativeContent"],
+    "web_accessible_resources": [
+        {
+            "resources": ["icons/*"],
+            "matches": ["<all_urls>"]
+        },
+        {
+            "resources": ["images/*"],
+            "matches": ["<all_urls>"]
+        },
+        {
+            "resources": ["fonts/*"],
+            "matches": ["<all_urls>"]
+        },
+        {
+            "resources": ["js/pageScript.js"],
+            "matches": ["<all_urls>"]
+        },
+        {
+            "resources": ["popup.html"],
+            "matches": ["<all_urls>"]
+        }
     ],
-    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self';",
-    "web_accessible_resources": ["icons/*", "images/*", "fonts/*", "js/pageScript.js", "lib/*", "popup.html"],
     "background": {
-        "scripts": ["js/background.js"],
-        "persistent": true
+        "service_worker": "js/background.js"
     },
     "content_scripts": [
         {
@@ -31,14 +38,6 @@
             "run_at": "document_start"
         }
     ],
-    "browser_action": {
-        "default_icon": {
-            "16": "icons/extension-icon-x16.png",
-            "32": "icons/extension-icon-x32.png",
-            "48": "icons/extension-icon-x48.png",
-            "128": "icons/extension-icon-x128.png"
-        }
-    },
     "devtools_page": "devtools.html",
     "icons": {
         "16": "icons/extension-icon-x16.png",
