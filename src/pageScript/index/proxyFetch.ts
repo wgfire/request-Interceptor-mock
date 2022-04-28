@@ -23,7 +23,7 @@ const myFetch = function (...args) {
     if (item && item.switch) {
         //const sendHeaders = Object.assign(args[1].headers, item.request.headers);
 
-        const sendbody = item.showOriginData ? item.request.originData : item.request.data;
+        const sendbody = item.showOriginData ? copyArgs[1]?.body : item.request.data;
         const sendHeader = JSON.parse(item.showOriginHeader ? item.request.originHeaders : item.request.headers);
         args[1] = {
             ...sendHeader,

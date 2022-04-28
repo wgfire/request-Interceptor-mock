@@ -70,7 +70,8 @@ class ProxyXhr extends BaseXhr {
             const { request } = data;
             if (data.showOriginData) {
                 // 如果用户设置了显示原始数据,那么就发送原生请求数据
-                return request.originData;
+
+                return config.data;
             }
             return request.data;
         }
