@@ -117,6 +117,7 @@ export const createMockItemForFetch = ({
         originResponse,
         showOriginData: false,
         showOriginResponse: false,
+        showOriginHeader: false,
         id: createId({ url, data: originData }),
         type: 'F',
     };
