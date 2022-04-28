@@ -301,7 +301,8 @@ const checkJson = (json: any) => {
         if (!json) return {};
         // 用户404 或者报错 会返回html文档导致解析失败
         if (typeof json === 'string') return JSON.parse(json);
-        return json;
+        if (json instanceof Object) return json;
+        return {};
     } catch {
         return {};
     }
