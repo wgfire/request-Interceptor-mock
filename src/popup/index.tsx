@@ -80,7 +80,8 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[] }> = (props: { mock
         // 更新界面上的mockData数量
         setMockData((perData) => {
             const mock = [...perData];
-            const index = mock.findIndex((el) => el.id === item.id);
+            // 这里用url来判断不用id是因为 id会根据请求的数据生成，但是很多时候我就是要更新这个url的请求数据
+            const index = mock.findIndex((el) => el.url === item.url);
             if (index === -1) {
                 mock.push(item);
             } else {
@@ -300,7 +301,7 @@ const checkJson = (json: any) => {
     try {
         if (!json) return {};
         // 用户404 或者报错 会返回html文档导致解析失败
-        if (typeof json === 'string') return JSON.parse(json);
+        if (typeof json === 'string' && /^{.+}$/.test(json)) return JSON.parse(json);
         if (json instanceof Object) return json;
         return {};
     } catch {
