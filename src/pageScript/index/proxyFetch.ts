@@ -22,7 +22,8 @@ const myFetch = function (...args) {
 
     if (item && item.switch) {
         //const sendHeaders = Object.assign(args[1].headers, item.request.headers);
-
+        // 更新原生请求数据
+        item.request.originData = copyArgs[1]?.body;
         const sendbody = item.showOriginData ? copyArgs[1]?.body : item.request.data;
         const sendHeader = JSON.parse(item.showOriginHeader ? item.request.originHeaders : item.request.headers);
         args[1] = {
@@ -31,8 +32,24 @@ const myFetch = function (...args) {
             body: sendbody, // 发送原生数据还是模拟数据
         };
         console.log(args, '拦截请求数据');
-        return originFetch(...args).then((response) => {
-            const responseData = item.showOriginResponse ? item.originResponse : item.response;
+        return originFetch(...args).then(async (response) => {
+            const cloneResponse = response.clone();
+            // 这里要拿到response的原生返回的请求和响应数据,进行更新
+            const originData = await cloneResponse.json().then((data) => {
+                const sendItem = {
+                    ...item,
+                    originResponse: JSON.stringify(data),
+                };
+                window.postMessage({
+                    to: 'iframe',
+                    action: 'update',
+                    data: sendItem,
+                });
+                return JSON.stringify(data);
+            });
+
+            const responseData = item.showOriginResponse ? originData : item.response;
+
             // 判断是否要显示原始的请求数据更改请求数据和响应数据
             const stream = createReadStream(responseData);
             // 创建一个headers 对象
@@ -42,30 +59,14 @@ const myFetch = function (...args) {
                 status: 200, // 此处必须设置为200，ok会变成true,不能直接设置ok的值 ,但是404的话 只要body不为空就可以 fetch只要不是网络错误就是调用then,后面就是promise的then
                 statusText: response.statusText,
             });
-
-            // 对一些属性进行代理 部分属性newResponse，部分response
-            const proxy = createProxy(newResponse, response);
-            const cloneResponse = response.clone();
-            // 这里要拿到response的原生返回的请求和响应数据,进行更新
-            try {
-                cloneResponse.json().then((data) => {
-                    const sendItem = {
-                        ...item,
-                        originResponse: JSON.stringify(data),
-                    };
-                    window.postMessage({
-                        to: 'iframe',
-                        action: 'update',
-                        data: sendItem,
-                    });
-                });
-            } catch (error) {}
             newResponse
                 .clone()
                 .json()
                 .then((data) => {
                     console.log('模拟响应数据', data);
                 });
+            // 对一些属性进行代理 部分属性newResponse，部分response
+            const proxy = createProxy(newResponse, response);
 
             return proxy;
         });
