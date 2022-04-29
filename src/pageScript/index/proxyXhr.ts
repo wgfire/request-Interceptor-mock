@@ -1,6 +1,6 @@
 import { BaseXhr, hooksProps } from './baseXhr';
 import type { configProps, mockDataItem } from './utils';
-import { switchFindUrl, findUrlBuyMock, createMockItem } from './utils';
+import { createMockItem, findUrlBuyMock, switchFindUrl } from './utils';
 
 let mockUrl: any;
 let xhr: ProxyXhr | null;
@@ -58,7 +58,7 @@ class ProxyXhr extends BaseXhr {
                 const headers = data.showOriginHeader ? request.originHeaders : request.headers;
                 Object.keys(headers).length > 0 && this.setRequestHeaderData(headers, xhr);
                 xhr.timeout = request.timeout; //  用户如果设置的话 会覆盖当前的属性
-                xhr.withCredentials = true; // 开启拦截默认允许跨域cookie
+
                 console.log(request.timeout, '设置了超时时间');
             },
             mockUrl,

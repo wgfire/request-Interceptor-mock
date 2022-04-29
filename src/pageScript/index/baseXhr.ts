@@ -3,7 +3,7 @@ export interface hooksProps {
 }
 export class BaseXhr {
     public hooks: hooksProps = {};
-    public afterHooks:hooksProps ={} // 执行完hooks后的一些回调
+    public afterHooks: hooksProps = {}; // 执行完hooks后的一些回调
     public instance: any;
     public originXhr = window.XMLHttpRequest;
     reqListData: Array<any> = [];
@@ -56,6 +56,7 @@ export class BaseXhr {
             this._xhr = new _this.originXhr();
             // 用户new XMLHttpRequest创建的为当前this，此时将这个this上的属性进行代理
             console.log(this, '用户的实例');
+            //@ts-ignore
             _this.overwrite(this);
         };
     }
@@ -72,6 +73,8 @@ export class BaseXhr {
 
             this.overwriteAttributes(key, proxyXHR);
         }
+        //@ts-ignore 默认开启携带cookie不然有些网站会报错
+        proxyXHR._xhr.withCredentials = true;
     }
 
     /**
@@ -80,31 +83,28 @@ export class BaseXhr {
      */
     overwriteMethod(key: string, proxyXHR: any) {
         let hooks = this.hooks;
-        let originResult = null
+        let originResult = null;
         proxyXHR[key] = (...args: any[]) => {
             // 拦截的方法
             let hooksResult: boolean | any[] = false;
-            originResult = args
+            originResult = args;
             if (hooks[key]) {
                 hooksResult = hooks[key].call(proxyXHR, args);
                 if (hooksResult === false) return false;
             }
             if (key == 'send') {
                 args = [hooksResult];
-                proxyXHR['__originSendData'] = originResult[0] // 原生的发送data的参数
-                proxyXHR['__realitySendData'] = args[0]  // 实际发送的参数
+                proxyXHR['__originSendData'] = originResult[0]; // 原生的发送data的参数
+                proxyXHR['__realitySendData'] = args[0]; // 实际发送的参数
             }
             //console.log(key,'方法',args)
             // 执行方法本体
             const res = proxyXHR._xhr[key].apply(proxyXHR._xhr, args);
             // 执行回调
-          
-        
+
             // if(this.afterHooks[key]) {
             // this.afterHooks[key].call(proxyXHR, originResult,args);
             // }
-           
-
 
             return res;
         };
@@ -157,8 +157,7 @@ export class BaseXhr {
                 return;
             }
             // 其他的属性
-           
-
+            console.log('设置了属性', key, val);
             this._xhr[key] = val;
         };
 
