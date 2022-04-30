@@ -1,4 +1,6 @@
-import { mockDataItem } from '../../utils/type';
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable default-case */
+import { mockDataItem } from './type';
 
 /** 当前config 下 是否存在与mockUrl里 */
 export const findUrlBuyMock = (url: string, mockUrl: mockDataItem[], key = 'url') => {
@@ -124,7 +126,7 @@ interface ResponsePar extends Response {
 }
 export function createProxy(newResponse: Response, response: Response) {
     const proxy = new Proxy(newResponse, {
-        get: function (target: ResponsePar, name) {
+        get(target: ResponsePar, name) {
             switch (name) {
                 case 'redirected':
                 case 'type':
@@ -135,13 +137,14 @@ export function createProxy(newResponse: Response, response: Response) {
             // headers status ok 主要的字段信息走新的response对象
             return target[name];
         },
-        set: function (target, name, value) {
-            //console.log(name,value,'被设置的值',target,proxy);
-            return (target[name] = value);
+        set(target, name, value) {
+            // console.log(name,value,'被设置的值',target,proxy);
+
+            return Reflect.set(target, name, value);
         },
     });
 
-    for (let key in proxy) {
+    for (const key in proxy) {
         if (typeof proxy[key] === 'function') {
             proxy[key] = proxy[key].bind(newResponse);
         }

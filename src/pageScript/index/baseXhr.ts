@@ -74,7 +74,7 @@ export class BaseXhr {
             this.overwriteAttributes(key, proxyXHR);
         }
         //@ts-ignore 默认开启携带cookie不然有些网站会报错
-        proxyXHR._xhr.withCredentials = true;
+        //proxyXHR._xhr.withCredentials = true;
     }
 
     /**

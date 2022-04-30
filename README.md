@@ -20,6 +20,7 @@
 # 问题总结：
 
 - 改为 iframe 渲染后，通信链路很长，之前 popup 用 div 渲染，跟 pagescript 通信和 content 通信很方便，现在两者之前通信都要通过 background，和 content 做跳转。 1.比如展开和收缩，popup 只能发送消息到 background,然后在转发到 content 改变 iframe 的样式， 2.更新 mock 列表，pagescript 只能发送消息到 content,content 到 background，然后 background 在发送到 popup。
+- 当 Access-Control-Allow-Origin 的值为 '\*' 的时候跨域请求不允许携带认证
 
 # 效果图
 
