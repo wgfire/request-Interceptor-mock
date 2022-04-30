@@ -22,6 +22,7 @@
     overflow: auto;
     height: 100%;
     transition: all 0.5s;
+    animation: changeBackground 120s linear forwards infinite;
     background-size: 100% 100%;
     & .card-box {
         margin: 10px 0px;
@@ -51,7 +52,23 @@
         background: white !important;
     }
 }
-
+@keyframes changeBackground {
+    from {
+        background-image: url(./image/1.png);
+    }
+    25% {
+        background-image: url(./image/2.png);
+    }
+    50% {
+        background-image: url(./image/3.png);
+    }
+    75% {
+        background-image: url(./image/4.png);
+    }
+    100% {
+        background-image: url(./image/5.png);
+    }
+}
 .semi-input-wrapper {
     border: 1px solid #d9d9d9;
     color: black;
