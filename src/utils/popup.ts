@@ -1,12 +1,13 @@
+/* eslint-disable default-case */
 /**
  * popup用到一些工具方法
  */
 
-import { mockDataItem } from '../pageScript/index/utils';
+import { mockDataItem } from './type';
 
 // 根据需要的key返回当前原生的数据
 export const getOriginData = (key: string, el: mockDataItem) => {
-    let item = null;
+    let item;
     switch (key) {
         case 'header':
             item = el.showOriginHeader ? el.request.originHeaders : el.request.headers;

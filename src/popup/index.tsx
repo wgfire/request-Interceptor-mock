@@ -1,16 +1,17 @@
-import { IconDoubleChevronLeft, IconDoubleChevronRight } from '@douyinfe/semi-icons';
+import { IconDoubleChevronLeft, IconDoubleChevronRight, IconSetting } from '@douyinfe/semi-icons';
 import { Card, Collapse, Input, Notification } from '@douyinfe/semi-ui';
 import React, { useEffect, useState } from 'react';
 import JSONInput from 'react-json-editor-ajrm';
 // @ts-ignore
 import locale from 'react-json-editor-ajrm/locale/en';
 
-import { mockDataItem } from '../pageScript/index/utils';
-import { debounce, postMockDataToScript } from '../utils/common';
+import { debounce } from '../utils/common';
 import { copyAction } from '../utils/popup';
+import type { globalConfig, mockDataItem } from '../utils/type';
 import { ActionBar } from './components/ActionBar';
 import { CopyButton } from './components/CopyButton';
 import { HeaderExtraContent } from './components/HeaderExtraContent';
+import { SideBar } from './components/sideBar/sideBar';
 import { useCopy } from './hooks/useCopy';
 import { useDomFullRequest } from './hooks/useFullScreen';
 
@@ -26,8 +27,13 @@ const Cardtitle: React.FC<{ url: string; type: string }> = (props: { url: string
     );
 };
 
-export const Popup: React.FC<{ mockDataPopup: mockDataItem[] }> = (props: { mockDataPopup: mockDataItem[] }) => {
-    const { mockDataPopup } = props;
+export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globalConfig }> = (props: {
+    mockDataPopup: mockDataItem[];
+    configPopup: globalConfig;
+}) => {
+    const { mockDataPopup, configPopup } = props;
+    const [config, setConfig] = useState(configPopup);
+    const [visible, setVisible] = useState(false);
     const [mockData, setMockData] = useState(mockDataPopup || []);
     const [ready, setReady] = useState(false);
     const [show, setShow] = useState(false); // 是否展开状态
@@ -67,11 +73,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[] }> = (props: { mock
     const refreshMockData = debounce(
         () => {
             // 将现有的数据重新发送个background，background也需要更新，然后在转发给content 在发到pagescript更新mock
-            chrome.runtime.sendMessage({ action: 'setMock', to: 'background', data: mockData }, (response) => {
-                if (response) {
-                    postMockDataToScript(response);
-                }
-            });
+            chrome.runtime.sendMessage({ action: 'setMock', to: 'background', data: { mockData, config } });
         },
         1000,
         false,
@@ -139,9 +141,19 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[] }> = (props: { mock
             refreshMockData();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [mockData]);
+    }, [mockData, config]);
     return (
         <div className="popup-box scrollbar">
+            <SideBar
+                config={config}
+                visible={visible}
+                onCancel={(value: boolean) => {
+                    setVisible(value);
+                }}
+                onChange={(value: globalConfig) => {
+                    setConfig(value);
+                }}
+            />
             <div className="title-box">
                 <h1 className="title">mT插件┗|｀O′|┛ 嗷~~</h1>
 
@@ -150,6 +162,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[] }> = (props: { mock
                      * 右上角的按钮,个人团队定制需求，不需要的直接删掉就行
                      */
                     <CopyButton
+                        style={{ marginLeft: '100px' }}
                         onClick={() => {
                             const noSwitchItem = mockData.find((el) => el.switch === false);
                             const data = JSON.parse(noSwitchItem?.request.originData);
@@ -157,6 +170,12 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[] }> = (props: { mock
                         }}
                     />
                 }
+                <IconSetting
+                    style={{ cursor: 'pointer' }}
+                    onClick={(e) => {
+                        setVisible(true);
+                    }}
+                />
             </div>
             <div onClick={showClickHandel} className="show-icon">
                 {show ? <IconDoubleChevronRight /> : <IconDoubleChevronLeft />}

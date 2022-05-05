@@ -1,8 +1,11 @@
+import { createMockItem, findUrlBuyMock, switchFindUrl } from '../../utils/pagescript';
+import type { configProps, globalDataPorps, mockDataItem } from '../../utils/type';
 import { BaseXhr, hooksProps } from './baseXhr';
-import type { configProps, mockDataItem } from './utils';
-import { switchFindUrl, findUrlBuyMock, createMockItem } from './utils';
 
-let mockUrl: any;
+const xhrData: globalDataPorps = {
+    mockData: [],
+    config: { withCredentials: true },
+};
 let xhr: ProxyXhr | null;
 class ProxyXhr extends BaseXhr {
     static config: configProps = {
@@ -58,19 +61,17 @@ class ProxyXhr extends BaseXhr {
                 const headers = data.showOriginHeader ? request.originHeaders : request.headers;
                 Object.keys(headers).length > 0 && this.setRequestHeaderData(headers, xhr);
                 xhr.timeout = request.timeout; //  用户如果设置的话 会覆盖当前的属性
-                xhr.withCredentials = true; // 开启拦截默认允许跨域cookie
                 console.log(request.timeout, '设置了超时时间');
             },
-            mockUrl,
+            xhrData.mockData,
         );
     }
     setRequestData(config: configProps) {
-        const data = findUrlBuyMock(config.url, mockUrl);
+        const data = findUrlBuyMock(config.url, xhrData.mockData);
         if (data && data.switch) {
             const { request } = data;
             if (data.showOriginData) {
                 // 如果用户设置了显示原始数据,那么就发送原生请求数据
-
                 return config.data;
             }
             return request.data;
@@ -82,7 +83,7 @@ class ProxyXhr extends BaseXhr {
         switchFindUrl(
             config.url,
             (data) => {
-                console.log(config, data, '找到修改的地方', mockUrl);
+                console.log(config, data, '找到修改的地方', xhrData.mockData);
                 if (data.showOriginResponse) {
                     // 如果用户显示原生响应数据
                     xhr.responseText = data.originResponse;
@@ -90,7 +91,7 @@ class ProxyXhr extends BaseXhr {
                     xhr.responseText = data.response;
                 }
             },
-            mockUrl,
+            xhrData.mockData,
         );
     }
 }
@@ -98,13 +99,12 @@ class ProxyXhr extends BaseXhr {
  * 先执行open 随后触发onreadystatechange一次 最后 执行send
  */
 
-export const setMockData = (data: any) => {
-    // 拿到dom上挂载的mock数据
-    const mockData = data; // JSON.parse(document.querySelector('#popup > div > textarea')?.innerHTML!)
-    mockUrl = mockData;
-    console.log('xhr里的mockData数据', mockUrl);
+export const setMockData = (data: globalDataPorps) => {
+    xhrData.mockData = data.mockData;
+    xhrData.config = data.config;
+    console.log('xhr里的mockData数据', xhrData.mockData);
 };
-export const initXhr = (data: any): ProxyXhr => {
+export const initXhr = (data: globalDataPorps): ProxyXhr => {
     setMockData(data);
     if (xhr) {
         return xhr;
@@ -123,8 +123,9 @@ export const initXhr = (data: any): ProxyXhr => {
             },
             open(data: any) {
                 const [, url] = data;
-                console.log(Date.now(), '打开链接', url);
+                console.log(Date.now(), '打开链接', url, xhrData.config.withCredentials);
                 ProxyXhr.config.url = url;
+                this._xhr.withCredentials = xhrData.config.withCredentials;
             },
             onreadystatechange() {
                 if (this.readyState === 1) {
@@ -132,8 +133,15 @@ export const initXhr = (data: any): ProxyXhr => {
                     xhr!.setRequestInfo(ProxyXhr.config, this); // 等于1的时候修改请求信息
                 } else if (this.readyState === 4) {
                     // 更新原始数据
-                    console.log(Date.now(), '请求完成', this.responseText);
-                    this.responseText = this._xhr.responseText;
+                    switchFindUrl(
+                        this.responseURL,
+                        (data) => {
+                            if (data.showOriginResponse) {
+                                this.responseText = this._xhr.responseText;
+                            }
+                        },
+                        xhrData.mockData,
+                    );
                 }
                 console.log('监听链接', Date.now(), this.responseURL, this.readyState);
             },

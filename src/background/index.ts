@@ -1,6 +1,7 @@
 import './webRequest';
 
 import { observerProxy } from '../utils/common';
+import { globalDataPorps, mockDataItem } from '../utils/type';
 
 console.log('This is background page!');
 // 数据通过webRequest 存起来
@@ -22,11 +23,13 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
         console.log('收到来自content-script的消息：发送mock数据', window.mockData);
         fn(window.mockData);
     },
-    setMock: (fn: (arg: any) => void, arg: any[]) => {
-        window.mockData = arg.filter((el) => el.switch === true);
+    setMock: (fn: (arg: globalDataPorps) => void, arg: globalDataPorps) => {
+        const mockData = arg.mockData.filter((el: mockDataItem) => el.switch === true);
+        const obj = JSON.parse(JSON.stringify(arg));
+        obj.mockData = mockData;
         fn(arg);
-        chrome.storage.local.set({ mockData: window.mockData }, () => {
-            console.log('更新background mockData 成功', window.mockData);
+        chrome.storage.local.set({ globalData: obj }, () => {
+            console.log('更新background globalData 成功', obj);
         });
         // 发送给content 消息，将popup里更新的好的数据通过content在传到pagescript里。
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -64,10 +67,3 @@ const start = (data: any) => {
         }
     });
 };
-
-// chrome.browserAction.onClicked.addListener(function () {
-//     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-//         console.log('发送消息');
-//         chrome.tabs.sendMessage(tabs[0].id!, { to: 'content', action: 'toggle' });
-//     });
-// });
