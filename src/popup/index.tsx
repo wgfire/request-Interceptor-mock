@@ -111,14 +111,10 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     };
 
     // 匹配规则保存到后台
-    const ruleChangeHandel = debounce(
-        (value: string) => {
-            chrome.storage.local.set({ rule: value });
-            setRuleInput(value);
-        },
-        100,
-        false,
-    );
+    const ruleChangeHandel = (value: string) => {
+        chrome.storage.local.set({ rule: value });
+        setRuleInput(value);
+    };
 
     const findMockBuyUrl = (id: string, fn: (index: number) => void) => {
         // 根据url 找到列表数据
@@ -190,129 +186,123 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                 className="rule-input"
             />
             {mockData &&
-                mockData
-                    .filter((el) => {
-                        const rule = new RegExp(ruleInput);
-                        const result = ruleInput !== '' ? rule.test(el.url) : true;
-                        return result;
-                    })
-                    .map((el, index) => (
-                        // @ts-ignore
-                        <Card
-                            shadows="hover"
-                            key={el.id}
-                            className="card-box"
-                            title={<Cardtitle url={el.url} type={el.type} />}
-                            headerExtraContent={
-                                <HeaderExtraContent
-                                    switchCheck={el.switch}
-                                    switchChange={(value) => {
-                                        findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                            setMockDataProps(value, indexSwitch, 'switch');
-                                        });
-                                    }}
-                                    dropdownClick={(value) => {
-                                        console.log(value);
-                                        const data = copyAction(value.type, el);
-                                        data && copy(data);
+                filterMockData(mockData, ruleInput).map((el, index) => (
+                    // @ts-ignore
+                    <Card
+                        shadows="hover"
+                        key={el.id}
+                        className="card-box"
+                        title={<Cardtitle url={el.url} type={el.type} />}
+                        headerExtraContent={
+                            <HeaderExtraContent
+                                switchCheck={el.switch}
+                                switchChange={(value) => {
+                                    findMockBuyUrl(el.id, (indexSwitch: number) => {
+                                        setMockDataProps(value, indexSwitch, 'switch');
+                                    });
+                                }}
+                                dropdownClick={(value) => {
+                                    console.log(value);
+                                    const data = copyAction(value.type, el);
+                                    data && copy(data);
+                                }}
+                            />
+                        }
+                    >
+                        <Collapse>
+                            <Panel header="RequestHeader" itemKey="1">
+                                <ActionBar
+                                    name={`请求头${el.showOriginHeader ? '(只读)' : ''}`}
+                                    onclick={(type) => {
+                                        if (type === 'expand') {
+                                            domFullRequest(`#s-${index}-1-jsonInput-body`);
+                                        } else if (type === 'change') {
+                                            findMockBuyUrl(el.id, (indexSwitch: number) => {
+                                                setMockDataProps(!el.showOriginHeader, indexSwitch, 'showOriginHeader');
+                                            });
+                                        }
                                     }}
                                 />
-                            }
-                        >
-                            <Collapse>
-                                <Panel header="RequestHeader" itemKey="1">
-                                    <ActionBar
-                                        name={`请求头${el.showOriginHeader ? '(只读)' : ''}`}
-                                        onclick={(type) => {
-                                            if (type === 'expand') {
-                                                domFullRequest(`#s-${index}-1-jsonInput-body`);
-                                            } else if (type === 'change') {
-                                                findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                                    setMockDataProps(!el.showOriginHeader, indexSwitch, 'showOriginHeader');
-                                                });
-                                            }
-                                        }}
-                                    />
 
-                                    <JSONInput
-                                        width="100%"
-                                        id={`s-${index}-1-jsonInput`}
-                                        viewOnly={el.showOriginHeader}
-                                        placeholder={checkJson(el.showOriginHeader ? el.request.originHeaders : el.request.headers)}
-                                        onBlur={(value: Record<string, unknown>) => {
+                                <JSONInput
+                                    width="100%"
+                                    id={`s-${index}-1-jsonInput`}
+                                    viewOnly={el.showOriginHeader}
+                                    placeholder={checkJson(el.showOriginHeader ? el.request.originHeaders : el.request.headers)}
+                                    onBlur={(value: Record<string, unknown>) => {
+                                        findMockBuyUrl(el.id, (indexSwitch: number) => {
+                                            changeHandel(value, indexSwitch, 'headers');
+                                        });
+                                    }}
+                                    locale={locale}
+                                    height="150px"
+                                />
+                            </Panel>
+                        </Collapse>
+                        <Collapse>
+                            <Panel header="RequestData" itemKey="2">
+                                <ActionBar
+                                    name={`请求数据${el.showOriginData ? '(只读)' : ''}`}
+                                    onclick={(type) => {
+                                        if (type === 'expand') {
+                                            domFullRequest(`#s-${index}-2-jsonInput-body`);
+                                        } else if (type === 'change') {
                                             findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                                changeHandel(value, indexSwitch, 'headers');
+                                                setMockDataProps(!el.showOriginData, indexSwitch, 'showOriginData');
                                             });
-                                        }}
-                                        locale={locale}
-                                        height="150px"
-                                    />
-                                </Panel>
-                            </Collapse>
-                            <Collapse>
-                                <Panel header="RequestData" itemKey="2">
-                                    <ActionBar
-                                        name={`请求数据${el.showOriginData ? '(只读)' : ''}`}
-                                        onclick={(type) => {
-                                            if (type === 'expand') {
-                                                domFullRequest(`#s-${index}-2-jsonInput-body`);
-                                            } else if (type === 'change') {
-                                                findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                                    setMockDataProps(!el.showOriginData, indexSwitch, 'showOriginData');
-                                                });
+                                        }
+                                        //    actionBarList[type]()
+                                    }}
+                                />
+                                <JSONInput
+                                    confirmGood
+                                    width="100%"
+                                    id={`s-${index}-2-jsonInput`}
+                                    viewOnly={el.showOriginData}
+                                    placeholder={checkJson(el.showOriginData ? el.request.originData : el.request.data)}
+                                    onBlur={(value: Record<string, unknown>) => {
+                                        findMockBuyUrl(el.id, (indexSwitch: number) => {
+                                            changeHandel(value, indexSwitch);
+                                        });
+                                    }}
+                                    locale={locale}
+                                    height="150px"
+                                />
+                            </Panel>
+                        </Collapse>
+                        <Collapse>
+                            <Panel header="ResponseData" itemKey="3">
+                                <ActionBar
+                                    name={`返回数据${el.showOriginResponse ? '(只读)' : ''}`}
+                                    onclick={(type) => {
+                                        if (type === 'expand') {
+                                            domFullRequest(`#s-${index}-3-jsonInput-body`);
+                                        } else if (type === 'change') {
+                                            findMockBuyUrl(el.id, (indexSwitch: number) => {
+                                                setMockDataProps(!el.showOriginResponse, indexSwitch, 'showOriginResponse');
+                                            });
+                                        }
+                                    }}
+                                />
+                                <JSONInput
+                                    width="100%"
+                                    id={`s-${index}-3-jsonInput`}
+                                    placeholder={checkJson(el.showOriginResponse ? el.originResponse : el.response)}
+                                    viewOnly={el.showOriginResponse}
+                                    onBlur={(value: any) => {
+                                        findMockBuyUrl(el.id, (indexSwitch: number) => {
+                                            if (checkJson(value.json)) {
+                                                setMockDataProps(value.json, indexSwitch, 'response');
                                             }
-                                            //    actionBarList[type]()
-                                        }}
-                                    />
-                                    <JSONInput
-                                        confirmGood
-                                        width="100%"
-                                        id={`s-${index}-2-jsonInput`}
-                                        viewOnly={el.showOriginData}
-                                        placeholder={checkJson(el.showOriginData ? el.request.originData : el.request.data)}
-                                        onBlur={(value: Record<string, unknown>) => {
-                                            findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                                changeHandel(value, indexSwitch);
-                                            });
-                                        }}
-                                        locale={locale}
-                                        height="150px"
-                                    />
-                                </Panel>
-                            </Collapse>
-                            <Collapse>
-                                <Panel header="ResponseData" itemKey="3">
-                                    <ActionBar
-                                        name={`返回数据${el.showOriginResponse ? '(只读)' : ''}`}
-                                        onclick={(type) => {
-                                            if (type === 'expand') {
-                                                domFullRequest(`#s-${index}-3-jsonInput-body`);
-                                            } else if (type === 'change') {
-                                                findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                                    setMockDataProps(!el.showOriginResponse, indexSwitch, 'showOriginResponse');
-                                                });
-                                            }
-                                        }}
-                                    />
-                                    <JSONInput
-                                        width="100%"
-                                        id={`s-${index}-3-jsonInput`}
-                                        placeholder={checkJson(el.showOriginResponse ? el.originResponse : el.response)}
-                                        viewOnly={el.showOriginResponse}
-                                        onBlur={(value: any) => {
-                                            findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                                if (checkJson(value.json)) {
-                                                    setMockDataProps(value.json, indexSwitch, 'response');
-                                                }
-                                            });
-                                        }}
-                                        locale={locale}
-                                        height="450px"
-                                    />
-                                </Panel>
-                            </Collapse>
-                        </Card>
-                    ))}
+                                        });
+                                    }}
+                                    locale={locale}
+                                    height="450px"
+                                />
+                            </Panel>
+                        </Collapse>
+                    </Card>
+                ))}
         </div>
     );
 };
@@ -326,6 +316,20 @@ const checkJson = (json: any) => {
     } catch {
         return {};
     }
+};
+/**
+ * @description
+ * 根据url地址和内容过滤接口
+ * @param mockData
+ * @param ruleInput
+ */
+const filterMockData = (mockData: mockDataItem[], ruleInput: string): mockDataItem[] => {
+    return mockData.filter((el: mockDataItem) => {
+        if (!ruleInput) return true;
+        const testArray = [el.url, el.response, el.originResponse];
+        const reg = new RegExp(ruleInput, 'g');
+        return testArray.some((item) => reg.test(item));
+    });
 };
 
 export default Popup;
