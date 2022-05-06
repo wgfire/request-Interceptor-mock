@@ -1,5 +1,4 @@
-import './webRequest';
-
+import './note';
 import { observerProxy } from '../utils/common';
 import { globalDataPorps, mockDataItem } from '../utils/type';
 
