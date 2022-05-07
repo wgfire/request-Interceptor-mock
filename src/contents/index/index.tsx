@@ -7,10 +7,9 @@ import { injectCustomJs, postMockDataToScript, readStorageAll } from '../../util
 2.当页面加载完成之后，自动执行开启了mock的url-像background发送消息获取mock列表
 */
 import './style.scss';
-
+import './note';
 console.log(`Current page show`);
-
-let mockData: any;
+import { clickHandel } from './note';
 let show = false; // iframe是否展开的字段
 const iframe: HTMLIFrameElement = document.createElement('iframe');
 const actionMap: any = {
@@ -26,6 +25,9 @@ const actionMap: any = {
     update: (data: any, sendResponse: () => void) => {
         console.log('收到pagescript的update事件,转发给background到popup', data);
         chrome.runtime.sendMessage({ to: 'background', action: 'update', data });
+    },
+    addNote: (data: any, sendResponse: () => void) => {
+        clickHandel(data.data.selectionText, data.data.url);
     },
 };
 

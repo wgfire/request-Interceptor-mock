@@ -11,33 +11,31 @@
  * 3.点击便签可以快速找到网址，并且高亮显示之前选中的元素。
  * 4.支持删除便签
  */
+import { createHighlightDiv } from './utils';
 interface NoteProps {
     textContent: string;
     clientRect: any;
 }
 interface NoteData {
-    item: NoteProps;
+    item: NoteProps[];
     url: string;
 }
 const data: NoteData[] = [];
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.type === 'note') {
-        clickHandel();
-    }
-});
-
-function clickHandel() {
+export function clickHandel(textContent: string, url: string) {
     const selection = window.getSelection();
-    const textContent = selection?.toString() as string;
+    // const textContent = selection?.toString() as string;
     const rang = selection?.getRangeAt(0); // range对象
-    const clientRect = rang?.getBoundingClientRect(); // 坐标信息
+    const clientRect = rang?.getBoundingClientRect() as DOMRect; // 坐标信息
     const item: NoteData = {
-        item: { textContent: textContent, clientRect: clientRect },
-        url: window.location.href,
+        item: [{ textContent: textContent, clientRect: clientRect }],
+        url,
     };
+    createHighlightDiv(clientRect, textContent);
     data.push(item);
     console.log(data);
+    // chrome.storage.local.set({ noteData: data });
+    return data;
 }
 function start() {
     // 创建界面 接受之前的便签数据
