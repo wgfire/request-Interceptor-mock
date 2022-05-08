@@ -30,9 +30,9 @@ export interface mockDataItem {
     };
     response: any;
     originResponse: any;
-    showOriginData?: false;
-    showOriginResponse: false; // 默认显示代理的数据
-    showOriginHeader?: false; // fetch 的请求body跟xhr不一样，可以在一个请求配置里获取到
+    showOriginData?: boolean;
+    showOriginResponse: boolean; // 默认显示代理的数据
+    showOriginHeader?: boolean; // fetch 的请求body跟xhr不一样，可以在一个请求配置里获取到
     id: string; // 根据url和请求body生成唯一id
     type: string; // 代理的类型
     [key: string]: any;

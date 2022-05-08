@@ -1,12 +1,10 @@
 import { IconDoubleChevronLeft, IconDoubleChevronRight, IconSetting } from '@douyinfe/semi-icons';
 import { Card, Collapse, Input, Notification } from '@douyinfe/semi-ui';
 import React, { useEffect, useState } from 'react';
-import JSONInput from 'react-json-editor-ajrm';
-// @ts-ignore
-import locale from 'react-json-editor-ajrm/locale/en';
+import ReactJson, { InteractionProps } from 'react-json-view';
 
 import { debounce } from '../utils/common';
-import { copyAction } from '../utils/popup';
+import { copyAction, setObjectValue } from '../utils/popup';
 import type { globalConfig, mockDataItem } from '../utils/type';
 import { ActionBar } from './components/ActionBar';
 import { CopyButton } from './components/CopyButton';
@@ -48,28 +46,21 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
         },
     });
     const domFullRequest = useDomFullRequest({});
-    const setMockDataProps = (value: any, index: number, key: string) => {
+    const setMockDataProps = (value: any, index: number, key: string[]) => {
         // 根据索引设置某个key的值
+
         const mock = [...mockData];
-        mock[index][key] = value;
+        const item = mock[index];
+        const updateItem = setObjectValue(key, item, value);
+        mock[index] = { ...item, ...updateItem };
         setMockData(mock);
     };
-    // 请求数据和请求头的更新回调
-    const changeHandel = debounce(
-        (value: { json: any }, index: number, key = 'data') => {
-            try {
-                if (JSON.parse(value.json)) {
-                    // 当用户改变的值是合法的json string 才去更新
-                    const data = [...mockData];
-                    const el = data[index];
-                    el.request[key] = value.json;
-                    setMockData(data);
-                }
-            } catch {}
-        },
-        1000,
-        false,
-    );
+    // add edite delete的回调
+    const changeHandel = (id: string, updatedSrc: object, key: string[]) => {
+        findMockBuyUrl(id, (indexSwitch: number) => {
+            setMockDataProps(JSON.stringify(updatedSrc), indexSwitch, key);
+        });
+    };
     const refreshMockData = debounce(
         () => {
             // 将现有的数据重新发送个background，background也需要更新，然后在转发给content 在发到pagescript更新mock
@@ -168,7 +159,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                 }
                 <IconSetting
                     style={{ cursor: 'pointer' }}
-                    onClick={(e) => {
+                    onClick={() => {
                         setVisible(true);
                     }}
                 />
@@ -198,7 +189,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                                 switchCheck={el.switch}
                                 switchChange={(value) => {
                                     findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                        setMockDataProps(value, indexSwitch, 'switch');
+                                        setMockDataProps(value, indexSwitch, ['switch']);
                                     });
                                 }}
                                 dropdownClick={(value) => {
@@ -218,24 +209,33 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                                             domFullRequest(`#s-${index}-1-jsonInput-body`);
                                         } else if (type === 'change') {
                                             findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                                setMockDataProps(!el.showOriginHeader, indexSwitch, 'showOriginHeader');
+                                                setMockDataProps(!el.showOriginHeader, indexSwitch, ['showOriginHeader']);
                                             });
                                         }
                                     }}
                                 />
-
-                                <JSONInput
-                                    width="100%"
-                                    id={`s-${index}-1-jsonInput`}
-                                    viewOnly={el.showOriginHeader}
-                                    placeholder={checkJson(el.showOriginHeader ? el.request.originHeaders : el.request.headers)}
-                                    onBlur={(value: Record<string, unknown>) => {
-                                        findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                            changeHandel(value, indexSwitch, 'headers');
-                                        });
+                                <ReactJson
+                                    name={false}
+                                    collapsed
+                                    theme="monokai"
+                                    collapseStringsAfterLength={12}
+                                    src={checkJson(el.showOriginHeader ? el.request.originHeaders : el.request.headers)}
+                                    onEdit={(value: InteractionProps) => {
+                                        if (el.showOriginHeader) return false;
+                                        changeHandel(el.id, value.updated_src, ['request', 'headers']);
+                                        return true;
                                     }}
-                                    locale={locale}
-                                    height="150px"
+                                    onAdd={(value: InteractionProps) => {
+                                        if (el.showOriginHeader) return false;
+                                        changeHandel(el.id, value.updated_src, ['request', 'headers']);
+                                        return true;
+                                    }}
+                                    onDelete={(value: InteractionProps) => {
+                                        if (el.showOriginHeader) return false;
+                                        changeHandel(el.id, value.updated_src, ['request', 'headers']);
+                                        return true;
+                                    }}
+                                    displayDataTypes={false}
                                 />
                             </Panel>
                         </Collapse>
@@ -248,25 +248,34 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                                             domFullRequest(`#s-${index}-2-jsonInput-body`);
                                         } else if (type === 'change') {
                                             findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                                setMockDataProps(!el.showOriginData, indexSwitch, 'showOriginData');
+                                                setMockDataProps(!el.showOriginData, indexSwitch, ['showOriginData']);
                                             });
                                         }
                                         //    actionBarList[type]()
                                     }}
                                 />
-                                <JSONInput
-                                    confirmGood
-                                    width="100%"
-                                    id={`s-${index}-2-jsonInput`}
-                                    viewOnly={el.showOriginData}
-                                    placeholder={checkJson(el.showOriginData ? el.request.originData : el.request.data)}
-                                    onBlur={(value: Record<string, unknown>) => {
-                                        findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                            changeHandel(value, indexSwitch);
-                                        });
+                                <ReactJson
+                                    name={false}
+                                    collapsed
+                                    theme="monokai"
+                                    collapseStringsAfterLength={12}
+                                    src={checkJson(el.showOriginData ? el.request.originData : el.request.data)}
+                                    onEdit={(value: InteractionProps) => {
+                                        if (el.showOriginData) return false;
+                                        changeHandel(el.id, value.updated_src, ['request', 'data']);
+                                        return true;
                                     }}
-                                    locale={locale}
-                                    height="150px"
+                                    onAdd={(value: InteractionProps) => {
+                                        if (el.showOriginData) return false;
+                                        changeHandel(el.id, value.updated_src, ['request', 'data']);
+                                        return true;
+                                    }}
+                                    onDelete={(value: InteractionProps) => {
+                                        if (el.showOriginData) return false;
+                                        changeHandel(el.id, value.updated_src, ['request', 'data']);
+                                        return true;
+                                    }}
+                                    displayDataTypes={false}
                                 />
                             </Panel>
                         </Collapse>
@@ -274,30 +283,38 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                             <Panel header="ResponseData" itemKey="3">
                                 <ActionBar
                                     name={`返回数据${el.showOriginResponse ? '(只读)' : ''}`}
-                                    onclick={(type) => {
+                                    onclick={(type: string) => {
                                         if (type === 'expand') {
                                             domFullRequest(`#s-${index}-3-jsonInput-body`);
                                         } else if (type === 'change') {
                                             findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                                setMockDataProps(!el.showOriginResponse, indexSwitch, 'showOriginResponse');
+                                                setMockDataProps(!el.showOriginResponse, indexSwitch, ['showOriginResponse']);
                                             });
                                         }
                                     }}
                                 />
-                                <JSONInput
-                                    width="100%"
-                                    id={`s-${index}-3-jsonInput`}
-                                    placeholder={checkJson(el.showOriginResponse ? el.originResponse : el.response)}
-                                    viewOnly={el.showOriginResponse}
-                                    onBlur={(value: any) => {
-                                        findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                            if (checkJson(value.json)) {
-                                                setMockDataProps(value.json, indexSwitch, 'response');
-                                            }
-                                        });
+                                <ReactJson
+                                    name={false}
+                                    collapsed
+                                    theme="monokai"
+                                    collapseStringsAfterLength={12}
+                                    src={checkJson(el.showOriginResponse ? el.originResponse : el.response)}
+                                    onEdit={(value: InteractionProps) => {
+                                        if (el.showOriginResponse) return false;
+                                        changeHandel(el.id, value.updated_src, ['response']);
+                                        return true;
                                     }}
-                                    locale={locale}
-                                    height="450px"
+                                    onAdd={(value: InteractionProps) => {
+                                        if (el.showOriginResponse) return false;
+                                        changeHandel(el.id, value.updated_src, ['response']);
+                                        return true;
+                                    }}
+                                    onDelete={(value: InteractionProps) => {
+                                        if (el.showOriginResponse) return false;
+                                        changeHandel(el.id, value.updated_src, ['response']);
+                                        return true;
+                                    }}
+                                    displayDataTypes={false}
                                 />
                             </Panel>
                         </Collapse>
@@ -311,7 +328,7 @@ const checkJson = (json: any) => {
         if (!json) return {};
         // 用户404 或者报错 会返回html文档导致解析失败
         if (typeof json === 'string' && /^{.+}$/.test(json)) return JSON.parse(json);
-        if (json instanceof Object) return json;
+        if (json instanceof Object) json;
         return {};
     } catch {
         return {};
@@ -323,13 +340,12 @@ const checkJson = (json: any) => {
  * @param mockData
  * @param ruleInput
  */
-const filterMockData = (mockData: mockDataItem[], ruleInput: string): mockDataItem[] => {
-    return mockData.filter((el: mockDataItem) => {
+const filterMockData = (mockData: mockDataItem[], ruleInput: string): mockDataItem[] =>
+    mockData.filter((el: mockDataItem) => {
         if (!ruleInput) return true;
         const testArray = [el.url, el.response, el.originResponse];
         const reg = new RegExp(ruleInput, 'g');
         return testArray.some((item) => reg.test(item));
     });
-};
 
 export default Popup;

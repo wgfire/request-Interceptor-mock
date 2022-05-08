@@ -58,6 +58,7 @@ module.exports = {
         'promise/always-return': OFF,
         'promise/no-nesting': OFF,
         '@typescript-eslint/ban-ts-comment': OFF,
+        '@typescript-eslint/ban-types': OFF,
 
         'react/jsx-indent': [ERROR, 4],
         'react/jsx-filename-extension': [ERROR, { extensions: ['.ts', '.tsx', '.json', '.js'] }],

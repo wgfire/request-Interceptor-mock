@@ -43,3 +43,12 @@ export const copyAction = (type: string, el: mockDataItem) => {
 
     return copyData;
 };
+
+export const setObjectValue = (key: string[], el: mockDataItem, value: any): any => {
+    if (key.length === 1) {
+        const item = { ...el };
+        item[key[0]] = value;
+        return item;
+    }
+    return setObjectValue(key.slice(1), el[key[0]], value);
+};
