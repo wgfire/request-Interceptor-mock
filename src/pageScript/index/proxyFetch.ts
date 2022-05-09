@@ -35,10 +35,10 @@ const myFetch = function (...args) {
         return originFetch(...args).then(async (response) => {
             const cloneResponse = response.clone();
             // 这里要拿到response的原生返回的请求和响应数据,进行更新
-            const originData = await cloneResponse.json().then((data) => {
+            const originData = await cloneResponse.json().finally((data) => {
                 const sendItem = {
                     ...item,
-                    originResponse: JSON.stringify(data),
+                    originResponse: JSON.stringify(data || {}),
                 };
                 window.postMessage({
                     to: 'iframe',
@@ -73,28 +73,28 @@ const myFetch = function (...args) {
     } else {
         return originFetch(...args).then((response) => {
             // 为了跟xhr保持使用统一将body从请求配置里分离开来
+
             const sendData = copyArgs[1]?.body;
             delete copyArgs[1]?.body;
             const originsendHeader = JSON.stringify({ ...copyArgs[1] }); // 包含请求头信息和请求body
             const cloneResponse = response.clone();
-            try {
-                cloneResponse.json().then((data) => {
-                    const sendItem = createMockItemForFetch({
-                        url: cloneResponse.url,
-                        data: sendData,
-                        originData: sendData,
-                        response: JSON.stringify(data),
-                        originResponse: JSON.stringify(data),
-                        headers: originsendHeader,
-                        originHeaders: originsendHeader,
-                    });
-                    window.postMessage({
-                        to: 'iframe',
-                        action: 'update',
-                        data: sendItem,
-                    });
+            cloneResponse.json().finally((data) => {
+                const sendItem = createMockItemForFetch({
+                    url: cloneResponse.url,
+                    data: sendData,
+                    originData: sendData,
+                    response: JSON.stringify(data || {}),
+                    originResponse: JSON.stringify(data || {}),
+                    headers: originsendHeader,
+                    originHeaders: originsendHeader,
                 });
-            } catch (error) {}
+                window.postMessage({
+                    to: 'iframe',
+                    action: 'update',
+                    data: sendItem,
+                });
+            });
+
             return response;
         });
     }
