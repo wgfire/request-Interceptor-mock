@@ -151,7 +151,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                     <CopyButton
                         style={{ marginLeft: '100px' }}
                         onClick={() => {
-                            const noSwitchItem = mockData.find((el) => el.switch === false);
+                            const noSwitchItem = mockData.find((el) => el.switch === false && el.url.includes('myyscm.com'));
                             const data = JSON.parse(noSwitchItem?.request.originData);
                             data && data.token && copy(data.token);
                         }}
