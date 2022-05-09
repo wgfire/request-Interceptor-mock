@@ -100,10 +100,16 @@ const myFetch = function (...args) {
     }
 };
 export function proxyFetch(data) {
-    mockData = data;
+    mockData = data['mockData'];
     if (!change) {
         console.log('fetch替换', mockData);
         window.fetch = myFetch;
     }
     change = true;
+}
+
+export function cancelProxyFetch() {
+    window.fetch = originFetch;
+    change = false;
+    console.log('取消了代理fetch');
 }

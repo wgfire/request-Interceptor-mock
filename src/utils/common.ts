@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-this-alias */
-import { globalDataPorps } from './type';
+import { globalDataProps } from './type';
 
 export function injectCustomJs(jsPath = 'lib/mock.js'): Promise<any> {
     return new Promise((resolve) => {
@@ -65,9 +65,9 @@ export function debounce(func: (...arg: any[]) => void, wait: number, immediate:
     };
 }
 
-export function postMockDataToScript(globalData: any) {
+export function postMockDataToScript(globalData: any, action = 'start') {
     window.postMessage({
-        action: 'start',
+        action,
         to: 'pageScript',
         globalData,
     });
@@ -87,10 +87,10 @@ export function localGetSync(key: string): Promise<any> {
  * @description 读取存储的数据
  * @returns Map
  */
-export async function readStorageAll(): Promise<globalDataPorps> {
-    let localKey: globalDataPorps = {
+export async function readStorageAll(): Promise<globalDataProps> {
+    let localKey: globalDataProps = {
         mockData: [],
-        config: { withCredentials: false },
+        config: { withCredentials: false, proxySwitch: true },
     };
 
     const data = await localGetSync('globalData');

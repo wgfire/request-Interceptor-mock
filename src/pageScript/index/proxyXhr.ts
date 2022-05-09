@@ -1,10 +1,10 @@
 import { createMockItem, findUrlBuyMock, switchFindUrl } from '../../utils/pagescript';
-import type { configProps, globalDataPorps, mockDataItem } from '../../utils/type';
+import type { configProps, globalDataProps, mockDataItem } from '../../utils/type';
 import { BaseXhr, hooksProps } from './baseXhr';
 
-const xhrData: globalDataPorps = {
+const xhrData: globalDataProps = {
     mockData: [],
-    config: { withCredentials: true },
+    config: { withCredentials: true, proxySwitch: true },
 };
 let xhr: ProxyXhr | null;
 class ProxyXhr extends BaseXhr {
@@ -99,12 +99,17 @@ class ProxyXhr extends BaseXhr {
  * 先执行open 随后触发onreadystatechange一次 最后 执行send
  */
 
-export const setMockData = (data: globalDataPorps) => {
+export const setMockData = (data: globalDataProps) => {
     xhrData.mockData = data.mockData;
     xhrData.config = data.config;
     console.log('xhr里的mockData数据', xhrData.mockData);
 };
-export const initXhr = (data: globalDataPorps): ProxyXhr => {
+export const cancelProxyXhr = () => {
+    xhr!.unset();
+    xhr = null;
+    console.log('取消了代理xhr');
+};
+export const initXhr = (data: globalDataProps): ProxyXhr => {
     setMockData(data);
     if (xhr) {
         return xhr;

@@ -24,7 +24,7 @@ export const SideBar: React.FC<SideBarProps> = (props) => {
                 }}
                 mask={false}
             >
-                <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', margin: '0px 6px' }}>
                     <Title heading={6} style={{ margin: 8 }}>
                         withCredentials
                     </Title>
@@ -35,6 +35,20 @@ export const SideBar: React.FC<SideBarProps> = (props) => {
                         checked={config.withCredentials}
                         onChange={(checked: boolean) => {
                             onChange({ ...config, withCredentials: checked });
+                        }}
+                    />
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', margin: '0px 6px' }}>
+                    <Title heading={6} style={{ margin: 8 }}>
+                        开启拦截
+                    </Title>
+                    <Switch
+                        checkedText="开"
+                        uncheckedText="关"
+                        size="default"
+                        checked={config.proxySwitch}
+                        onChange={(checked: boolean) => {
+                            onChange({ ...config, proxySwitch: checked });
                         }}
                     />
                 </div>

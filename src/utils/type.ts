@@ -8,13 +8,14 @@ export interface configProps {
  */
 export interface globalConfig {
     withCredentials: boolean;
+    proxySwitch: boolean;
 }
 
-export interface globalDataPorps {
+export interface globalDataProps {
     mockData: mockDataItem[];
     config: globalConfig;
 }
-// export type globalMapData = Map<keyof globalDataPorps, globalDataPorps[keyof globalDataPorps]>;
+// export type globalMapData = Map<keyof globalDataProps, globalDataProps[keyof globalDataProps]>;
 export interface mockDataItem {
     status: number;
     switch: boolean;

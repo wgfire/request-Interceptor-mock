@@ -1,7 +1,7 @@
 import './webRequest';
 
 import { observerProxy } from '../utils/common';
-import { globalDataPorps, mockDataItem } from '../utils/type';
+import { globalDataProps, mockDataItem } from '../utils/type';
 
 console.log('This is background page!');
 // 数据通过webRequest 存起来
@@ -23,7 +23,7 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
         console.log('收到来自content-script的消息：发送mock数据', window.mockData);
         fn(window.mockData);
     },
-    setMock: (fn: (arg: globalDataPorps) => void, arg: globalDataPorps) => {
+    setMock: (fn: (arg: globalDataProps) => void, arg: globalDataProps) => {
         const mockData = arg.mockData.filter((el: mockDataItem) => el.switch === true);
         const obj = JSON.parse(JSON.stringify(arg));
         obj.mockData = mockData;

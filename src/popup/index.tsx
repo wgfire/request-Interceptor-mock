@@ -2,7 +2,8 @@ import { IconDoubleChevronLeft, IconDoubleChevronRight, IconSetting } from '@dou
 import { Card, Collapse, Input, Notification } from '@douyinfe/semi-ui';
 import React, { useEffect, useState } from 'react';
 import ReactJson, { InteractionProps } from 'react-json-view';
-
+import { Empty } from '@douyinfe/semi-ui';
+import { IllustrationConstruction, IllustrationConstructionDark } from '@douyinfe/semi-illustrations';
 import { debounce } from '../utils/common';
 import { copyAction, setObjectValue } from '../utils/popup';
 import type { globalConfig, mockDataItem } from '../utils/type';
@@ -176,7 +177,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                 value={ruleInput}
                 className="rule-input"
             />
-            {mockData &&
+            {mockData.length > 0 ? (
                 filterMockData(mockData, ruleInput).map((el, index) => (
                     // @ts-ignore
                     <Card
@@ -319,7 +320,17 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                             </Panel>
                         </Collapse>
                     </Card>
-                ))}
+                ))
+            ) : (
+                <div className="empty-wrapper">
+                    <Empty
+                        image={<IllustrationConstruction style={{ width: 150, height: 150 }} />}
+                        darkModeImage={<IllustrationConstructionDark style={{ width: 150, height: 150 }} />}
+                        title={'哦豁，还没有任何数据'}
+                        description="打开右上角的设置，开启拦截开关试试！"
+                    />
+                </div>
+            )}
         </div>
     );
 };

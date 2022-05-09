@@ -21,7 +21,8 @@ const actionMap: any = {
     },
     setMock: (request: any, sendResponse: () => void) => {
         console.log('收到popup的setMock事件,转发给pagescript');
-        postMockDataToScript(request.data);
+        const action = request.data.config.proxySwitch ? 'start' : 'cancel';
+        postMockDataToScript(request.data, action);
     },
     update: (data: any, sendResponse: () => void) => {
         console.log('收到pagescript的update事件,转发给background到popup', data);
@@ -50,19 +51,13 @@ function start() {
         console.log('读取本地数据', res);
         createPopup();
         injectCustomJs('js/pageScript.js').then(() => {
-            postMockDataToScript(res); //  需要在js挂载成功之后 再去发送消息
+            if (res.config.proxySwitch) {
+                postMockDataToScript(res); //  需要在js挂载成功之后 再去发送消息
+            }
         });
     });
 }
 start();
-/** 发送消息给后台获取mockdata 通信由于是异步的很费时间，所以在content直接取 */
-// chrome.storage.local.get('mockData', (res) => {
-//     console.log(res, '读取的本地数据');
-//     createPopup();
-//     injectCustomJs('js/pageScript.js').then(() => {
-//         postMockDataToScript(mockData); //  需要在js挂载成功之后 再去发送消息
-//     });
-// });
 
 window.addEventListener('message', (event) => {
     // 接受pagescript的消息的
