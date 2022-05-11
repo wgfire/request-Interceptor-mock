@@ -34,19 +34,22 @@ const myFetch = function (...args) {
         console.log(args, '拦截请求数据');
         return originFetch(...args).then(async (response) => {
             const cloneResponse = response.clone();
+            const originData = {};
             // 这里要拿到response的原生返回的请求和响应数据,进行更新
-            const originData = await cloneResponse.json().finally((data) => {
-                const sendItem = {
-                    ...item,
-                    originResponse: JSON.stringify(data || {}),
-                };
-                window.postMessage({
-                    to: 'iframe',
-                    action: 'update',
-                    data: sendItem,
+            if (cloneResponse.status === 200) {
+                originData = await cloneResponse.json().then((data) => {
+                    const sendItem = {
+                        ...item,
+                        originResponse: JSON.stringify(data || {}),
+                    };
+                    window.postMessage({
+                        to: 'iframe',
+                        action: 'update',
+                        data: sendItem,
+                    });
+                    return JSON.stringify(data || {});
                 });
-                return JSON.stringify(data);
-            });
+            }
 
             const responseData = item.showOriginResponse ? originData : item.response;
 
