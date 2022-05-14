@@ -8,7 +8,8 @@
 4.response的处理，先拿到原始的response，再构造一个新的response，替换原始的response,返回的body是一个文件流对象
 */
 
-import { createReadStream, createProxy, mockDataItem, createMockItemForFetch, IsIncludeUrlBuyMock } from './utils';
+import { createMockItemForFetch, createProxy, createReadStream, IsIncludeUrlBuyMock, mockDataItem } from './utils';
+
 const originFetch = fetch.bind(window);
 let mockData: mockDataItem = [{ url: '/api/user/login' }];
 let change = null; // 是否被替换过
@@ -34,20 +35,21 @@ const myFetch = function (...args) {
         console.log(args, '拦截请求数据');
         return originFetch(...args).then(async (response) => {
             const cloneResponse = response.clone();
-            const originData = {};
+            let originData = {};
             // 这里要拿到response的原生返回的请求和响应数据,进行更新
             if (cloneResponse.status === 200) {
                 originData = await cloneResponse.json().then((data) => {
+                    console.log('原生响应数据', data);
                     const sendItem = {
                         ...item,
-                        originResponse: JSON.stringify(data || {}),
+                        originResponse: JSON.stringify(data),
                     };
                     window.postMessage({
                         to: 'iframe',
                         action: 'update',
                         data: sendItem,
                     });
-                    return JSON.stringify(data || {});
+                    return JSON.stringify(data);
                 });
             }
 
@@ -81,16 +83,17 @@ const myFetch = function (...args) {
             delete copyArgs[1]?.body;
             const originsendHeader = JSON.stringify({ ...copyArgs[1] }); // 包含请求头信息和请求body
             const cloneResponse = response.clone();
-            cloneResponse.json().finally((data) => {
+            cloneResponse.json().then((data) => {
                 const sendItem = createMockItemForFetch({
                     url: cloneResponse.url,
                     data: sendData,
                     originData: sendData,
-                    response: JSON.stringify(data || {}),
-                    originResponse: JSON.stringify(data || {}),
+                    response: JSON.stringify(data instanceof Object ? data : {}),
+                    originResponse: JSON.stringify(data instanceof Object ? data : {}),
                     headers: originsendHeader,
                     originHeaders: originsendHeader,
                 });
+                console.log('更新的item', sendItem);
                 window.postMessage({
                     to: 'iframe',
                     action: 'update',

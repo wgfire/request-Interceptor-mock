@@ -24,31 +24,42 @@ export const getOriginData = (key: string, el: mockDataItem) => {
 };
 
 // 根据点击的copy类型，复制对应的类型数据
-export const copyAction = (type: string, el: mockDataItem) => {
+export const copyAction = (type: string[], el: mockDataItem) => {
     let copyData = '';
-    switch (type) {
-        case 'url':
-            copyData = el.url;
-            break;
-        case 'header':
-            copyData = getOriginData('header', el);
-            break;
-        case 'data':
-            copyData = getOriginData('data', el);
-            break;
-        case 'response':
-            copyData = getOriginData('response', el);
-            break;
-    }
+    type.forEach((element) => {
+        switch (element) {
+            case 'url':
+                copyData += el.url;
+                break;
+            case 'header':
+                copyData += '请求头：';
+                copyData += getOriginData('header', el) ?? '';
+                break;
+            case 'data':
+                copyData += '请求数据：';
+                copyData += getOriginData('data', el) ?? '';
+                break;
+            case 'response':
+                copyData += '响应数据：';
+                copyData += getOriginData('response', el) ?? '';
+                break;
+        }
+    });
 
     return copyData;
 };
 
-export const setObjectValue = (key: string[], el: mockDataItem, value: any): any => {
-    if (key.length === 1) {
-        const item = { ...el };
-        item[key[0]] = value;
-        return item;
-    }
-    return setObjectValue(key.slice(1), el[key[0]], value);
-};
+export const setObjectValue = (key: string[], el: mockDataItem, value: any): any =>
+    // eslint-disable-next-line unicorn/no-array-reduce
+    Object.keys(el).reduce((prev, cur) => {
+        if (cur === key[0]) {
+            const item = { ...el };
+            if (key.length === 1) {
+                item[cur] = value;
+            } else {
+                item[cur] = setObjectValue(key.slice(1), item[cur], value);
+            }
+            return item;
+        }
+        return prev;
+    }, el);

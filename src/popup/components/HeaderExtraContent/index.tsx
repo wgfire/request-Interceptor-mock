@@ -14,15 +14,18 @@ import './index.scss';
 export interface HeaderExtraContentProps {
     switchCheck: boolean;
     switchChange: (checked: boolean) => void;
-    dropdownClick: (value: { type: string }) => void;
+    dropdownClick: (value: { type: string; value: string[] | string }) => void;
 }
 export const HeaderExtraContent: React.FC<HeaderExtraContentProps> = (props: HeaderExtraContentProps) => {
     const { switchCheck, switchChange, dropdownClick } = props;
     const menu: DropDownMenuItem[] = [
-        { node: 'item', name: '复制URL', icon: <IconCopy />, onClick: () => dropdownClick({ type: 'url' }) },
-        { node: 'item', name: '复制请求头', icon: <IconCopy />, onClick: () => dropdownClick({ type: 'header' }) },
-        { node: 'item', name: '复制请求数据', icon: <IconCopy />, onClick: () => dropdownClick({ type: 'data' }) },
-        { node: 'item', name: '复制响应数据', icon: <IconCopy />, onClick: () => dropdownClick({ type: 'response' }) },
+        { node: 'item', name: '复制URL', icon: <IconCopy />, onClick: () => dropdownClick({ type: 'copy', value: ['url'] }) },
+        {
+            node: 'item',
+            name: '复制所有请求信息',
+            icon: <IconCopy />,
+            onClick: () => dropdownClick({ type: 'copy', value: ['header', 'data', 'response'] }),
+        },
     ];
     return (
         <div className="HeaderExtraContent">

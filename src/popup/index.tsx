@@ -1,9 +1,9 @@
 import { IconDoubleChevronLeft, IconDoubleChevronRight, IconSetting } from '@douyinfe/semi-icons';
-import { Card, Collapse, Input, Notification } from '@douyinfe/semi-ui';
+import { IllustrationConstruction, IllustrationConstructionDark } from '@douyinfe/semi-illustrations';
+import { Card, Collapse, Empty, Input, Notification } from '@douyinfe/semi-ui';
 import React, { useEffect, useState } from 'react';
 import ReactJson, { InteractionProps } from 'react-json-view';
-import { Empty } from '@douyinfe/semi-ui';
-import { IllustrationConstruction, IllustrationConstructionDark } from '@douyinfe/semi-illustrations';
+
 import { debounce } from '../utils/common';
 import { copyAction, setObjectValue } from '../utils/popup';
 import type { globalConfig, mockDataItem } from '../utils/type';
@@ -34,6 +34,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     const [config, setConfig] = useState(configPopup);
     const [visible, setVisible] = useState(false);
     const [mockData, setMockData] = useState(mockDataPopup || []);
+    const [controlRefsh, setControlRefsh] = useState(true);
     const [ready, setReady] = useState(false);
     const [show, setShow] = useState(false); // 是否展开状态
     const [ruleInput, setRuleInput] = useState('https?://'); // 过滤规则
@@ -49,7 +50,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     const domFullRequest = useDomFullRequest({});
     const setMockDataProps = (value: any, index: number, key: string[]) => {
         // 根据索引设置某个key的值
-
+        setControlRefsh(true);
         const mock = [...mockData];
         const item = mock[index];
         const updateItem = setObjectValue(key, item, value);
@@ -62,6 +63,22 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
             setMockDataProps(JSON.stringify(updatedSrc), indexSwitch, key);
         });
     };
+    const textAreaChange = (id: string, value: string, key: string[]) => {
+        console.log(value.toString());
+        try {
+            const data = JSON.parse(value); // 检查是否是合法的json
+            findMockBuyUrl(id, (indexSwitch: number) => {
+                setMockDataProps(JSON.stringify(data), indexSwitch, key);
+            });
+        } catch {
+            Notification.error({
+                content: `JSON解析失败，请检查JSON格式`,
+                duration: 2,
+                position: 'top',
+            });
+        }
+    };
+
     const refreshMockData = debounce(
         () => {
             // 将现有的数据重新发送个background，background也需要更新，然后在转发给content 在发到pagescript更新mock
@@ -93,6 +110,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
             if (request.action === 'update' && request.to === 'popup') {
                 console.log('popup收到更新数据', request);
                 updateMockData(request.data);
+                setControlRefsh(false);
             }
         });
     };
@@ -125,7 +143,8 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     }, []);
     useEffect(() => {
         // 为了解决第一次加载也触发 refreshMockData
-        if (ready) {
+        console.log('controlRefsh', controlRefsh);
+        if (ready && controlRefsh) {
             refreshMockData();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -200,7 +219,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                                 }}
                                 dropdownClick={(value) => {
                                     console.log(value);
-                                    const data = copyAction(value.type, el);
+                                    const data = copyAction(value.value as string[], el);
                                     data && copy(data);
                                 }}
                             />
@@ -220,29 +239,41 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                                         }
                                     }}
                                 />
-                                <ReactJson
-                                    name={false}
-                                    collapsed
-                                    theme="monokai"
-                                    collapseStringsAfterLength={12}
-                                    src={checkJson(el.showOriginHeader ? el.request.originHeaders : el.request.headers)}
-                                    onEdit={(value: InteractionProps) => {
-                                        if (el.showOriginHeader) return false;
-                                        changeHandel(el.id, value.updated_src, ['request', 'headers']);
-                                        return true;
-                                    }}
-                                    onAdd={(value: InteractionProps) => {
-                                        if (el.showOriginHeader) return false;
-                                        changeHandel(el.id, value.updated_src, ['request', 'headers']);
-                                        return true;
-                                    }}
-                                    onDelete={(value: InteractionProps) => {
-                                        if (el.showOriginHeader) return false;
-                                        changeHandel(el.id, value.updated_src, ['request', 'headers']);
-                                        return true;
-                                    }}
-                                    displayDataTypes={false}
-                                />
+                                <div id={`s-${index}-1-jsonInput-body`}>
+                                    <ReactJson
+                                        name={false}
+                                        collapsed
+                                        theme="monokai"
+                                        collapseStringsAfterLength={12}
+                                        src={checkJson(el.showOriginHeader ? el.request.originHeaders : el.request.headers)}
+                                        onEdit={(value: InteractionProps) => {
+                                            if (el.showOriginHeader) return false;
+                                            changeHandel(el.id, value.updated_src, ['request', 'headers']);
+                                            return true;
+                                        }}
+                                        onAdd={(value: InteractionProps) => {
+                                            if (el.showOriginHeader) return false;
+                                            changeHandel(el.id, value.updated_src, ['request', 'headers']);
+                                            return true;
+                                        }}
+                                        onDelete={(value: InteractionProps) => {
+                                            if (el.showOriginHeader) return false;
+                                            changeHandel(el.id, value.updated_src, ['request', 'headers']);
+                                            return true;
+                                        }}
+                                        displayDataTypes={false}
+                                    />
+                                    {!el.showOriginHeader && (
+                                        <textarea
+                                            rows={4}
+                                            cols={51}
+                                            value={el.request.headers}
+                                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                                                textAreaChange(el.id, e.currentTarget.value, ['request', 'headers']);
+                                            }}
+                                        />
+                                    )}
+                                </div>
                             </Panel>
                         </Collapse>
                         <Collapse>
@@ -260,29 +291,41 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                                         //    actionBarList[type]()
                                     }}
                                 />
-                                <ReactJson
-                                    name={false}
-                                    collapsed
-                                    theme="monokai"
-                                    collapseStringsAfterLength={12}
-                                    src={checkJson(el.showOriginData ? el.request.originData : el.request.data)}
-                                    onEdit={(value: InteractionProps) => {
-                                        if (el.showOriginData) return false;
-                                        changeHandel(el.id, value.updated_src, ['request', 'data']);
-                                        return true;
-                                    }}
-                                    onAdd={(value: InteractionProps) => {
-                                        if (el.showOriginData) return false;
-                                        changeHandel(el.id, value.updated_src, ['request', 'data']);
-                                        return true;
-                                    }}
-                                    onDelete={(value: InteractionProps) => {
-                                        if (el.showOriginData) return false;
-                                        changeHandel(el.id, value.updated_src, ['request', 'data']);
-                                        return true;
-                                    }}
-                                    displayDataTypes={false}
-                                />
+                                <div id={`s-${index}-2-jsonInput-body`}>
+                                    <ReactJson
+                                        name={false}
+                                        collapsed
+                                        theme="monokai"
+                                        collapseStringsAfterLength={12}
+                                        src={checkJson(el.showOriginData ? el.request.originData : el.request.data)}
+                                        onEdit={(value: InteractionProps) => {
+                                            if (el.showOriginData) return false;
+                                            changeHandel(el.id, value.updated_src, ['request', 'data']);
+                                            return true;
+                                        }}
+                                        onAdd={(value: InteractionProps) => {
+                                            if (el.showOriginData) return false;
+                                            changeHandel(el.id, value.updated_src, ['request', 'data']);
+                                            return true;
+                                        }}
+                                        onDelete={(value: InteractionProps) => {
+                                            if (el.showOriginData) return false;
+                                            changeHandel(el.id, value.updated_src, ['request', 'data']);
+                                            return true;
+                                        }}
+                                        displayDataTypes={false}
+                                    />
+                                    {!el.showOriginData && (
+                                        <textarea
+                                            rows={4}
+                                            cols={51}
+                                            value={el.request.data}
+                                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                                                textAreaChange(el.id, e.currentTarget.value, ['request', 'data']);
+                                            }}
+                                        />
+                                    )}
+                                </div>
                             </Panel>
                         </Collapse>
                         <Collapse>
@@ -299,29 +342,41 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                                         }
                                     }}
                                 />
-                                <ReactJson
-                                    name={false}
-                                    collapsed
-                                    theme="monokai"
-                                    collapseStringsAfterLength={12}
-                                    src={checkJson(el.showOriginResponse ? el.originResponse : el.response)}
-                                    onEdit={(value: InteractionProps) => {
-                                        if (el.showOriginResponse) return false;
-                                        changeHandel(el.id, value.updated_src, ['response']);
-                                        return true;
-                                    }}
-                                    onAdd={(value: InteractionProps) => {
-                                        if (el.showOriginResponse) return false;
-                                        changeHandel(el.id, value.updated_src, ['response']);
-                                        return true;
-                                    }}
-                                    onDelete={(value: InteractionProps) => {
-                                        if (el.showOriginResponse) return false;
-                                        changeHandel(el.id, value.updated_src, ['response']);
-                                        return true;
-                                    }}
-                                    displayDataTypes={false}
-                                />
+                                <div id={`s-${index}-3-jsonInput-body`}>
+                                    <ReactJson
+                                        name={false}
+                                        collapsed
+                                        theme="monokai"
+                                        collapseStringsAfterLength={12}
+                                        src={checkJson(el.showOriginResponse ? el.originResponse : el.response)}
+                                        onEdit={(value: InteractionProps) => {
+                                            if (el.showOriginResponse) return false;
+                                            changeHandel(el.id, value.updated_src, ['response']);
+                                            return true;
+                                        }}
+                                        onAdd={(value: InteractionProps) => {
+                                            if (el.showOriginResponse) return false;
+                                            changeHandel(el.id, value.updated_src, ['response']);
+                                            return true;
+                                        }}
+                                        onDelete={(value: InteractionProps) => {
+                                            if (el.showOriginResponse) return false;
+                                            changeHandel(el.id, value.updated_src, ['response']);
+                                            return true;
+                                        }}
+                                        displayDataTypes={false}
+                                    />
+                                    {!el.showOriginResponse && (
+                                        <textarea
+                                            rows={4}
+                                            cols={51}
+                                            value={el.response}
+                                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                                                textAreaChange(el.id, e.currentTarget.value, ['response']);
+                                            }}
+                                        />
+                                    )}
+                                </div>
                             </Panel>
                         </Collapse>
                     </Card>
@@ -331,7 +386,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                     <Empty
                         image={<IllustrationConstruction style={{ width: 150, height: 150 }} />}
                         darkModeImage={<IllustrationConstructionDark style={{ width: 150, height: 150 }} />}
-                        title={'哦豁，还没有任何数据'}
+                        title="哦豁，还没有任何数据"
                         description="打开右上角的设置，开启拦截开关试试！"
                     />
                 </div>

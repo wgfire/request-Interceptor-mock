@@ -13,6 +13,7 @@ export interface SideBarProps {
 }
 export const SideBar: React.FC<SideBarProps> = (props) => {
     const { visible, onCancel, config, onChange } = props;
+    // const data = [{ key: <span>https://www.baidu.com</span>, value: <Switch defaultChecked /> }];
     return (
         <div>
             <SideSheet
@@ -52,6 +53,23 @@ export const SideBar: React.FC<SideBarProps> = (props) => {
                         }}
                     />
                 </div>
+                {/* <div style={{ margin: '0px 6px' }}>
+                    <Title heading={6} style={{ margin: 8 }}>
+                        URL列表：
+                    </Title>
+                    <Descriptions
+                        data={data}
+                        row
+                        size="small"
+                        style={{
+                            boxShadow: 'var(--semi-shadow-elevated)',
+                            borderRadius: '4px',
+                            padding: '10px',
+                            marginRight: '20px',
+                            width: '450px',
+                        }}
+                    />
+                </div> */}
             </SideSheet>
         </div>
     );
