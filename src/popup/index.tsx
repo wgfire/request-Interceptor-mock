@@ -173,7 +173,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                         onClick={() => {
                             mockData.find((el) => {
                                 const data = JSON.parse(el.request.originData);
-                                if (el.switch === false && el.url.includes('myyscm.com') && data && data.token) {
+                                if (el.switch === false && el.url.includes('cgsupplier.developer.check-expire') && data && data.token) {
                                     copy(data.token);
                                     return true;
                                 }

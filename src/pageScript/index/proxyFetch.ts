@@ -76,29 +76,42 @@ const myFetch = function (...args) {
             return proxy;
         });
     } else {
-        return originFetch(...args).then((response) => {
+        return originFetch(...args).then(async (response) => {
             // 为了跟xhr保持使用统一将body从请求配置里分离开来
 
             const sendData = copyArgs[1]?.body;
             delete copyArgs[1]?.body;
             const originsendHeader = JSON.stringify({ ...copyArgs[1] }); // 包含请求头信息和请求body
             const cloneResponse = response.clone();
-            cloneResponse.json().then((data) => {
-                const sendItem = createMockItemForFetch({
-                    url: cloneResponse.url,
-                    data: sendData,
-                    originData: sendData,
-                    response: JSON.stringify(data instanceof Object ? data : {}),
-                    originResponse: JSON.stringify(data instanceof Object ? data : {}),
-                    headers: originsendHeader,
-                    originHeaders: originsendHeader,
+            let sendItem = {
+                url: cloneResponse.url,
+                data: sendData,
+                originData: sendData,
+                headers: originsendHeader,
+                originHeaders: originsendHeader,
+            };
+            //如果是404的话 cloneResponse.finally(data) 是undefined 所以还是根据状态来判断创建senditem
+            if (cloneResponse.status === 200) {
+                sendItem = await cloneResponse.json().then((data) => {
+                    sendItem = createMockItemForFetch({
+                        ...sendItem,
+                        response: JSON.stringify(data instanceof Object ? data : {}),
+                        originResponse: JSON.stringify(data instanceof Object ? data : {}),
+                    });
+                    return sendItem;
                 });
-                console.log('更新的item', sendItem);
-                window.postMessage({
-                    to: 'iframe',
-                    action: 'update',
-                    data: sendItem,
+            } else {
+                sendItem = createMockItemForFetch({
+                    ...sendItem,
+                    response: {},
+                    originResponse: {},
                 });
+            }
+            console.log('更新的item', sendItem);
+            window.postMessage({
+                to: 'iframe',
+                action: 'update',
+                data: sendItem,
             });
 
             return response;
