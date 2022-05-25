@@ -415,8 +415,13 @@ const filterMockData = (mockData: mockDataItem[], ruleInput: string): mockDataIt
     mockData.filter((el: mockDataItem) => {
         if (!ruleInput) return true;
         const testArray = [el.url, el.response, el.originResponse];
-        const reg = new RegExp(ruleInput, 'g');
-        return testArray.some((item) => reg.test(item));
+        try {
+            const reg = new RegExp(ruleInput, 'g');
+            return testArray.some((item) => reg.test(item));
+        } catch (error) {
+            console.log(error);
+            return false;
+        }
     });
 
 export default Popup;

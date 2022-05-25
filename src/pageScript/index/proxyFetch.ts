@@ -36,22 +36,27 @@ const myFetch = function (...args) {
         return originFetch(...args).then(async (response) => {
             const cloneResponse = response.clone();
             let originData = {};
-            // 这里要拿到response的原生返回的请求和响应数据,进行更新
+            let sendItem = {
+                ...item,
+                originData: copyArgs[1]?.body, // 更新原生请求数据
+            };
+            // 这里要拿到response的原生返回响应数据,进行更新
             if (cloneResponse.status === 200) {
                 originData = await cloneResponse.json().then((data) => {
                     console.log('原生响应数据', data);
-                    const sendItem = {
-                        ...item,
+                    sendItem = {
+                        ...sendItem,
                         originResponse: JSON.stringify(data),
                     };
-                    window.postMessage({
-                        to: 'iframe',
-                        action: 'update',
-                        data: sendItem,
-                    });
+
                     return JSON.stringify(data);
                 });
             }
+            window.postMessage({
+                to: 'iframe',
+                action: 'update',
+                data: sendItem,
+            });
 
             const responseData = item.showOriginResponse ? originData : item.response;
 

@@ -151,15 +151,19 @@ export const initXhr = (data: globalDataProps): ProxyXhr => {
                 console.log('监听链接', Date.now(), this.responseURL, this.readyState);
             },
             onload(event: any) {
-                console.log('插件监听-获取完成', event, this);
-                const item = createMockItem({ xhr: this });
-                console.log(item, '创建的item');
-                // 将popup界面改成iframe加载后 通信链路巨长
-                window.postMessage({
-                    to: 'content',
-                    action: 'update',
-                    data: item,
-                });
+                try {
+                    console.log('插件监听-获取完成', event, this);
+                    const item = createMockItem({ xhr: this });
+                    console.log(item, '创建的item');
+                    // 将popup界面改成iframe加载后 通信链路巨长
+                    window.postMessage({
+                        to: 'content',
+                        action: 'update',
+                        data: item,
+                    });
+                } catch (error) {
+                    console.log(error);
+                }
             },
             onerror(event: any) {
                 console.log('插件监听-错误', event);
