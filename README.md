@@ -1,3 +1,14 @@
+# 安装依赖
+
+```
+cnpm install
+
+cnpm run build
+```
+
+yarn 安装 会导致 ReactJson 组件报错
+pnpm 安装 会导致@douyinfe/semi-ui 安装不全
+
 # mT 插件功能列表：
 
 - 拦截所有的请求
