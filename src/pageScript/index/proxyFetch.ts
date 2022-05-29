@@ -69,12 +69,6 @@ const myFetch = function (...args) {
                 status: 200, // 此处必须设置为200，ok会变成true,不能直接设置ok的值 ,但是404的话 只要body不为空就可以 fetch只要不是网络错误就是调用then,后面就是promise的then
                 statusText: response.statusText,
             });
-            newResponse
-                .clone()
-                .json()
-                .then((data) => {
-                    console.log('模拟响应数据', data);
-                });
             // 对一些属性进行代理 部分属性newResponse，部分response
             const proxy = createProxy(newResponse, response);
 
@@ -83,7 +77,6 @@ const myFetch = function (...args) {
     } else {
         return originFetch(...args).then(async (response) => {
             // 为了跟xhr保持使用统一将body从请求配置里分离开来
-
             const sendData = copyArgs[1]?.body;
             delete copyArgs[1]?.body;
             const originsendHeader = JSON.stringify({ ...copyArgs[1] }); // 包含请求头信息和请求body

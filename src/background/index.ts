@@ -1,7 +1,6 @@
-import './webRequest';
-
 import { observerProxy } from '../utils/common';
 import { globalDataProps, mockDataItem } from '../utils/type';
+import { isNotifications } from './notifications';
 
 console.log('This is background page!');
 // 数据通过webRequest 存起来
@@ -33,7 +32,7 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
         });
         // 发送给content 消息，将popup里更新的好的数据通过content在传到pagescript里。
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id!, { action: 'setMock', to: 'content', data: arg });
+            chrome.tabs.sendMessage(tabs[0] ? tabs[0].id! : 0, { action: 'setMock', to: 'content', data: arg });
         });
     },
     clearMock: (fn: (arg: any) => void, arg: any) => {
@@ -48,11 +47,12 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
             chrome.tabs.sendMessage(tabs[0].id!, { action: 'toggle', to: 'content', data: '' });
         });
     },
-    update: (fn: (arg: any) => void, arg: any) => {
+    update: (fn: (arg: mockDataItem) => void, arg: any) => {
         // 将实时拦截的请求发送给popup
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            console.log('background更新mock数据到popup', arg);
-            chrome.tabs.sendMessage(tabs[0].id!, { action: 'update', to: 'popup', data: arg });
+            console.log('background更新mock数据到popup', arg, tabs);
+            isNotifications(arg);
+            chrome.tabs.sendMessage(tabs[0] ? tabs[0].id! : 0, { action: 'update', to: 'popup', data: arg });
         });
     },
 };

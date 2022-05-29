@@ -1,4 +1,5 @@
 import { injectCustomJs, postMockDataToScript, readStorageAll } from '../../utils/common';
+import { mockDataItem } from '../../utils/type';
 
 /** 2022年/二月/10日/星期四
 *@reviewType.Perf
@@ -10,7 +11,6 @@ import './style.scss';
 
 console.log(`Current page show`);
 
-let mockData: any;
 let show = false; // iframe是否展开的字段
 const iframe: HTMLIFrameElement = document.createElement('iframe');
 const actionMap: any = {
@@ -24,7 +24,7 @@ const actionMap: any = {
         const action = request.data.config.proxySwitch ? 'start' : 'cancel';
         postMockDataToScript(request.data, action);
     },
-    update: (data: any, sendResponse: () => void) => {
+    update: (data: mockDataItem, sendResponse: () => void) => {
         console.log('收到pagescript的update事件,转发给background到popup', data);
         chrome.runtime.sendMessage({ to: 'background', action: 'update', data });
     },
