@@ -3,7 +3,6 @@ import { IllustrationConstruction, IllustrationConstructionDark } from '@douyinf
 import { Card, Collapse, Empty, Input, Notification } from '@douyinfe/semi-ui';
 import React, { useEffect, useState } from 'react';
 import ReactJson, { InteractionProps } from 'react-json-view';
-
 import { debounce } from '../utils/common';
 import { copyAction, setObjectValue } from '../utils/popup';
 import type { globalConfig, mockDataItem } from '../utils/type';
@@ -34,7 +33,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     const [config, setConfig] = useState(configPopup);
     const [visible, setVisible] = useState(false);
     const [mockData, setMockData] = useState(mockDataPopup || []);
-    const [controlRefsh, setControlRefsh] = useState(true);
+    const [controlRefsh, setControlRefsh] = useState(true); // 列表数据由用户手动改变了才刷新
     const [ready, setReady] = useState(false);
     const [show, setShow] = useState(false); // 是否展开状态
     const [ruleInput, setRuleInput] = useState('https?://'); // 过滤规则
@@ -65,16 +64,15 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     };
     const textAreaChange = (id: string, value: string, key: string[]) => {
         console.log(value.toString());
+        let data: any; // 检查是否是合法的json
         try {
-            const data = JSON.parse(value); // 检查是否是合法的json
+            data = JSON.parse(value);
             findMockBuyUrl(id, (indexSwitch: number) => {
                 setMockDataProps(JSON.stringify(data), indexSwitch, key);
             });
         } catch {
-            Notification.error({
-                content: `JSON解析失败，请检查JSON格式`,
-                duration: 2,
-                position: 'top',
+            findMockBuyUrl(id, (indexSwitch: number) => {
+                setMockDataProps(JSON.stringify(data), indexSwitch, key);
             });
         }
     };

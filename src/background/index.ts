@@ -1,6 +1,6 @@
 import { observerProxy } from '../utils/common';
 import { globalDataProps, mockDataItem } from '../utils/type';
-import { isNotifications } from './notifications';
+import { isNotifications, resetMax } from './notifications';
 
 console.log('This is background page!');
 // 数据通过webRequest 存起来
@@ -54,6 +54,10 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
             isNotifications(arg);
             chrome.tabs.sendMessage(tabs[0] ? tabs[0].id! : 0, { action: 'update', to: 'popup', data: arg });
         });
+    },
+    onload: () => {
+        // 页面加载完成后，重置提醒次数
+        resetMax(1);
     },
 };
 const start = (data: any) => {

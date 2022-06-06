@@ -47,6 +47,7 @@ function createPopup() {
 
 function start() {
     const map = readStorageAll();
+    chrome.runtime.sendMessage({ to: 'background', action: 'onload' });
     map.then((res) => {
         console.log('读取本地数据', res);
         createPopup();
