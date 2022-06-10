@@ -1,19 +1,24 @@
 /* eslint-disable react/jsx-indent */
 import { SideSheet, Switch } from '@douyinfe/semi-ui';
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
-import React from 'react';
-
-import { globalConfig } from '../../../utils/type';
+import React, { useEffect, useState } from 'react';
+import { globalConfig, mockDataItem } from '../../../utils/type';
+import TableUrl, { TableDataInterFace } from '../TableUrl';
 
 export interface SideBarProps {
     visible: boolean;
     onCancel: (value: boolean) => void;
     config: globalConfig;
-    onChange: (value: globalConfig) => void;
+    onChangeConfig: (value: globalConfig) => void;
+    mockData: Array<mockDataItem>;
+    onchangeMockData: (value: Array<mockDataItem>) => void;
 }
 export const SideBar: React.FC<SideBarProps> = (props) => {
-    const { visible, onCancel, config, onChange } = props;
-    // const data = [{ key: <span>https://www.baidu.com</span>, value: <Switch defaultChecked /> }];
+    const { visible, onCancel, config, onChangeConfig: onChange, mockData, onchangeMockData } = props;
+    const [TableData, setTableData] = useState<Array<TableDataInterFace>>([]);
+    useEffect(() => {
+        setTableData(getTableData(mockData));
+    }, [mockData]);
     return (
         <div>
             <SideSheet
@@ -53,25 +58,64 @@ export const SideBar: React.FC<SideBarProps> = (props) => {
                         }}
                     />
                 </div>
-                {/* <div style={{ margin: '0px 6px' }}>
+                <div style={{ margin: '0px 6px' }}>
                     <Title heading={6} style={{ margin: 8 }}>
                         URL列表：
                     </Title>
-                    <Descriptions
-                        data={data}
-                        row
-                        size="small"
-                        style={{
-                            boxShadow: 'var(--semi-shadow-elevated)',
-                            borderRadius: '4px',
-                            padding: '10px',
-                            marginRight: '20px',
-                            width: '450px',
+                    <TableUrl
+                        dataSource={TableData}
+                        onChangeSwitch={(item, value) => {
+                            console.log(item, value);
+                            const itemIndex = TableData.findIndex((el) => el.url === item.url);
+                            TableData[itemIndex].switch = value;
+                            setTableData([...TableData]);
+                            onchangeMockData(setMockData(mockData, item));
                         }}
                     />
-                </div> */}
+                </div>
             </SideSheet>
         </div>
     );
+};
+const setMockData = (mockData: Array<mockDataItem>, item: TableDataInterFace): Array<mockDataItem> =>
+    mockData.map((el) => {
+        const domain = el.url.match(/^(https?:\/\/)\S+(\.cn|\.com|\.\w+)\//g)![0];
+        if (domain === item.url) {
+            return {
+                ...el,
+                switch: item.switch,
+            };
+        }
+        return el;
+    });
+const getTableData = function (data: Array<mockDataItem>): Array<TableDataInterFace> {
+    const temObj: { [key: string]: { number: number; switch: boolean } } = {} as { [key: string]: { number: number; switch: boolean } };
+    const temArr: Array<TableDataInterFace> = [];
+    data.forEach((el) => {
+        try {
+            const domain = el.url.match(/^(https?:\/\/)\S+(\.cn|\.com|\.\w+)\//g)![0];
+            if (temObj[domain]) {
+                temObj[domain].number += 1;
+            } else {
+                temObj[domain] = {
+                    number: 1,
+                    switch: true,
+                };
+            }
+        } catch (error) {
+            console.log(error, el, '错误');
+        }
+    });
+    Object.keys(temObj).forEach((keys) => {
+        const mockDataArray = data.filter((el) => el.url.match(/^(https?:\/\/)\S+(\.cn|\.com|\.\w+)\//g)![0] === keys);
+        const result = mockDataArray.some((el) => el.switch === true);
+        temObj[keys].switch = result;
+        temArr.push({
+            url: keys,
+            number: temObj[keys].number,
+            switch: result,
+        });
+    });
+    return temArr;
 };
 export default SideBar;

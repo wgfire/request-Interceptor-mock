@@ -59,9 +59,9 @@ export const createMockItem = ({ xhr }: { xhr: any }): mockDataItem => {
         },
         response: xhr.responseText,
         originResponse: xhr._xhr.responseText,
-        showOriginData: false,
+        showOriginData: true,
         showOriginResponse: false,
-        showOriginHeader: false,
+        showOriginHeader: true,
         id: createId({ url: xhr.responseURL, data: xhr.__originSendData }),
         type: 'X',
     };
@@ -92,9 +92,9 @@ export const createMockItemForFetch = ({
         },
         response,
         originResponse,
-        showOriginData: false,
+        showOriginData: true,
         showOriginResponse: false,
-        showOriginHeader: false,
+        showOriginHeader: true,
         id: createId({ url, data: originData }),
         type: 'F',
     };

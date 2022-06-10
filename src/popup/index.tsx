@@ -152,22 +152,27 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
             <SideBar
                 config={config}
                 visible={visible}
+                mockData={mockData}
                 onCancel={(value: boolean) => {
                     setVisible(value);
                 }}
-                onChange={(value: globalConfig) => {
+                onChangeConfig={(value: globalConfig) => {
+                    setControlRefsh(true);
                     setConfig(value);
+                }}
+                onchangeMockData={(mock: Array<mockDataItem>) => {
+                    setControlRefsh(true);
+                    setMockData(mock);
                 }}
             />
             <div className="title-box">
-                <h1 className="title">mT插件┗|｀O′|┛ 嗷~~</h1>
-
+                <h1 className="title">mT插件🤺</h1>
                 {
                     /**
                      * 右上角的按钮,个人团队定制需求，不需要的直接删掉就行
                      */
                     <CopyButton
-                        style={{ marginLeft: '100px' }}
+                        style={{ marginLeft: '200px' }}
                         onClick={() => {
                             mockData.find((el) => {
                                 const data = JSON.parse(el.request.originData);
@@ -192,7 +197,6 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
             </div>
             <Input
                 addonBefore="过滤URL"
-                addonAfter="支持正则"
                 onChange={(value: string) => {
                     ruleChangeHandel(value);
                 }}
