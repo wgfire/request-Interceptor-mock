@@ -4,7 +4,6 @@
 //                 ChenKS12138 <https://github.com/ChenKS12138>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.2
-
 declare namespace mockjs {
     type N = number;
     type S = string;

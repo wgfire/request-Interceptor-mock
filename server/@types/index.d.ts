@@ -6,6 +6,7 @@ type EventSourceEvent = Event & {
 declare interface Window {
     Mock: mockjs;
     mockData: any;
+    XMLHttpRequest: XMLHttpRequest;
 }
 declare module '*.svg';
 declare module '*.png';
