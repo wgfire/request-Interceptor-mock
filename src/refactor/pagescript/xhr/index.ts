@@ -4,21 +4,21 @@
 //  * 能够代理xhr的所有属性方法，并且拦截了on开头的属性
 //  */
 const proxProperty = {
-    onload: function (this: XMLHttpRequest, event: Event): void {
+    onload(this: XMLHttpRequest, event: Event): void {
         console.log(this, '加载完成');
     },
-    onreadystatechange: function (this: XMLHttpRequest, ev: Event) {
+    onreadystatechange(this: XMLHttpRequest, ev: Event) {
         console.log('监听链接', Date.now(), this.responseURL, this.readyState);
     },
 };
 
-const originXhr = window.XMLHttpRequest;
+const OriginXhr = window.XMLHttpRequest;
 class XMLHttpRequestSelf extends XMLHttpRequest {
-    readonly originXhr = new originXhr();
+    readonly originXhr = new OriginXhr();
     override status = 200;
     constructor() {
         super();
-        console.log(this, '用户的实例');
+        // console.log(this, '用户的实例');
         // this.writeProperty('onreadystatechange', proxProperty.onreadystatechange);
         // this.writeProperty('onload', proxProperty.onload);
         this.setProxy(proxProperty);
@@ -27,37 +27,63 @@ class XMLHttpRequestSelf extends XMLHttpRequest {
     //     console.log(this, '加载完成');
     // };
     writeProperty(key: keyof XMLHttpRequest, value: any) {
-        //@ts-ignore
+        // @ts-ignore
         this[key] = value;
     }
-    // open(method: string, url: string | URL): void {
-    //     console.log(this, '打开链接', url);
-    //     this.originXhr.open(method, url);
-    // }
-    // send(body?: Document | XMLHttpRequestBodyInit | null): void {
-    //     try {
-    //         this.originXhr.send(body);
-    //         console.log(body, '发送数据');
-    //     } catch (error) {
-    //         console.log(error, '发送失败');
-    //     }
-    // }
+    open(method: string, url: string | URL): void {
+        console.log(this, '打开链接', url);
+        this.open(method, url);
+    }
+    send(body?: Document | XMLHttpRequestBodyInit | null): void {
+        try {
+            this.send(body);
+            console.log(body, '发送数据');
+        } catch (error) {
+            console.log(error, '发送失败');
+        }
+    }
+    setRequestHeader(key: string, value: string): void {
+        console.log(this, 'setRequestHeader', key, value);
+        this.setRequestHeader(key, value);
+    }
+    getAllResponseHeaders(): string {
+        console.log(this, 'getAllResponseHeaders');
+        return this.getAllResponseHeaders();
+    }
+    onload: (this: XMLHttpRequest, ev: ProgressEvent<EventTarget>) => any = function () {
+        console.log(this, '加载完成');
+    };
+    onreadystatechange: (this: XMLHttpRequest, ev: Event) => any = function () {
+        console.log('监听链接', Date.now(), this.responseURL, this.readyState);
+    };
 
     setProxy(proxyMap: typeof proxProperty) {
         console.log(this, 'setProxy');
-        const proxy = new Proxy(originXhr, {
-            construct: (target) => {
-                console.log('开始代理', target);
+        const proxy = new Proxy(OriginXhr, {
+            construct: (T) => {
+                console.log('开始代理', T);
+                this.originXhr.addEventListener('load', this.onload.bind(this.originXhr));
+                this.originXhr.addEventListener('readystatechange', this.onreadystatechange.bind(this.originXhr));
                 return new Proxy(this.originXhr, {
                     get: (target: XMLHttpRequest, key: keyof XMLHttpRequest) => {
+                        const type = typeof target[key];
                         console.log(target, key, 'get');
+                        if (type === 'function' && this[key]) {
+                            return this[key].bind(this.originXhr);
+                        }
+                        if (type === 'function') {
+                            console.log(target, key, 'function');
+                            return target[key].bind(this.originXhr);
+                        }
+
                         return target[key];
                     },
                     set: (target: XMLHttpRequest, key: keyof XMLHttpRequest, value) => {
                         console.log(target, key, value, 'set');
+                        const targets = target;
                         try {
-                            //@ts-ignore
-                            target[key] = value;
+                            // @ts-ignore
+                            targets[key] = value;
                         } catch (error) {
                             console.log(error, key, value, 'set error');
                         }
@@ -71,10 +97,11 @@ class XMLHttpRequestSelf extends XMLHttpRequest {
     }
 }
 
-const initXhrs = function (): void {
-    //window.XMLHttpRequest = XMLHttpRequestSelf;
+const initXhrs = function (): XMLHttpRequestSelf {
+    // window.XMLHttpRequest = XMLHttpRequestSelf;
     // new MyXhr();
-    new XMLHttpRequestSelf();
+    const data = new XMLHttpRequestSelf();
+    return data;
 };
 
 export default initXhrs;
