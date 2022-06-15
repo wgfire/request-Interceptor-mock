@@ -202,3 +202,58 @@ export interface WtritableAttrs {
     OPENED: number;
     UNSENT: number;
 }
+
+class MyXhr extends XMLHttpRequest {
+    private readonly xhr = new XMLHttpRequest();
+
+    response = '';
+
+    responseText = '';
+
+    status = 0;
+
+    onload = null;
+
+    send = (body: any) => {
+        body = { ...body, a: 1 };
+        this.xhr.send(body);
+    };
+
+    onreadystatechange = null;
+
+    constructor() {
+        super();
+        this.proxyAttrs();
+    }
+
+    private proxyAttrs() {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const key in this.xhr) {
+            if (['responseText', 'response', 'status'].includes(key)) {
+                // 不做任何事情，这三个属性将在 MyXhr 中获取
+            } else if (key === 'onload') {
+                this.xhr.onload = (...args) => {
+                    // this.overrideResponse();
+                    this.onload?.(...args);
+                };
+            } else if (key === 'onreadystatechange') {
+                this.xhr.onreadystatechange = (...args) => {
+                    if (this.xhr.readyState === 4) {
+                        // this.overrideResponse();
+                    }
+                    this.onreadystatechange?.(...args);
+                };
+            } else {
+                Object.defineProperty(this, key, {
+                    get: () => {
+                        if (this.xhr[key] instanceof Function) {
+                            return this.xhr[key].bind(this.xhr);
+                        }
+                        return this.xhr[key];
+                    },
+                    set: (value) => (this.xhr[key] = value),
+                });
+            }
+        }
+    }
+}

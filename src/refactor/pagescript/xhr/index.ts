@@ -1,8 +1,8 @@
-/**
- * xhr代理类
- * @class XhrProxy
- * 能够代理xhr的所有属性方法，并且拦截了on开头的属性
- */
+// /**
+//  * xhr代理类
+//  * @class XhrProxy
+//  * 能够代理xhr的所有属性方法，并且拦截了on开头的属性
+//  */
 const proxProperty = {
     onload: function (this: XMLHttpRequest, event: Event): void {
         console.log(this, '加载完成');
@@ -10,105 +10,127 @@ const proxProperty = {
     onreadystatechange: function (this: XMLHttpRequest, ev: Event) {
         console.log('监听链接', Date.now(), this.responseURL, this.readyState);
     },
-    send(this: XMLHttpRequestSelf, body?: Document | XMLHttpRequestBodyInit | null): void {
-        this.originXhr.send.call(this.originXhr, body);
-    },
-    open(this: XMLHttpRequestSelf, method: string, url: string | URL): void {
-        console.log(Date.now(), '打开链接', url);
-        this.originXhr.open(method, url);
-    },
 };
+
 const originXhr = window.XMLHttpRequest;
 class XMLHttpRequestSelf extends XMLHttpRequest {
     readonly originXhr = new originXhr();
-    status = 200;
-    readonly DONE: number = 1;
-    OPENED: number = 1;
-
+    override status = 200;
     constructor() {
         super();
         console.log(this, '用户的实例');
-        this.setProxy();
-
-        this.writeProperty('onload', proxProperty.onload);
-
-        this.writeProperty('onreadystatechange', proxProperty.onreadystatechange);
-        this.writePropertys();
-        //  this.writeProperty('send', proxProperty.send.bind(this));
-        //this.writeProperty('open', proxProperty.open.bind(this));
-        // this.writeProperty();
+        // this.writeProperty('onreadystatechange', proxProperty.onreadystatechange);
+        // this.writeProperty('onload', proxProperty.onload);
+        this.setProxy(proxProperty);
     }
-
-    // onload: ((this: XMLHttpRequest, ev: ProgressEvent<EventTarget>) => any) | null = () => {
+    // onload: ((this: XMLHttpRequest, ev: ProgressEvent<EventTarget>) => any) | null = function () {
     //     console.log(this, '加载完成');
     // };
-
-    setProxy() {
-        new Proxy(this, {
-            get(target: XMLHttpRequestSelf, key: keyof XMLHttpRequestSelf) {
-                console.log('get-------------', key);
-                if (Object.keys(this).includes(key)) {
-                    return target[key];
-                }
-                return target.originXhr[key as keyof XMLHttpRequest];
-            },
-            set(target: XMLHttpRequestSelf, key: keyof XMLHttpRequest, value: any) {
-                console.log('set------------', key, value);
-                //@ts-ignore
-                return (target.originXhr[key as keyof XMLHttpRequest] = value); //无法分配到 "DONE" ，因为它是只读属性。
-            },
-        });
-    }
     writeProperty(key: keyof XMLHttpRequest, value: any) {
         //@ts-ignore
         this[key] = value;
     }
-    writePropertys() {
-        const proxyOn = ['open', 'send'];
-        for (let key in this) {
-            if (proxyOn.includes(key)) {
-                // this.writeProperty(key as keyof XMLHttpRequest, proxProperty[key as keyof typeof proxProperty]);
-                //@ts-ignore
-                this[key as keyof XMLHttpRequest] = proxProperty[key as keyof typeof proxProperty].bi;
-            }
-        }
+    // open(method: string, url: string | URL): void {
+    //     console.log(this, '打开链接', url);
+    //     this.originXhr.open(method, url);
+    // }
+    // send(body?: Document | XMLHttpRequestBodyInit | null): void {
+    //     try {
+    //         this.originXhr.send(body);
+    //         console.log(body, '发送数据');
+    //     } catch (error) {
+    //         console.log(error, '发送失败');
+    //     }
+    // }
+
+    setProxy(proxyMap: typeof proxProperty) {
+        console.log(this, 'setProxy');
+        const proxy = new Proxy(originXhr, {
+            construct: (target) => {
+                console.log('开始代理', target);
+                return new Proxy(this.originXhr, {
+                    get: (target: XMLHttpRequest, key: keyof XMLHttpRequest) => {
+                        console.log(target, key, 'get');
+                        return target[key];
+                    },
+                    set: (target: XMLHttpRequest, key: keyof XMLHttpRequest, value) => {
+                        console.log(target, key, value, 'set');
+                        try {
+                            //@ts-ignore
+                            target[key] = value;
+                        } catch (error) {
+                            console.log(error, key, value, 'set error');
+                        }
+                        return true;
+                    },
+                });
+            },
+        });
+
+        window.XMLHttpRequest = proxy;
     }
 }
 
 const initXhrs = function (): void {
-    // @ts-ignore 重新定义window下的xmlHttpRequest类型
-    // window.XMLHttpRequest = function (this: XMLHttpRequest): typeof window.XMLHttpRequest {
-    //     const proxyXhr = new Proxy(originXhr, {
-    //         get(target, key: string): any {
-    //             console.log(`get ${key}`);
-    //             return target[key];
-    //         },
-    //     });
-    //     console.log(this, 'xhr的实例');
-
-    //     // const xhrProxy = new Proxy(xhr, {
-    //     //     get(target, key: string) {
-    //     //         console.log(target, key, 'xhr代理');
-    //     //         if (key.indexOf('on') === 0) {
-    //     //             return function (...arg: any[]) {
-    //     //                 const eventName = key.slice(2);
-    //     //                 const event = new Event(eventName, { bubbles: true, cancelable: false }) as Events;
-    //     //                 //  event.detail = [...arg];
-    //     //                 event.data = arg;
-    //     //                 document.dispatchEvent(event);
-    //     //             };
-    //     //         }
-    //     //         return target;
-    //     //     },
-    //     //     set(target, p, value, receiver) {
-    //     //         console.log(target, p, value, receiver, 'xhr代理');
-    //     //         return Reflect.set(target, p, value, receiver);
-    //     //     },
-    //     // });
-    //     return proxyXhr;
-    // };
-
-    window.XMLHttpRequest = XMLHttpRequestSelf;
+    //window.XMLHttpRequest = XMLHttpRequestSelf;
+    // new MyXhr();
+    new XMLHttpRequestSelf();
 };
 
 export default initXhrs;
+
+// class MyXhr extends XMLHttpRequest {
+//     private readonly xhr = new XMLHttpRequest();
+
+//     response = '';
+
+//     responseText = '';
+
+//     status = 0;
+
+//     onload = null;
+
+//     onreadystatechange = null;
+
+//     constructor() {
+//         super();
+//         console.log(this, '实例');
+//         this.proxyAttrs();
+//     }
+
+//     private proxyAttrs() {
+//         // eslint-disable-next-line no-restricted-syntax
+//         for (const key in this.xhr) {
+//             if (['responseText', 'response', 'status'].includes(key)) {
+//                 // 不做任何事情，这三个属性将在 MyXhr 中获取
+//             } else if (key === 'onload') {
+//                 this.xhr.onload = (...args) => {
+//                     // this.overrideResponse();
+//                     this.onload?.(...args);
+//                 };
+//             } else if (key === 'onreadystatechange') {
+//                 this.xhr.onreadystatechange = (...args) => {
+//                     if (this.xhr.readyState === 4) {
+//                         // this.overrideResponse();
+//                     }
+//                     this.onreadystatechange?.(...args);
+//                 };
+//             } else {
+//                 Object.defineProperty(this, key, {
+//                     get: () => {
+//                         console.log(key, 'key');
+//                         if (key === 'send') {
+//                             console.log('get', key);
+//                             return this.send.bind(this.xhr);
+//                         }
+//                         if (this.xhr[key] instanceof Function) {
+//                             return this.xhr[key].bind(this.xhr);
+//                         }
+//                         return this.xhr[key];
+//                     },
+//                     set: (value) => (this.xhr[key] = value),
+//                 });
+//             }
+//         }
+//     }
+// }
