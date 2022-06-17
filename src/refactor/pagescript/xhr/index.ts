@@ -60,14 +60,14 @@ class XMLHttpRequestSelf extends XMLHttpRequest {
     onerror: (this: XMLHttpRequest, ev: Event) => any = function () {
         console.log(this, '加载失败');
     };
-    addEventListener(): void {
+    addEventListeners(): void {
         this.originXhr.addEventListener('load', this.onload.bind(this.originXhr));
         this.originXhr.addEventListener('readystatechange', this.onreadystatechange.bind(this.originXhr));
         this.originXhr.addEventListener('error', this.onerror.bind(this.originXhr));
     }
 
     setProxy(proxyMap: typeof proxProperty) {
-        console.log(this, 'setProxy', this.OriginXhr);
+        console.log(this, 'setProxy', this.originXhr);
 
         const proxy = new Proxy(this.OriginXhr, {
             construct: (T) => {
@@ -75,7 +75,7 @@ class XMLHttpRequestSelf extends XMLHttpRequest {
                 this.originXhr = new T();
                 console.log('开始代理', T);
                 // 添加监听事件到当前的this上
-                this.addEventListener();
+                this.addEventListeners();
                 return new Proxy(this.originXhr, {
                     get: (target: XMLHttpRequest, key: keyof XMLHttpRequest) => {
                         const type = typeof target[key];
