@@ -1,4 +1,4 @@
-import initXhrs from '../../refactor/pagescript/xhr/index';
+import initXhr from '../../refactor/pagescript/xhr/index';
 import type { globalDataProps } from '../../utils/type';
 import { cancelProxyFetch, proxyFetch } from './proxyFetch';
 import { cancelProxyXhr } from './proxyXhr';
@@ -16,8 +16,8 @@ window.addEventListener('message', (e) => {
 
 export const refreshMockAction = (globalData: globalDataProps) => {
     // 重新设置mock数据
-    //  initXhr(globalData);
-    initXhrs();
+    // initXhr(globalData);
+    initXhr();
     proxyFetch(globalData);
 };
 /**
