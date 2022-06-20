@@ -90,20 +90,21 @@ const myFetch = function (...args) {
             };
             //如果是404的话 cloneResponse.finally(data) 是undefined 所以还是根据状态来判断创建senditem
             if (cloneResponse.status === 200) {
-                sendItem = await cloneResponse.json().then((data) => {
-                    sendItem = createMockItemForFetch({
-                        ...sendItem,
-                        response: JSON.stringify(data instanceof Object ? data : {}),
-                        originResponse: JSON.stringify(data instanceof Object ? data : {}),
+                try {
+                    // cloneResponse.json()可能会失败
+                    sendItem = await cloneResponse.json().then((data) => {
+                        sendItem = createMockItemForFetch({
+                            ...sendItem,
+                            response: JSON.stringify(data instanceof Object ? data : {}),
+                            originResponse: JSON.stringify(data instanceof Object ? data : {}),
+                        });
+                        return sendItem;
                     });
-                    return sendItem;
-                });
+                } catch (error) {
+                    sendItem = createEmptyMOck(sendItem);
+                }
             } else {
-                sendItem = createMockItemForFetch({
-                    ...sendItem,
-                    response: {},
-                    originResponse: {},
-                });
+                sendItem = createEmptyMOck(sendItem);
             }
             console.log('更新的item', sendItem);
             window.postMessage({
@@ -129,4 +130,11 @@ export function cancelProxyFetch() {
     window.fetch = originFetch;
     change = false;
     console.log('取消了代理fetch');
+}
+export function createEmptyMOck(sendItem: object) {
+    return createMockItemForFetch({
+        ...sendItem,
+        response: {},
+        originResponse: {},
+    });
 }
