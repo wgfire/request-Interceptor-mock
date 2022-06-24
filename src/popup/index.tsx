@@ -203,9 +203,8 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                 value={ruleInput}
                 className="rule-input"
             />
-            {mockData.length > 0 ? (
+            {mockData.length > 0 && config.proxySwitch ? (
                 filterMockData(mockData, ruleInput).map((el, index) => (
-                    // @ts-ignore
                     <Card
                         shadows="hover"
                         key={el.id}
