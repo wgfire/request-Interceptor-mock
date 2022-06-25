@@ -17,7 +17,7 @@ window.addEventListener('message', (e) => {
 export const refreshMockAction = (globalData: globalDataProps) => {
     // 重新设置mock数据
     // initXhr(globalData);
-    initXhr();
+    initXhr(globalData);
     proxyFetch(globalData);
 };
 /**
