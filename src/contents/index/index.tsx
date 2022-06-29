@@ -28,6 +28,10 @@ const actionMap: any = {
         console.log('收到pagescript的update事件,转发给background到popup', data);
         chrome.runtime.sendMessage({ to: 'background', action: 'update', data });
     },
+    error: (data: { url: string }, sendResponse: () => void) => {
+        console.log('content接受到error');
+        chrome.runtime.sendMessage({ to: 'background', action: 'error', data });
+    },
 };
 
 function createPopup() {
@@ -70,8 +74,9 @@ window.addEventListener('message', (event) => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.to === 'content') {
-        console.log(request, sender, 'content收到消息');
         const name = request.action as string;
+        console.log(request, 'content收到消息', name);
+
         actionMap[name] && actionMap[name](request, sendResponse);
     }
 });

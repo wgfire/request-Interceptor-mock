@@ -63,6 +63,7 @@ export const createMockItem = ({ xhr }: { xhr: any }): mockDataItem => {
         showOriginResponse: false,
         showOriginHeader: true,
         id: createId({ url: xhr.responseURL, data: xhr.__originSendData }),
+        proxy: { switch: false, url: '' },
         type: 'X',
     };
     return obj;
@@ -96,6 +97,7 @@ export const createMockItemForFetch = ({
         showOriginResponse: false,
         showOriginHeader: true,
         id: createId({ url, data: originData }),
+        proxy: { switch: false, url: '' },
         type: 'F',
     };
     return obj;

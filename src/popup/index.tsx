@@ -8,8 +8,9 @@ import { copyAction, setObjectValue } from '../utils/popup';
 import type { globalConfig, mockDataItem } from '../utils/type';
 import { ActionPanel } from './components/ActionPanel';
 import { CopyButton } from './components/CopyButton';
-import { HeaderExtraContent } from './components/HeaderExtraContent';
-import { SideBar } from './components/sideBar/sideBar';
+import { DropDownParam, HeaderExtraContent } from './components/HeaderExtraContent';
+import { SingleSideSheet } from './components/SingleSideSheet';
+import { ConfigSideSheet } from './components/ConfigSideSheet';
 import { useCopy } from './hooks/useCopy';
 
 import './index.scss';
@@ -18,7 +19,7 @@ const Cardtitle: React.FC<{ url: string; type: string }> = (props: { url: string
     const { url, type } = props;
     return (
         <div style={{ marginRight: '10px' }}>
-            <Input value={url} addonBefore={`${type}-URL:`} />
+            <Input value={url} addonBefore={`${type}-URL:`} disabled />
         </div>
     );
 };
@@ -30,6 +31,8 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     const { mockDataPopup, configPopup } = props;
     const [config, setConfig] = useState(configPopup);
     const [visible, setVisible] = useState(false);
+    const [singleVisible, setSingVisible] = useState(false);
+    const [singMockData, setSingMockData] = useState<mockDataItem>({} as mockDataItem);
     const [mockData, setMockData] = useState(mockDataPopup || []);
     const [controlRefsh, setControlRefsh] = useState(true); // 列表数据由用户手动改变了才刷新
     const [ready, setReady] = useState(false);
@@ -77,9 +80,10 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     const refreshMockData = debounce(
         () => {
             // 将现有的数据重新发送个background，background也需要更新，然后在转发给content 在发到pagescript更新mock
+            console.log('setmock', Date.now());
             chrome.runtime.sendMessage({ action: 'setMock', to: 'background', data: { mockData, config } });
         },
-        1000,
+        2000,
         false,
     );
     const updateMockData = (item: mockDataItem) => {
@@ -115,6 +119,20 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
         chrome.runtime.sendMessage({ to: 'background', action: 'toggle' });
     };
 
+    const dropDownClick = (value: DropDownParam, el: mockDataItem) => {
+        const { type } = value;
+        // 超过三个判断可以用策略模式优化，目前不需要
+        if (type === 'copy') {
+            const data = copyAction(value.value as string[], el);
+            data && copy(data);
+        } else if (type === 'openSetItemModal') {
+            // 打开单个配置侧边栏
+            console.log('打开');
+            setSingVisible(true);
+            setSingMockData(el); // 设置当前配置数据为哪一条
+        }
+    };
+
     // 匹配规则保存到后台
     const ruleChangeHandel = (value: string) => {
         chrome.storage.local.set({ rule: value });
@@ -146,7 +164,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     }, [mockData, config]);
     return (
         <div className="popup-box scrollbar">
-            <SideBar
+            <ConfigSideSheet
                 config={config}
                 visible={visible}
                 mockData={mockData}
@@ -160,6 +178,21 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                 onchangeMockData={(mock: Array<mockDataItem>) => {
                     setControlRefsh(true);
                     setMockData(mock);
+                }}
+            />
+            <SingleSideSheet
+                visible={singleVisible}
+                item={singMockData}
+                itemChange={(item) => {
+                    setControlRefsh(true);
+                    findMockBuyUrl(item.id, (indexSwitch: number) => {
+                        const mock = [...mockData];
+                        mock[indexSwitch] = item;
+                        setMockData(mock);
+                    });
+                }}
+                onCancel={(value: boolean) => {
+                    setSingVisible(value);
                 }}
             />
             <div className="title-box">
@@ -216,9 +249,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                                     });
                                 }}
                                 dropdownClick={(value) => {
-                                    console.log(value);
-                                    const data = copyAction(value.value as string[], el);
-                                    data && copy(data);
+                                    dropDownClick(value, el);
                                 }}
                             />
                         }
@@ -248,17 +279,6 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
             )}
         </div>
     );
-};
-const checkJson = (json: any) => {
-    try {
-        if (!json) return {};
-        // 用户404 或者报错 会返回html文档导致解析失败
-        if (typeof json === 'string' && /^{.+}$/.test(json)) return JSON.parse(json);
-        if (json instanceof Object) json;
-        return {};
-    } catch {
-        return {};
-    }
 };
 /**
  * @description

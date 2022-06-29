@@ -10,11 +10,22 @@ chrome.storage.local.get('mockData', (res) => {
     const { mockData } = res;
     start(Array.isArray(mockData) ? mockData : []);
 });
-const mockDataChange = (target: any) => {
-    // 当在popup改变mockdata时 触发改变
-    // 此时将数据重新发给pageScript 执行新的拦截逻辑
-    console.log(target, '属性被改变');
-    //    sendMessageToContent(target);  // 在background里对content发送消息，有时候会发送失败
+const proxyNotifications = (item: mockDataItem) => {
+    const domain = item.url.match(/^(https?:\/\/)\S+(\.cn|\.com)/g);
+    const url = item.url.match(/(?<=^(https?:\/\/)\S+(\.cn|\.com))\S+/g);
+    isNotifications({
+        title: `提醒:${domain ? domain[0] : ''}`,
+        url: item.url,
+        message: `${url ? url[0] : ''}-已被拦截代理`,
+    });
+};
+const errorNotifications = (item: { url: string }) => {
+    const domain = item.url.match(/^(https?:\/\/)\S+(\.cn|\.com)/g);
+    isNotifications({
+        title: `提醒:${domain ? domain[0] : ''}`,
+        url: item.url,
+        message: `当前地址请求失败`,
+    });
 };
 
 const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } = {
@@ -51,19 +62,25 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
         // 将实时拦截的请求发送给popup
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             console.log('background更新mock数据到popup', arg, tabs);
-            isNotifications(arg);
+            if (arg.switch) {
+                proxyNotifications(arg);
+            }
             chrome.tabs.sendMessage(tabs[0] ? tabs[0].id! : 0, { action: 'update', to: 'popup', data: arg });
         });
     },
+    error: (fn: (arg: mockDataItem) => void, arg: { url: string }) => {
+        // 将实时拦截的请求发送给popup
+        errorNotifications(arg);
+    },
+
     onload: () => {
-        // 页面加载完成后，重置提醒次数
+        // 页面加载完成后，重置提醒次数,代理是弹出一次
         resetMax(1);
     },
 };
 const start = (data: any) => {
     console.log(data);
     window.mockData = data.length > 0 ? data : [];
-    window.mockData = observerProxy(window.mockData, mockDataChange);
     chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
         if (request.to === 'background') {
             console.log('后台收到来自content-script的消息：', request);

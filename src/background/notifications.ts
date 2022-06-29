@@ -4,7 +4,8 @@ console.log('notifications.ts', Max);
 class NotificationsEvent {
     options = {
         url: '',
-        max: 5, // 最大的提醒数量
+        title: '',
+        message: '',
     };
     static instance: NotificationsEvent;
     permission = '';
@@ -43,10 +44,10 @@ class NotificationsEvent {
                 `${Math.random()}`,
                 {
                     type: 'basic',
-                    title: `提醒:${domain ? domain[0] : ''}`,
+                    title: options.title || `提醒:${domain ? domain[0] : ''}`,
                     iconUrl: '../icons/extension-icon-x32.png',
-                    message: `${url ? url[0] : ''}-已被拦截代理`,
-                    contextMessage: 'mt插件启动',
+                    message: options.message || `${url ? url[0] : ''}-已被拦截代理`,
+                    contextMessage: 'mt插件',
                 },
                 (id) => {
                     Max -= Max;
@@ -57,16 +58,14 @@ class NotificationsEvent {
 }
 
 export default NotificationsEvent;
-
+export type TypeNotification = 'Intercept' | 'error';
 /**
  * 检查当前item是否是开启拦截
  * @param item mockDataItem
  */
-export const isNotifications = (item: mockDataItem): void => {
-    if (item.switch) {
-        const notification = NotificationsEvent.getInstance();
-        notification.init({ url: item.url });
-    }
+export const isNotifications = (options: NotificationsEvent['options']): void => {
+    const notification = NotificationsEvent.getInstance();
+    notification.init(options);
 };
 
 export const resetMax = (max = 1): void => {

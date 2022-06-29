@@ -4,17 +4,18 @@
  1.Card组件右侧操作栏
  */
 
-import { IconCopy } from '@douyinfe/semi-icons';
+import { IconCopy, IconSetting } from '@douyinfe/semi-icons';
 import { Button, Dropdown, Switch } from '@douyinfe/semi-ui';
 import { DropDownMenuItem } from '@douyinfe/semi-ui/lib/es/dropdown';
 import React from 'react';
 
 import './index.scss';
 
+export type DropDownParam = { type: 'copy' | 'openSetItemModal'; value: string[] | string };
 export interface HeaderExtraContentProps {
     switchCheck: boolean;
     switchChange: (checked: boolean) => void;
-    dropdownClick: (value: { type: string; value: string[] | string }) => void;
+    dropdownClick: (value: DropDownParam) => void;
 }
 export const HeaderExtraContent: React.FC<HeaderExtraContentProps> = (props: HeaderExtraContentProps) => {
     const { switchCheck, switchChange, dropdownClick } = props;
@@ -26,12 +27,18 @@ export const HeaderExtraContent: React.FC<HeaderExtraContentProps> = (props: Hea
             icon: <IconCopy />,
             onClick: () => dropdownClick({ type: 'copy', value: ['header', 'data', 'response'] }),
         },
+        {
+            node: 'item',
+            name: '请求配置',
+            icon: <IconSetting />,
+            onClick: () => dropdownClick({ type: 'openSetItemModal', value: '' }),
+        },
     ];
     return (
         <div className="HeaderExtraContent">
             <Switch checked={switchCheck} size="small" onChange={switchChange} />
             <Dropdown menu={menu} trigger="hover" position="bottomRight">
-                <Button type="primary" icon={<IconCopy />} size="small" theme="light" style={{ color: '#00b3a1' }} />
+                <Button type="primary" icon={<IconSetting />} size="small" theme="light" style={{ color: '#00b3a1' }} />
             </Dropdown>
         </div>
     );

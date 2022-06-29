@@ -25,7 +25,7 @@
     background-size: 100% 100%;
     & .card-box {
         margin: 10px 0px;
-        background: rgba(242 242 242 / 77%);
+        background: rgba(255 255 255 / 58%);
         box-shadow: rgba(0, 0, 0, 0.12) 0px 0px 15px 2px !important;
     }
     & .show-icon {
@@ -46,7 +46,7 @@
 }
 .rule-input {
     background: white;
-    box-shadow: rgba(0, 0, 0, 0.12) 0px 0px 15px 2px !important;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 0px 10px 2px !important;
     & .semi-input-default {
         background: white !important;
     }

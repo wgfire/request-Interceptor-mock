@@ -13,12 +13,13 @@ export interface SideBarProps {
     mockData: Array<mockDataItem>;
     onchangeMockData: (value: Array<mockDataItem>) => void;
 }
-export const SideBar: React.FC<SideBarProps> = (props) => {
+export const ConfigSideSheet: React.FC<SideBarProps> = (props) => {
     const { visible, onCancel, config, onChangeConfig: onChange, mockData, onchangeMockData } = props;
     const [TableData, setTableData] = useState<Array<TableDataInterFace>>([]);
     useEffect(() => {
         setTableData(getTableData(mockData));
     }, [mockData]);
+
     return (
         <div>
             <SideSheet
@@ -107,15 +108,25 @@ const getTableData = function (data: Array<mockDataItem>): Array<TableDataInterF
         }
     });
     Object.keys(temObj).forEach((keys) => {
-        const mockDataArray = data.filter((el) => el.url.match(/^(https?:\/\/)\S+(\.cn|\.com|\.\w+)\//g)![0] === keys);
-        const result = mockDataArray.some((el) => el.switch === true);
-        temObj[keys].switch = result;
-        temArr.push({
-            url: keys,
-            number: temObj[keys].number,
-            switch: result,
-        });
+        try {
+            const mockDataArray = data.filter((el) => {
+                const result = el.url.match(/^(https?:\/\/)\S+(\.cn|\.com|\.\w+)\//g);
+                if (result) {
+                    return result[0] === keys;
+                }
+                return false;
+            });
+            const result = mockDataArray.some((el) => el.switch === true);
+            temObj[keys].switch = result;
+            temArr.push({
+                url: keys,
+                number: temObj[keys].number,
+                switch: result,
+            });
+        } catch (error) {
+            console.log(error);
+        }
     });
     return temArr;
 };
-export default SideBar;
+export default ConfigSideSheet;

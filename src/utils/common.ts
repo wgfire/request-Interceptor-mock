@@ -45,12 +45,15 @@ export function observerProxy(obj: Record<string, unknown>, onchange: (target: a
  */
 export function debounce(func: (...arg: any[]) => void, wait: number, immediate: boolean): (...arg: any[]) => void {
     let timeout: number | undefined;
-    return (...args: []) => {
+    return (...args: []): boolean => {
         // @ts-ignore
         // eslint-disable-next-line unicorn/no-this-assignment
         const context: any = this;
         // const args = [...arguments];
-        if (timeout) clearTimeout(timeout);
+        if (timeout) {
+            clearTimeout(timeout);
+            timeout = 100;
+        }
         if (immediate) {
             const callNow = !timeout;
             timeout = setTimeout(() => {
@@ -60,8 +63,10 @@ export function debounce(func: (...arg: any[]) => void, wait: number, immediate:
         } else {
             timeout = setTimeout(() => {
                 func.apply(context, args);
+                timeout = undefined;
             }, wait);
         }
+        return true;
     };
 }
 

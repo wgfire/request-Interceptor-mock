@@ -36,5 +36,10 @@ export interface mockDataItem {
     showOriginHeader?: boolean; // fetch 的请求body跟xhr不一样，可以在一个请求配置里获取到
     id: string; // 根据url和请求body生成唯一id
     type: string; // 代理的类型
+    proxy: {
+        // 代理地址信息
+        switch: boolean;
+        url: string;
+    };
     [key: string]: any;
 }
