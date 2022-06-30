@@ -23,10 +23,11 @@ class NotificationsEvent {
     init(options: any): void {
         this.options = { ...this.options, ...options };
         console.log(this.options, '创建提醒', Notification.permission);
-        if (this.permission !== 'granted') {
+        if (Notification.permission !== 'granted') {
+            // 询问用户如果同意就执行提醒
             Notification.requestPermission((permission) => {
-                console.log(permission, '权限');
                 this.permission = permission;
+                console.log(permission, '权限');
                 this.createNotification();
             });
         } else {

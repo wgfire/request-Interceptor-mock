@@ -7,7 +7,7 @@ export function injectCustomJs(jsPath = 'lib/mock.js'): Promise<any> {
         const temp = document.createElement('script');
         temp.setAttribute('type', 'text/javascript');
         // 获得的地址类似：chrome-extension://ihcokhadfjfchaeagdoclpnjdiokfakg/js/inject.js
-        temp.src = chrome.extension.getURL(jsPath);
+        temp.src = chrome.runtime.getURL(jsPath);
         document.documentElement.append(temp);
 
         temp.addEventListener('load', () => {

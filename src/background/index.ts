@@ -1,10 +1,9 @@
-import { observerProxy } from '../utils/common';
 import { globalDataProps, mockDataItem } from '../utils/type';
 import { isNotifications, resetMax } from './notifications';
 
 console.log('This is background page!');
 // 数据通过webRequest 存起来
-
+let mockData: mockDataItem[];
 chrome.storage.local.get('mockData', (res) => {
     console.log(res, '读取的本地数据');
     const { mockData } = res;
@@ -30,8 +29,8 @@ const errorNotifications = (item: { url: string }) => {
 
 const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } = {
     getMock: (fn: (arg: any) => void) => {
-        console.log('收到来自content-script的消息：发送mock数据', window.mockData);
-        fn(window.mockData);
+        console.log('收到来自content-script的消息：发送mock数据', mockData);
+        fn(mockData);
     },
     setMock: (fn: (arg: globalDataProps) => void, arg: globalDataProps) => {
         const mockData = arg.mockData.filter((el: mockDataItem) => el.switch === true);
@@ -86,11 +85,15 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
 };
 const start = (data: any) => {
     console.log(data);
-    window.mockData = data.length > 0 ? data : [];
+    mockData = data.length > 0 ? data : [];
     chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
         if (request.to === 'background') {
             console.log('后台收到来自content-script的消息：', request);
-            actionMap[request.action](sendResponse, request.data);
+            try {
+                actionMap[request.action](sendResponse, request.data);
+            } catch (error) {
+                console.log(request, '未找到执行函数');
+            }
         }
     });
 };
