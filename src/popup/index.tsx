@@ -1,4 +1,4 @@
-import { IconDoubleChevronLeft, IconDoubleChevronRight, IconSetting } from '@douyinfe/semi-icons';
+import { IconDoubleChevronLeft, IconDoubleChevronRight, IconSetting, IconRefresh } from '@douyinfe/semi-icons';
 import { IllustrationConstruction, IllustrationConstructionDark } from '@douyinfe/semi-illustrations';
 import { Card, Empty, Input, Notification } from '@douyinfe/semi-ui';
 import React, { useEffect, useState } from 'react';
@@ -84,7 +84,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
             chrome.runtime.sendMessage({ action: 'setMock', to: 'background', data: { mockData, config } });
         },
         2000,
-        false,
+        true,
     );
     const updateMockData = (item: mockDataItem) => {
         // 更新界面上的mockData数量
@@ -197,12 +197,13 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
             />
             <div className="title-box">
                 <h1 className="title">mT插件🤺</h1>
+
                 {
                     /**
                      * 右上角的按钮,个人团队定制需求，不需要的直接删掉就行
                      */
                     <CopyButton
-                        style={{ marginLeft: '200px' }}
+                        style={{ marginLeft: '170px' }}
                         onClick={() => {
                             mockData.find((el) => {
                                 const data = JSON.parse(el.request.originData);
@@ -215,6 +216,13 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                         }}
                     />
                 }
+                <IconRefresh
+                    style={{ margin: '0px 16px', cursor: 'pointer' }}
+                    title="重新加载"
+                    onClick={() => {
+                        chrome.runtime.sendMessage({ to: 'background', action: 'reload' });
+                    }}
+                />
                 <IconSetting
                     style={{ cursor: 'pointer' }}
                     onClick={() => {

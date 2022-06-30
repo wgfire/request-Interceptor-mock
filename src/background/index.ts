@@ -69,13 +69,19 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
         });
     },
     error: (fn: (arg: mockDataItem) => void, arg: { url: string }) => {
-        // 将实时拦截的请求发送给popup
+        // 请求失败进行提醒
         errorNotifications(arg);
     },
 
     onload: () => {
         // 页面加载完成后，重置提醒次数,代理是弹出一次
         resetMax(1);
+    },
+    reload: () => {
+        // 重新加载界面
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            chrome.tabs.sendMessage(tabs[0].id!, { action: 'reload', to: 'content', data: null });
+        });
     },
 };
 const start = (data: any) => {

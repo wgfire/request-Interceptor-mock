@@ -27,7 +27,7 @@ const myFetch = function (...args) {
         const sendbody = item.showOriginData ? copyArgs[1]?.body : item.request.data;
         // 判断请求头数据是用原生请求头数据还是模拟请求头数据
         const sendHeader = JSON.parse(item.showOriginHeader ? item.request.originHeaders : item.request.headers);
-        args[0] = (item.proxy.switch && item.proxy.url) ?? item.url; //改变请求地址
+        args[0] = item.proxy.switch && item.proxy.url ? item.proxy.url : item.url; //改变请求地址
         args[1] = {
             ...sendHeader,
             body: sendbody,

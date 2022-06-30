@@ -23,10 +23,14 @@ export const SingleSideSheet = (props: SingleSideSheetProps) => {
     const { onCancel, visible, item, itemChange } = props;
     const [data, setData] = useState<mockDataItem>(item);
     const [url, setUrl] = useState('');
+    const [check, setChecked] = useState(false);
+
     useUpdateEffect(() => {
         setData(item);
-        setUrl(item.proxy.url);
+        // setUrl(item.proxy.url);
+        // setChecked(item.proxy.switch);
     }, [item]);
+
     const setSuffix = (value: string): React.ReactElement => (
         <div style={{ width: '72px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             格式：{reg.test(value) ? <IconTick /> : <IconClose />}
@@ -47,21 +51,19 @@ export const SingleSideSheet = (props: SingleSideSheetProps) => {
                     <Input
                         addonBefore="代理地址"
                         onChange={(value: string) => {
-                            setUrl(value);
-
-                            if (reg.test(value)) {
-                                data.proxy.url = value;
-                                itemChange(data);
-                            }
+                            data.proxy.url = value;
+                            data.proxy.switch = reg.test(value);
+                            itemChange(data);
                         }}
-                        value={url}
-                        suffix={setSuffix(url)}
+                        value={data.proxy.url}
+                        suffix={setSuffix(data.proxy.url)}
                         showClear
                         style={{ width: '80%' }}
                     />
                     <Switch
-                        defaultChecked={data.proxy.switch}
+                        checked={data.proxy.switch}
                         onChange={(checked) => {
+                            // setChecked(checked);
                             data.proxy.switch = checked;
                             itemChange(data);
                         }}

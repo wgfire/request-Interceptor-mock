@@ -14,23 +14,27 @@ console.log(`Current page show`);
 let show = false; // iframe是否展开的字段
 const iframe: HTMLIFrameElement = document.createElement('iframe');
 const actionMap: any = {
-    toggle: (request: any, sendResponse: () => void) => {
+    toggle: (request: any) => {
         console.log('收到popup的toggle事件');
         show = !show;
         iframe?.style.setProperty('transform', show ? 'translateX(0px)' : 'translateX(480px)', 'important');
     },
-    setMock: (request: any, sendResponse: () => void) => {
+    setMock: (request: any) => {
         console.log('收到popup的setMock事件,转发给pagescript');
         const action = request.data.config.proxySwitch ? 'start' : 'cancel';
         postMockDataToScript(request.data, action);
     },
-    update: (data: mockDataItem, sendResponse: () => void) => {
+    update: (data: mockDataItem) => {
         console.log('收到pagescript的update事件,转发给background到popup', data);
         chrome.runtime.sendMessage({ to: 'background', action: 'update', data });
     },
-    error: (data: { url: string }, sendResponse: () => void) => {
+    error: (data: { url: string }) => {
         console.log('content接受到error');
         chrome.runtime.sendMessage({ to: 'background', action: 'error', data });
+    },
+    reload: (data: any) => {
+        console.log('content接受到reload');
+        window.top?.location.reload();
     },
 };
 
@@ -72,11 +76,10 @@ window.addEventListener('message', (event) => {
     }
 });
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request) => {
     if (request.to === 'content') {
         const name = request.action as string;
         console.log(request, 'content收到消息', name);
-
-        actionMap[name] && actionMap[name](request, sendResponse);
+        actionMap[name] && actionMap[name](request);
     }
 });
