@@ -90,7 +90,7 @@ const setMockData = (mockData: Array<mockDataItem>, item: TableDataInterFace): A
         return el;
     });
 const getTableData = function (data: Array<mockDataItem>): Array<TableDataInterFace> {
-    const temObj: { [key: string]: { number: number; switch: boolean } } = {} as { [key: string]: { number: number; switch: boolean } };
+    const temObj = {} as { [key: string]: { number: number; switch: boolean } };
     const temArr: Array<TableDataInterFace> = [];
     data.forEach((el) => {
         try {
@@ -107,6 +107,7 @@ const getTableData = function (data: Array<mockDataItem>): Array<TableDataInterF
             console.log(error, el, '错误');
         }
     });
+    /** 找到当前switch 是开启还是关闭，只要有一个开启就是开启状态 */
     Object.keys(temObj).forEach((keys) => {
         try {
             const mockDataArray = data.filter((el) => {

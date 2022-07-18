@@ -1,19 +1,19 @@
 import { IconDoubleChevronLeft, IconDoubleChevronRight, IconSetting, IconRefresh } from '@douyinfe/semi-icons';
 import { IllustrationConstruction, IllustrationConstructionDark } from '@douyinfe/semi-illustrations';
-import { Card, Empty, Input, Notification } from '@douyinfe/semi-ui';
+import { Card, Empty, Input, Notification, Tabs, TabPane } from '@douyinfe/semi-ui';
 import React, { useEffect, useState } from 'react';
 
 import { debounce } from '../utils/common';
 import { copyAction, setObjectValue } from '../utils/popup';
 import type { globalConfig, mockDataItem } from '../utils/type';
 import { ActionPanel } from './components/ActionPanel';
-import { CopyButton } from './components/CopyButton';
 import { DropDownParam, HeaderExtraContent } from './components/HeaderExtraContent';
 import { SingleSideSheet } from './components/SingleSideSheet';
 import { ConfigSideSheet } from './components/ConfigSideSheet';
 import { useCopy } from './hooks/useCopy';
 
 import './index.scss';
+import { getUrlNumberData } from './parse';
 
 const Cardtitle: React.FC<{ url: string; type: string }> = (props: { url: string; type: string }) => {
     const { url, type } = props;
@@ -32,7 +32,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     const [config, setConfig] = useState(configPopup);
     const [visible, setVisible] = useState(false);
     const [singleVisible, setSingVisible] = useState(false);
-    const [singMockData, setSingMockData] = useState<mockDataItem>({} as mockDataItem);
+    const [singMockData, setSingMockData] = useState<mockDataItem>({} as mockDataItem); // 点击单条配置所保存的item
     const [mockData, setMockData] = useState(mockDataPopup || []);
     const [controlRefsh, setControlRefsh] = useState(true); // 列表数据由用户手动改变了才刷新
     const [ready, setReady] = useState(false);
@@ -197,38 +197,21 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
             />
             <div className="title-box">
                 <h1 className="title">mT插件🤺</h1>
-
-                {
-                    /**
-                     * 右上角的按钮,个人团队定制需求，不需要的直接删掉就行
-                     */
-                    <CopyButton
-                        style={{ marginLeft: '170px' }}
+                <div>
+                    <IconRefresh
+                        style={{ margin: '0px 16px', cursor: 'pointer' }}
+                        title="重新加载"
                         onClick={() => {
-                            mockData.find((el) => {
-                                const data = JSON.parse(el.request.originData);
-                                if (el.switch === false && el.url.includes('cgsupplier.developer.check-expire') && data && data.token) {
-                                    copy(data.token);
-                                    return true;
-                                }
-                                return false;
-                            });
+                            chrome.runtime.sendMessage({ to: 'background', action: 'reload' });
                         }}
                     />
-                }
-                <IconRefresh
-                    style={{ margin: '0px 16px', cursor: 'pointer' }}
-                    title="重新加载"
-                    onClick={() => {
-                        chrome.runtime.sendMessage({ to: 'background', action: 'reload' });
-                    }}
-                />
-                <IconSetting
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => {
-                        setVisible(true);
-                    }}
-                />
+                    <IconSetting
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => {
+                            setVisible(true);
+                        }}
+                    />
+                </div>
             </div>
             <div onClick={showClickHandel} className="show-icon">
                 {show ? <IconDoubleChevronRight /> : <IconDoubleChevronLeft />}
@@ -241,40 +224,47 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                 value={ruleInput}
                 className="rule-input"
             />
+
             {mockData.length > 0 && config.proxySwitch ? (
-                filterMockData(mockData, ruleInput).map((el, index) => (
-                    <Card
-                        shadows="hover"
-                        key={el.id}
-                        className="card-box"
-                        title={<Cardtitle url={el.url} type={el.type} />}
-                        headerExtraContent={
-                            <HeaderExtraContent
-                                switchCheck={el.switch}
-                                switchChange={(value) => {
-                                    findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                        setMockDataProps(value, indexSwitch, ['switch']);
-                                    });
-                                }}
-                                dropdownClick={(value) => {
-                                    dropDownClick(value, el);
-                                }}
-                            />
-                        }
-                    >
-                        <ActionPanel
-                            valueChange={(id, value, key) => {
-                                findMockBuyUrl(id, (indexSwitch: number) => {
-                                    setMockDataProps(value, indexSwitch, [key]);
-                                });
-                            }}
-                            textAreaChange={textAreaChange}
-                            changeHandel={changeHandel}
-                            data={el}
-                            index={index}
-                        />
-                    </Card>
-                ))
+                <Tabs type="card" collapsible style={{ marginTop: '10px' }}>
+                    {getUrlNumberData(mockData).map((item) => (
+                        <TabPane tab={item.url} itemKey={item.url} key={item.id} className="scrollbar">
+                            {filterMockData(item.data, ruleInput).map((el, index) => (
+                                <Card
+                                    shadows="hover"
+                                    key={el.id}
+                                    className="card-box"
+                                    title={<Cardtitle url={el.url} type={el.type} />}
+                                    headerExtraContent={
+                                        <HeaderExtraContent
+                                            switchCheck={el.switch}
+                                            switchChange={(value) => {
+                                                findMockBuyUrl(el.id, (indexSwitch: number) => {
+                                                    setMockDataProps(value, indexSwitch, ['switch']);
+                                                });
+                                            }}
+                                            dropdownClick={(value) => {
+                                                dropDownClick(value, el);
+                                            }}
+                                        />
+                                    }
+                                >
+                                    <ActionPanel
+                                        valueChange={(id, value, key) => {
+                                            findMockBuyUrl(id, (indexSwitch: number) => {
+                                                setMockDataProps(value, indexSwitch, [key]);
+                                            });
+                                        }}
+                                        textAreaChange={textAreaChange}
+                                        changeHandel={changeHandel}
+                                        data={el}
+                                        index={index}
+                                    />
+                                </Card>
+                            ))}
+                        </TabPane>
+                    ))}
+                </Tabs>
             ) : (
                 <div className="empty-wrapper">
                     <Empty
