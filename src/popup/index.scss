@@ -55,6 +55,13 @@
     position: relative;
     top: 20%;
 }
+.semi-tabs-pane {
+    height: 90vh;
+    overflow: auto;
+}
+.semi-tabs-bar {
+    margin: 10px 0px;
+}
 
 .semi-input-wrapper {
     border: 1px solid #d9d9d9;

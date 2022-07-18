@@ -1,19 +1,19 @@
-import { IconDoubleChevronLeft, IconDoubleChevronRight, IconSetting, IconRefresh } from '@douyinfe/semi-icons';
+import { IconDoubleChevronLeft, IconDoubleChevronRight, IconRefresh, IconSetting } from '@douyinfe/semi-icons';
 import { IllustrationConstruction, IllustrationConstructionDark } from '@douyinfe/semi-illustrations';
-import { Card, Empty, Input, Notification, Tabs, TabPane } from '@douyinfe/semi-ui';
+import { Card, Empty, Input, Notification, TabPane, Tabs } from '@douyinfe/semi-ui';
 import React, { useEffect, useState } from 'react';
 
 import { debounce } from '../utils/common';
 import { copyAction, setObjectValue } from '../utils/popup';
 import type { globalConfig, mockDataItem } from '../utils/type';
 import { ActionPanel } from './components/ActionPanel';
+import { ConfigSideSheet } from './components/ConfigSideSheet';
 import { DropDownParam, HeaderExtraContent } from './components/HeaderExtraContent';
 import { SingleSideSheet } from './components/SingleSideSheet';
-import { ConfigSideSheet } from './components/ConfigSideSheet';
 import { useCopy } from './hooks/useCopy';
+import { getUrlNumberData } from './parse';
 
 import './index.scss';
-import { getUrlNumberData } from './parse';
 
 const Cardtitle: React.FC<{ url: string; type: string }> = (props: { url: string; type: string }) => {
     const { url, type } = props;
@@ -38,6 +38,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     const [ready, setReady] = useState(false);
     const [show, setShow] = useState(false); // 是否展开状态
     const [ruleInput, setRuleInput] = useState('https?://'); // 过滤规则
+    const [activeKey, setActiveKey] = useState(''); // 默认激活的tabs
     const copy = useCopy({
         onSuccess: (value) => {
             Notification.success({
@@ -226,7 +227,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
             />
 
             {mockData.length > 0 && config.proxySwitch ? (
-                <Tabs type="card" collapsible style={{ marginTop: '10px' }}>
+                <Tabs type="card" collapsible defaultActiveKey={activeKey}>
                     {getUrlNumberData(mockData).map((item) => (
                         <TabPane tab={item.url} itemKey={item.url} key={item.id} className="scrollbar">
                             {filterMockData(item.data, ruleInput).map((el, index) => (

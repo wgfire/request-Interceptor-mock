@@ -34,16 +34,17 @@ export function getUrlNumberData(data: mockDataItem[]): UrlNumberDataInterface[]
                     number: 1,
                     data: [el],
                     switch: true,
-                    url: url,
+                    url,
                 };
             }
         }
     });
 
-    result = Object.values(temObj).map((el: UrlNumberDataInterface, index) => {
-        el.switch = el.data.some((el) => el.switch === true);
-        el.id = index;
-        return el;
+    result = Object.values(temObj).map((item: UrlNumberDataInterface, index) => {
+        const assign = Object.assign(item);
+        assign.switch = assign.data.some((_: mockDataItem) => _.switch === true);
+        assign.id = index;
+        return assign;
     });
     console.log(result, 'result');
     return result;
