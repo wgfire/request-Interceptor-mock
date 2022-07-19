@@ -17,8 +17,9 @@ export interface UrlNumberDataInterface {
     id: number;
     [key: string]: any;
 }
-export function getUrlNumberData(data: mockDataItem[]): UrlNumberDataInterface[] {
-    let result: UrlNumberDataInterface[] = [];
+export function getUrlNumberData(data: mockDataItem[]): { defaultKey: string; panelData: UrlNumberDataInterface[] } {
+    let panelData: UrlNumberDataInterface[] = [];
+    let defaultKey = '';
     const temObj = {} as UrlNumberDataInterface;
     // const temArr: Array<TableDataInterFace> = [];
     // 将每个域名分类
@@ -40,12 +41,13 @@ export function getUrlNumberData(data: mockDataItem[]): UrlNumberDataInterface[]
         }
     });
 
-    result = Object.values(temObj).map((item: UrlNumberDataInterface, index) => {
+    panelData = Object.values(temObj).map((item: UrlNumberDataInterface, index) => {
         const assign = Object.assign(item);
         assign.switch = assign.data.some((_: mockDataItem) => _.switch === true);
         assign.id = index;
         return assign;
     });
-    console.log(result, 'result');
-    return result;
+    defaultKey = panelData.length > 0 ? panelData[0].url : '';
+    console.log(panelData, 'result');
+    return { defaultKey, panelData };
 }

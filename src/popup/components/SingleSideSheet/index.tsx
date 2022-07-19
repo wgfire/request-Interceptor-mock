@@ -4,10 +4,11 @@
 1.单个URL的请求配置
 */
 
+import { IconClose, IconTick } from '@douyinfe/semi-icons';
 import { Input, SideSheet, Switch } from '@douyinfe/semi-ui';
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
-import { useEffect, useState } from 'react';
-import { IconClose, IconTick } from '@douyinfe/semi-icons';
+import { useState } from 'react';
+
 import { mockDataItem } from '../../../utils/type';
 import { useUpdateEffect } from '../../hooks/useUpdateEffect';
 
@@ -22,13 +23,8 @@ export interface SingleSideSheetProps {
 export const SingleSideSheet = (props: SingleSideSheetProps) => {
     const { onCancel, visible, item, itemChange } = props;
     const [data, setData] = useState<mockDataItem>(item);
-    const [url, setUrl] = useState('');
-    const [check, setChecked] = useState(false);
-
     useUpdateEffect(() => {
         setData(item);
-        // setUrl(item.proxy.url);
-        // setChecked(item.proxy.switch);
     }, [item]);
 
     const setSuffix = (value: string): React.ReactElement => (
@@ -63,7 +59,6 @@ export const SingleSideSheet = (props: SingleSideSheetProps) => {
                     <Switch
                         checked={data.proxy.switch}
                         onChange={(checked) => {
-                            // setChecked(checked);
                             data.proxy.switch = checked;
                             itemChange(data);
                         }}

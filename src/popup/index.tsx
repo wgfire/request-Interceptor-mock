@@ -38,7 +38,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     const [ready, setReady] = useState(false);
     const [show, setShow] = useState(false); // 是否展开状态
     const [ruleInput, setRuleInput] = useState('https?://'); // 过滤规则
-    const [activeKey, setActiveKey] = useState(''); // 默认激活的tabs
+    const { defaultKey, panelData } = getUrlNumberData(mockData); // 转换为面板数据
     const copy = useCopy({
         onSuccess: (value) => {
             Notification.success({
@@ -157,7 +157,6 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     }, []);
     useEffect(() => {
         // 为了解决第一次加载也触发 refreshMockData
-        console.log('controlRefsh', controlRefsh);
         if (ready && controlRefsh) {
             refreshMockData();
         }
@@ -226,9 +225,9 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                 className="rule-input"
             />
 
-            {mockData.length > 0 && config.proxySwitch ? (
-                <Tabs type="card" collapsible defaultActiveKey={activeKey}>
-                    {getUrlNumberData(mockData).map((item) => (
+            {panelData.length > 0 && config.proxySwitch ? (
+                <Tabs type="card" collapsible defaultActiveKey={defaultKey}>
+                    {panelData.map((item) => (
                         <TabPane tab={item.url} itemKey={item.url} key={item.id} className="scrollbar">
                             {filterMockData(item.data, ruleInput).map((el, index) => (
                                 <Card

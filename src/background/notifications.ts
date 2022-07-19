@@ -1,4 +1,3 @@
-import { mockDataItem } from '../utils/type';
 let Max = 1;
 console.log('notifications.ts', Max);
 class NotificationsEvent {
@@ -9,7 +8,7 @@ class NotificationsEvent {
     };
     static instance: NotificationsEvent;
     permission = '';
-    constructor() {}
+
     static getInstance(): NotificationsEvent {
         // 判断是否已经new过1个实例
         if (!NotificationsEvent.instance) {
@@ -38,8 +37,8 @@ class NotificationsEvent {
     createNotification(): void {
         const { options } = this;
         console.log(options, '创建提醒');
-        const domain = options.url.match(/^(https?:\/\/)\S+(\.cn|\.com)/g);
-        const url = options.url.match(/(?<=^(https?:\/\/)\S+(\.cn|\.com))\S+/g);
+        const domain = options.url.match(/^(https?):\/\/(.*?)\//);
+        const url = options.url.match(/(?<=^(https?):\/\/(.*?)\/)\S+/g);
         Max > 0 &&
             chrome.notifications.create(
                 `${Math.random()}`,
