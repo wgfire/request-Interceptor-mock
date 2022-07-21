@@ -1,7 +1,7 @@
 {
-    "name": "mt chrome extension ",
+    "name": "MTJX",
     "version": "1.0",
-    "description": "拦截xhr请求，并对其进行mock数据将其返回",
+    "description": "拦截xhr请求,修改请求数据、响应数据，用于接口问题排查、mock接口数据等场景",
     "manifest_version": 3,
     "minimum_chrome_version": "80",
     "permissions": ["tabs", "contextMenus", "webRequest", "notifications", "storage", "contextMenus", "activeTab", "declarativeContent"],
