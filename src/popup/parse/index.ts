@@ -59,7 +59,7 @@ export function getUrlNumberData(data: mockDataItem[], ruleInput: string): { act
         assign.id = index;
         return assign;
     });
-    activeKey = panelData.length === 0 || !ruleInput ? panelData[0].url : getDefaultKey(panelData, ruleInput);
+    activeKey = panelData.length <= 0 ? '' : !ruleInput ? panelData[0].url : getDefaultKey(panelData, ruleInput);
     console.log(panelData, 'result', activeKey);
     return { activeKey, panelData };
 }

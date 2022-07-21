@@ -10,16 +10,16 @@ chrome.storage.local.get('mockData', (res) => {
     start(Array.isArray(mockData) ? mockData : []);
 });
 const proxyNotifications = (item: mockDataItem) => {
-    const domain = item.url.match(/^(https?:\/\/)\S+(\.cn|\.com)/g);
-    const url = item.url.match(/(?<=^(https?:\/\/)\S+(\.cn|\.com))\S+/g);
+    const domain = item.url.match(/^(https?):\/\/(.*?)\//);
+    const url = item.url.match(/(?<=^(https?):\/\/(.*?)\/)\S+/g);
     isNotifications({
-        title: `提醒:${domain ? domain[0] : ''}`,
+        title: `拦截提醒:${domain ? domain[0] : ''}`,
         url: item.url,
         message: `${url ? url[0] : ''}-已被拦截代理`,
     });
 };
 const errorNotifications = (item: { url: string }) => {
-    const domain = item.url.match(/^(https?:\/\/)\S+(\.cn|\.com)/g);
+    const domain = item.url.match(/^(https?):\/\/(.*?)\//);
     isNotifications({
         title: `提醒:${domain ? domain[0] : ''}`,
         url: item.url,
