@@ -43,7 +43,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     const copy = useCopy({
         onSuccess: (value) => {
             Notification.success({
-                content: `Copy Success: ${value.toString().slice(0, 100)}`,
+                content: `Copy Success: ${value.toString().slice(0, 40)}...`,
                 duration: 1,
                 position: 'top',
             });

@@ -97,6 +97,12 @@ export class BaseXhr {
                 proxyXHR['__originSendData'] = originResult[0]; // 原生的发送data的参数
                 proxyXHR['__realitySendData'] = args[0]; // 实际发送的参数
             }
+            if (key === 'open') {
+                // 修改open打开的地址
+                if (Array.isArray(hooksResult)) {
+                    args = [...hooksResult];
+                }
+            }
             //console.log(key,'方法',args)
             // 执行方法本体
             const res = proxyXHR._xhr[key].apply(proxyXHR._xhr, args);

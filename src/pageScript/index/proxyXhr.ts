@@ -1,4 +1,4 @@
-import { createMockItem, findUrlBuyMock, switchFindUrl } from '../../utils/pagescript';
+import { createMockItem, findUrlBuyMock, IsIncludeUrlBuyMock, switchFindUrl } from '../../utils/pagescript';
 import type { configProps, globalDataProps, mockDataItem } from '../../utils/type';
 import { BaseXhr, hooksProps } from './baseXhr';
 
@@ -128,9 +128,13 @@ export const initXhr = (data: globalDataProps): ProxyXhr => {
             },
             open(data: any) {
                 const [, url] = data;
-                console.log(Date.now(), '打开链接', url, xhrData.config.withCredentials);
+                let mockItem = IsIncludeUrlBuyMock(url, xhrData.mockData);
+                let proxyUrl = mockItem ? (mockItem.proxy.switch && mockItem.proxy.url ? mockItem.proxy.url : url) : url;
+                console.log(Date.now(), '打开链接', url, '代理链接', proxyUrl);
                 ProxyXhr.config.url = url;
                 this._xhr.withCredentials = xhrData.config.withCredentials;
+                data[1] = proxyUrl;
+                return data;
             },
             onreadystatechange() {
                 if (this.readyState === 1) {
