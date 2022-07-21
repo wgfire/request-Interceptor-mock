@@ -34,11 +34,12 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     const [singleVisible, setSingVisible] = useState(false);
     const [singMockData, setSingMockData] = useState<mockDataItem>({} as mockDataItem); // 点击单条配置所保存的item
     const [mockData, setMockData] = useState(mockDataPopup || []);
-    const [controlRefsh, setControlRefsh] = useState(true); // 列表数据由用户手动改变了才刷新
+    const [controlRefresh, setControlRefresh] = useState(true); // 列表数据由用户手动改变了才刷新
     const [ready, setReady] = useState(false);
     const [show, setShow] = useState(false); // 是否展开状态
     const [ruleInput, setRuleInput] = useState('https?://'); // 过滤规则
-    const { defaultKey, panelData } = getUrlNumberData(mockData); // 转换为面板数据
+    const { activeKey: defaultedKey, panelData } = getUrlNumberData(mockData, ruleInput); // 转换为面板数据
+    const [activeKey, setActiveKey] = useState(defaultedKey);
     const copy = useCopy({
         onSuccess: (value) => {
             Notification.success({
@@ -50,7 +51,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     });
     const setMockDataProps = (value: any, index: number, key: string[]) => {
         // 根据索引设置某个key的值
-        setControlRefsh(true);
+        setControlRefresh(true);
         const mock = [...mockData];
         const item = mock[index];
         const updateItem = setObjectValue(key, item, value);
@@ -110,7 +111,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
             if (request.action === 'update' && request.to === 'popup') {
                 console.log('popup收到更新数据', request);
                 updateMockData(request.data);
-                setControlRefsh(false);
+                setControlRefresh(false);
             }
         });
     };
@@ -156,8 +157,12 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     useEffect(() => {
+        console.log(defaultedKey, 'key值变化');
+        setActiveKey(defaultedKey);
+    }, [defaultedKey]);
+    useEffect(() => {
         // 为了解决第一次加载也触发 refreshMockData
-        if (ready && controlRefsh) {
+        if (ready && controlRefresh) {
             refreshMockData();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -172,11 +177,11 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                     setVisible(value);
                 }}
                 onChangeConfig={(value: globalConfig) => {
-                    setControlRefsh(true);
+                    setControlRefresh(true);
                     setConfig(value);
                 }}
                 onchangeMockData={(mock: Array<mockDataItem>) => {
-                    setControlRefsh(true);
+                    setControlRefresh(true);
                     setMockData(mock);
                 }}
             />
@@ -184,7 +189,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                 visible={singleVisible}
                 item={singMockData}
                 itemChange={(item) => {
-                    setControlRefsh(true);
+                    setControlRefresh(true);
                     findMockBuyUrl(item.id, (indexSwitch: number) => {
                         const mock = [...mockData];
                         mock[indexSwitch] = item;
@@ -226,7 +231,16 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
             />
 
             {panelData.length > 0 && config.proxySwitch ? (
-                <Tabs type="card" collapsible defaultActiveKey={defaultKey}>
+                <Tabs
+                    type="card"
+                    collapsible
+                    defaultActiveKey={activeKey}
+                    activeKey={activeKey}
+                    onTabClick={(Key) => {
+                        console.log(Key);
+                        setActiveKey(Key);
+                    }}
+                >
                     {panelData.map((item) => (
                         <TabPane tab={item.url} itemKey={item.url} key={item.id} className="scrollbar">
                             {filterMockData(item.data, ruleInput).map((el, index) => (

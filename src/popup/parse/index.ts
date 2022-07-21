@@ -6,9 +6,20 @@
 
 import { mockDataItem } from '../../utils/type';
 
-/**
- * 将mockdata的数据进行根据url进行分类，将同一个url里的放在一起
- */
+/**返回删选项对应的面板key */
+const getDefaultKey = (panelData: UrlNumberDataInterface[], ruleInput: string): string => {
+    let result = '';
+    const reg = new RegExp(ruleInput, 'g');
+    panelData.forEach((el) => {
+        const isTrue = el.data.some((dataItem) => {
+            const testArray = [dataItem.url, dataItem.response, dataItem.originResponse];
+            return testArray.some((item) => reg.test(item));
+        });
+        isTrue ? (result = el.url) : '';
+    });
+
+    return result;
+};
 export interface UrlNumberDataInterface {
     url: string;
     switch: boolean;
@@ -17,9 +28,10 @@ export interface UrlNumberDataInterface {
     id: number;
     [key: string]: any;
 }
-export function getUrlNumberData(data: mockDataItem[]): { defaultKey: string; panelData: UrlNumberDataInterface[] } {
+/**根据mockData 获取转换的mock面板数据 以及删选项对应的面板key */
+export function getUrlNumberData(data: mockDataItem[], ruleInput: string): { activeKey: string; panelData: UrlNumberDataInterface[] } {
     let panelData: UrlNumberDataInterface[] = [];
-    let defaultKey = '';
+    let activeKey = '';
     const temObj = {} as UrlNumberDataInterface;
     // const temArr: Array<TableDataInterFace> = [];
     // 将每个域名分类
@@ -47,7 +59,7 @@ export function getUrlNumberData(data: mockDataItem[]): { defaultKey: string; pa
         assign.id = index;
         return assign;
     });
-    defaultKey = panelData.length > 0 ? panelData[0].url : '';
-    console.log(panelData, 'result');
-    return { defaultKey, panelData };
+    activeKey = panelData.length === 0 || !ruleInput ? panelData[0].url : getDefaultKey(panelData, ruleInput);
+    console.log(panelData, 'result', activeKey);
+    return { activeKey, panelData };
 }
