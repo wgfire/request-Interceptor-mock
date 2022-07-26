@@ -80,7 +80,7 @@ export const ConfigSideSheet: React.FC<SideBarProps> = (props) => {
 };
 const setMockData = (mockData: Array<mockDataItem>, item: TableDataInterFace): Array<mockDataItem> =>
     mockData.map((el) => {
-        const domain = el.url.match(/^(https?:\/\/)\S+(\.cn|\.com|\.\w+)\//g)![0];
+        const domain = el.url.match(/^(https?):\/\/(.*?)\//)![0];
         if (domain === item.url) {
             return {
                 ...el,
@@ -94,7 +94,7 @@ const getTableData = function (data: Array<mockDataItem>): Array<TableDataInterF
     const temArr: Array<TableDataInterFace> = [];
     data.forEach((el) => {
         try {
-            const domain = el.url.match(/^(https?:\/\/)\S+(\.cn|\.com|\.\w+)\//g)![0];
+            const domain = el.url.match(/^(https?):\/\/(.*?)\//)![0];
             if (temObj[domain]) {
                 temObj[domain].number += 1;
             } else {
@@ -111,7 +111,7 @@ const getTableData = function (data: Array<mockDataItem>): Array<TableDataInterF
     Object.keys(temObj).forEach((keys) => {
         try {
             const mockDataArray = data.filter((el) => {
-                const result = el.url.match(/^(https?:\/\/)\S+(\.cn|\.com|\.\w+)\//g);
+                const result = el.url.match(/^(https?):\/\/(.*?)\//);
                 if (result) {
                     return result[0] === keys;
                 }

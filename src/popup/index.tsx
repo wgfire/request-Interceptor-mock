@@ -15,11 +15,11 @@ import { getUrlNumberData } from './parse';
 
 import './index.scss';
 
-const Cardtitle: React.FC<{ url: string; type: string }> = (props: { url: string; type: string }) => {
+const CardTitle: React.FC<{ url: string; type: string }> = (props: { url: string; type: string }) => {
     const { url, type } = props;
     return (
         <div style={{ marginRight: '10px' }}>
-            <Input value={url} addonBefore={`${type}-URL:`} disabled />
+            <Input value={url} addonBefore={`${type}-URL:`} />
         </div>
     );
 };
@@ -248,7 +248,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                                     shadows="hover"
                                     key={el.id}
                                     className="card-box"
-                                    title={<Cardtitle url={el.url} type={el.type} />}
+                                    title={<CardTitle url={el.url} type={el.type} />}
                                     headerExtraContent={
                                         <HeaderExtraContent
                                             switchCheck={el.switch}

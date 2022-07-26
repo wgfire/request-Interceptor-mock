@@ -17,7 +17,7 @@ export const IsIncludeUrlBuyMock = (url: string, mockUrl: mockDataItem[]) => {
 };
 
 export const switchFindUrl = (url: string, fn: (data: mockDataItem) => any, mockUrl: mockDataItem[]) => {
-    const data = findUrlBuyMock(url, mockUrl);
+    const data = findUrlBuyMock(url, mockUrl) || IsIncludeUrlBuyMock(url, mockUrl);
     if (data && data.switch) {
         fn(data);
     }
@@ -57,8 +57,8 @@ export const createMockItem = ({ xhr }: { xhr: any }): mockDataItem => {
             data: xhr.__realitySendData,
             originData: xhr.__originSendData,
         },
-        response: xhr.responseText,
-        originResponse: xhr._xhr.responseText,
+        response: xhr.responseText.replace(/\s/g, ''),
+        originResponse: xhr._xhr.responseText.replace(/\s/g, ''),
         showOriginData: true,
         showOriginResponse: false,
         showOriginHeader: true,

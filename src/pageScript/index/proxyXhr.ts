@@ -159,7 +159,7 @@ export const initXhr = (data: globalDataProps): ProxyXhr => {
                     console.log('插件监听-获取完成', event, this);
                     const data = findUrlBuyMock(this.responseURL, xhrData.mockData);
                     const item = createMockItem({ xhr: this });
-                    item.switch = data ? data.switch : false;
+                    item.switch = data ? data.switch : false; // 为了让background 弹出通知所以开启switch
                     console.log(item, '创建的item');
                     // 将popup界面改成iframe加载后 通信链路巨长
                     window.postMessage({
