@@ -41,5 +41,17 @@ export interface mockDataItem {
         switch: boolean;
         url: string;
     };
+    wait?: number;
+    priority?: string;
     [key: string]: any;
+}
+export interface DevToolRequestItem {
+    /**
+     * 等待的时长
+     */
+    wait: number;
+
+    url: string;
+
+    priority: string;
 }

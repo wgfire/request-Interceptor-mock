@@ -1,4 +1,5 @@
-import { globalDataProps, mockDataItem } from '../utils/type';
+/* eslint-disable no-shadow */
+import { DevToolRequestItem, globalDataProps, mockDataItem } from '../utils/type';
 import { isNotifications, resetMax } from './notifications';
 
 console.log('This is background page!');
@@ -67,6 +68,15 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
             chrome.tabs.sendMessage(tabs[0] ? tabs[0].id! : 0, { action: 'update', to: 'popup', data: arg });
         });
     },
+    updateRequestinfo: (fn: (arg: any) => void, arg: DevToolRequestItem) => {
+        // 将devtool实时拦截的请求信息补充给popup界面展示
+        console.log('background收到devtool', arg);
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            console.log('background更新mock数据到popup', arg, tabs);
+            chrome.tabs.sendMessage(tabs[0] ? tabs[0].id! : 2, { action: 'updateRequestinfo', to: 'popup', data: arg });
+        });
+    },
+
     error: (fn: (arg: mockDataItem) => void, arg: { url: string }) => {
         // 请求失败进行提醒
         errorNotifications(arg);
@@ -79,7 +89,7 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
     reload: () => {
         // 重新加载界面
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id!, { action: 'reload', to: 'content', data: null });
+            chrome.tabs.sendMessage(tabs[0].id!, { action: 'reload', to: 'content', data: undefined });
         });
     },
 };
@@ -88,10 +98,10 @@ const start = (data: any) => {
     mockData = data.length > 0 ? data : [];
     chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
         if (request.to === 'background') {
-            console.log('后台收到来自content-script的消息：', request);
+            console.log('后台收到消息：', request);
             try {
                 actionMap[request.action](sendResponse, request.data);
-            } catch (error) {
+            } catch {
                 console.log(request, '未找到执行函数');
             }
         }

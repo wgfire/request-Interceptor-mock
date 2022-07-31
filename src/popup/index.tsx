@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-for-loop */
 import { IconDoubleChevronLeft, IconDoubleChevronRight, IconRefresh, IconSetting } from '@douyinfe/semi-icons';
 import { IllustrationConstruction, IllustrationConstructionDark } from '@douyinfe/semi-illustrations';
 import { Card, Empty, Input, Notification, TabPane, Tabs } from '@douyinfe/semi-ui';
@@ -5,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 
 import { debounce } from '../utils/common';
 import { copyAction, setObjectValue } from '../utils/popup';
-import type { globalConfig, mockDataItem } from '../utils/type';
+import type { DevToolRequestItem, globalConfig, mockDataItem } from '../utils/type';
 import { ActionPanel } from './components/ActionPanel';
 import { ConfigSideSheet } from './components/ConfigSideSheet';
 import { DropDownParam, HeaderExtraContent } from './components/HeaderExtraContent';
@@ -15,11 +16,18 @@ import { getUrlNumberData } from './parse';
 
 import './index.scss';
 
-const CardTitle: React.FC<{ url: string; type: string }> = (props: { url: string; type: string }) => {
-    const { url, type } = props;
+interface CardTitleProps {
+    url: string;
+    type: string;
+    wait: number | undefined;
+    priority: string | undefined;
+}
+const CardTitle: React.FC<CardTitleProps> = (props: CardTitleProps) => {
+    const { url, type, wait, priority } = props;
     return (
         <div style={{ marginRight: '10px' }}>
             <Input value={url} addonBefore={`${type}-URL:`} />
+            <div>时间 {wait}</div>
         </div>
     );
 };
@@ -105,13 +113,34 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
             return mock;
         });
     };
+    const updateRequestinfo = (data: DevToolRequestItem[]): void => {
+        for (let i = 0; i < data.length; i += 1) {
+            const item = data[i];
+            setMockData((perData) => {
+                const mock = [...perData];
+                const index = mock.findIndex((el) => el.url === item.url);
+                if (index > 0 && (!mock[index].priority || !mock[index].wait)) {
+                    mock[index].priority = item.priority;
+                    mock[index].wait = Math.ceil(item.wait);
+                }
+
+                return mock;
+            });
+        }
+    };
     const getRefreshMockData = () => {
         chrome.runtime.onMessage.addListener((request) => {
             // 这里也会监听到发给content里的消息毕竟是一个content域
             if (request.action === 'update' && request.to === 'popup') {
                 console.log('popup收到更新数据', request);
-                updateMockData(request.data);
-                setControlRefresh(false);
+                if (request.action === 'update') {
+                    updateMockData(request.data);
+                    setControlRefresh(false);
+                }
+                /** 更新请求的等待时间其他信息 */
+                // if (request.action === 'updateRequestinfo') {
+                //     updateRequestinfo(request.data);
+                // }
             }
         });
     };
@@ -248,7 +277,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                                     shadows="hover"
                                     key={el.id}
                                     className="card-box"
-                                    title={<CardTitle url={el.url} type={el.type} />}
+                                    title={<CardTitle url={el.url} type={el.type} wait={el.wait} priority={el.priority} />}
                                     headerExtraContent={
                                         <HeaderExtraContent
                                             switchCheck={el.switch}
