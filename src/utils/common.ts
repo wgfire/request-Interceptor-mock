@@ -6,6 +6,7 @@ export function injectCustomJs(jsPath = 'lib/mock.js'): Promise<any> {
     return new Promise((resolve) => {
         const temp = document.createElement('script');
         temp.setAttribute('type', 'text/javascript');
+        temp.setAttribute('async', 'async');
         // 获得的地址类似：chrome-extension://ihcokhadfjfchaeagdoclpnjdiokfakg/js/inject.js
         temp.src = chrome.runtime.getURL(jsPath);
         document.documentElement.append(temp);
@@ -70,7 +71,7 @@ export function debounce(func: (...arg: any[]) => void, wait: number, immediate:
     };
 }
 
-export function postMockDataToScript(globalData: any, action = 'start') {
+export function postMockDataToScript(globalData: globalDataProps | null, action = 'start') {
     window.postMessage({
         action,
         to: 'pageScript',
