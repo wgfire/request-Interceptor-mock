@@ -14,5 +14,7 @@ export const useUpdateEffect = (effect: () => void, deps: any[]) => {
             return;
         }
         effect();
-    }, deps);
+    }, [...deps, effect]); // eslint-disable-line react-hooks/exhaustive-deps
 };
+
+export default useUpdateEffect;

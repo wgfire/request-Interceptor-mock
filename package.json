@@ -27,14 +27,10 @@
         "prepare": "husky install"
     },
     "lint-staged": {
-        "*.{ts,tsx,js}": [
-            "eslint -c .eslintrc.js",
-            "format-imports --config .vscode/import-sorter.json"
+        "src/*.{ts,tsx}": [
+            "npm run eslint"
         ],
-        "*.{css,less,scss}": [
-            "stylelint --config .stylelintrc.json"
-        ],
-        "*.{ts,tsx,json,js,css,less,scss,md}": [
+        "src/*.{ts,tsx,json,js,css,less,scss}": [
             "prettier --write"
         ]
     },

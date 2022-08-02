@@ -1,54 +1,96 @@
-import { useCallback, useEffect, useRef } from 'react';
-
-import { DevToolRequestItem } from '../utils/type';
-
+import { useEffect, useRef } from 'react';
+import { Layout, Nav, Button, Skeleton, Avatar, Input, Typography } from '@douyinfe/semi-ui';
+import { IconSetting, IconGithubLogo, IconSearch } from '@douyinfe/semi-icons';
 import './App.scss';
 
 const App = (): JSX.Element => {
-    const requestData = useRef<DevToolRequestItem[]>([]);
-    const timer = useRef<number | undefined>();
-    const requestFinishHandel = (request: chrome.devtools.network.Request) => {
-        const obj: DevToolRequestItem = {
-            wait: request.timings.wait,
-            url: request.request.url as string,
-            priority: request._priority as string,
-        };
-        console.log(request, 'xx');
-        if (timer.current) {
-            requestData.current.push(obj);
-            clearTimeout(timer.current);
-        }
-        timer.current = setTimeout(() => {
-            // 将收集好的requestdata 给到background
-            console.log(requestData.current, '更新的数据');
-            chrome.runtime.sendMessage({
-                to: 'background',
-                data: requestData.current,
-                action: 'updateRequestinfo',
-            });
-            requestData.current = [];
-        }, 1000);
-    };
-    const onRequestFinished = useCallback((): void => {
-        const requestType = new Set(['fetch', 'xhr']);
-        chrome.devtools.network.onRequestFinished.addListener((request) => {
-            if (requestType.has(request._resourceType as string)) {
-                requestFinishHandel(request);
-            }
-        });
-    }, []);
+    const { Title, Text } = Typography;
+    const { Header, Footer, Content } = Layout;
+    const loading = useRef<boolean | undefined>(false);
     useEffect(() => {
         console.log('App', chrome.devtools);
-        onRequestFinished();
-        return () => {
-            chrome.devtools.network.onRequestFinished.removeListener(requestFinishHandel);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        chrome.devtools.network.onRequestFinished.addListener((request) => {
+            console.log(request, 'xx');
+        });
     }, []);
     return (
-        <div className="app">
-            <h1 className="title">MT插件面板，开发建设中....</h1>
-        </div>
+        <Layout style={{ border: '1px solid var(--semi-color-border)' }}>
+            <Header style={{ backgroundColor: 'var(--semi-color-bg-1)' }}>
+                <div>
+                    <Nav mode="horizontal" defaultSelectedKeys={['Home']}>
+                        <Nav.Header>
+                            <Title>Mt Extension</Title>
+                        </Nav.Header>
+
+                        <Nav.Footer>
+                            <Button
+                                theme="borderless"
+                                icon={<IconSetting size="large" />}
+                                style={{
+                                    color: 'var(--semi-color-text-2)',
+                                    marginRight: '12px',
+                                }}
+                            />
+                            <Avatar color="orange" size="small">
+                                WG
+                            </Avatar>
+                        </Nav.Footer>
+                    </Nav>
+                </div>
+            </Header>
+            <Content
+                style={{
+                    padding: '24px',
+                    backgroundColor: 'var(--semi-color-bg-0)',
+                }}
+            >
+                <div style={{ display: 'flex', width: '60%' }} className="search-box">
+                    <IconSearch size="large" style={{ marginRight: '12px' }} />
+                    <Input
+                        addonBefore="过滤URL"
+                        onChange={() => {
+                            // ruleChangeHandel(value);
+                        }}
+                        className="rule-input"
+                    />
+                </div>
+                <div
+                    style={{
+                        borderRadius: '10px',
+                        border: '1px solid var(--semi-color-border)',
+                        height: '376px',
+                        padding: '32px',
+                    }}
+                >
+                    <Skeleton placeholder={<Skeleton.Paragraph rows={2} />} loading={loading.current}>
+                        <p>Hi, Bytedance dance dance.</p>
+                        <p>Hi, Bytedance dance dance.</p>
+                    </Skeleton>
+                </div>
+            </Content>
+            <Footer
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    padding: '20px',
+                    color: 'var(--semi-color-text-2)',
+                    backgroundColor: 'rgba(var(--semi-grey-0), 1)',
+                }}
+            >
+                <Text
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Text style={{ marginRight: '8px' }}>Mt Extension</Text>
+                    <span>Copyright © 2022 WG. All Rights Reserved. </span>
+                </Text>
+                <Text link icon={<IconGithubLogo />} underline>
+                    反馈建议
+                </Text>
+            </Footer>
+        </Layout>
     );
 };
 

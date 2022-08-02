@@ -19,15 +19,12 @@ import './index.scss';
 interface CardTitleProps {
     url: string;
     type: string;
-    wait: number | undefined;
-    priority: string | undefined;
 }
 const CardTitle: React.FC<CardTitleProps> = (props: CardTitleProps) => {
-    const { url, type, wait, priority } = props;
+    const { url, type } = props;
     return (
         <div style={{ marginRight: '10px' }}>
             <Input value={url} addonBefore={`${type}-URL:`} />
-            <div>时间 {wait}</div>
         </div>
     );
 };
@@ -112,21 +109,6 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
 
             return mock;
         });
-    };
-    const updateRequestinfo = (data: DevToolRequestItem[]): void => {
-        for (let i = 0; i < data.length; i += 1) {
-            const item = data[i];
-            setMockData((perData) => {
-                const mock = [...perData];
-                const index = mock.findIndex((el) => el.url === item.url);
-                if (index > 0 && (!mock[index].priority || !mock[index].wait)) {
-                    mock[index].priority = item.priority;
-                    mock[index].wait = Math.ceil(item.wait);
-                }
-
-                return mock;
-            });
-        }
     };
     const getRefreshMockData = () => {
         chrome.runtime.onMessage.addListener((request) => {
@@ -277,7 +259,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                                     shadows="hover"
                                     key={el.id}
                                     className="card-box"
-                                    title={<CardTitle url={el.url} type={el.type} wait={el.wait} priority={el.priority} />}
+                                    title={<CardTitle url={el.url} type={el.type} />}
                                     headerExtraContent={
                                         <HeaderExtraContent
                                             switchCheck={el.switch}

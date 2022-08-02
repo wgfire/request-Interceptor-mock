@@ -6,7 +6,7 @@
 
 import { mockDataItem } from '../../utils/type';
 
-/**返回删选项对应的面板key */
+/** 返回删选项对应的面板key */
 const getDefaultKey = (panelData: UrlNumberDataInterface[], ruleInput: string): string => {
     let result = '';
     const reg = new RegExp(ruleInput, 'g');
@@ -28,7 +28,7 @@ export interface UrlNumberDataInterface {
     id: number;
     [key: string]: any;
 }
-/**根据mockData 获取转换的mock面板数据 以及删选项对应的面板key */
+/** 根据mockData 获取转换的mock面板数据 以及删选项对应的面板key */
 export function getUrlNumberData(data: mockDataItem[], ruleInput: string): { activeKey: string; panelData: UrlNumberDataInterface[] } {
     let panelData: UrlNumberDataInterface[] = [];
     let activeKey = '';
