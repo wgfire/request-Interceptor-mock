@@ -37,7 +37,6 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
         const mockData = arg.mockData.filter((el: mockDataItem) => el.switch === true);
         const obj = JSON.parse(JSON.stringify(arg));
         obj.mockData = mockData;
-        fn(arg);
         chrome.storage.local.set({ globalData: obj }, () => {
             console.log('更新background globalData 成功', obj);
         });
@@ -45,6 +44,7 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             chrome.tabs.sendMessage(tabs[0] ? tabs[0].id! : 0, { action: 'setMock', to: 'content', data: arg });
         });
+        fn(arg);
     },
     clearMock: (fn: (arg: any) => void, arg: any) => {
         chrome.storage.local.clear().then((res) => {
@@ -53,7 +53,7 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
         });
     },
     toggle: (fn: (arg: any) => void, arg: any) => {
-        // 在转发给content-script进行切换展开。
+        // 在转发给content-script进行切换展开,content作用域用tabs发
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             chrome.tabs.sendMessage(tabs[0].id!, { action: 'toggle', to: 'content', data: '' });
         });
@@ -65,15 +65,15 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
             if (arg.switch) {
                 proxyNotifications(arg);
             }
-            chrome.tabs.sendMessage(tabs[0] ? tabs[0].id! : 0, { action: 'update', to: 'popup', data: arg });
+            chrome.runtime.sendMessage({ action: 'update', to: 'devtools', data: arg });
         });
     },
-    updateRequestinfo: (fn: (arg: any) => void, arg: DevToolRequestItem) => {
+    updateRequestInfo: (fn: (arg: any) => void, arg: DevToolRequestItem) => {
         // 将devtool实时拦截的请求信息补充给popup界面展示
         console.log('background收到devtool', arg);
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             console.log('background更新mock数据到popup', arg, tabs);
-            chrome.tabs.sendMessage(tabs[0] ? tabs[0].id! : 2, { action: 'updateRequestinfo', to: 'popup', data: arg });
+            chrome.tabs.sendMessage(tabs[0] ? tabs[0].id! : 2, { action: 'updateRequestInfo', to: 'popup', data: arg });
         });
     },
 

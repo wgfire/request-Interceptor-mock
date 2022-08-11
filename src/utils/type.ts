@@ -55,3 +55,8 @@ export interface DevToolRequestItem {
 
     priority: string;
 }
+export interface ReceiveMessage {
+    to: 'content' | 'background' | 'popup' | 'devtools';
+    action: string;
+    data: any;
+}
