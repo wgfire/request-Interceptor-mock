@@ -11,9 +11,17 @@
 .semi-layout-footer {
     flex: 0 0 60px;
 }
-.search-box{
+.search-box {
     display: flex;
-    width: 50%;
     align-items: center;
     margin-bottom: 24px;
+}
+.tools-content {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 5%;
+}
+.table-content {
+}
+.panel-content {
 }

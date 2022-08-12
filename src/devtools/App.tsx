@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Layout, Nav, Button, Skeleton, Avatar, Input, Typography } from '@douyinfe/semi-ui';
 import { IconSetting, IconGithubLogo, IconSearch } from '@douyinfe/semi-icons';
-import './App.scss';
-import { mockDataItem, ReceiveMessage } from '../utils/type';
+import { globalDataProps, mockDataItem, ReceiveMessage } from '../utils/type';
 
+import './App.scss';
+import { DataTable } from './components/dataTable';
 type DevtoolsRequest = chrome.devtools.network.Request;
 const CollectType = ['xhr', 'fetch'];
-const App = (): JSX.Element => {
+const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
     const { Title, Text } = Typography;
     const { Header, Footer, Content } = Layout;
     const loading = useRef<boolean | undefined>(false);
@@ -31,7 +32,6 @@ const App = (): JSX.Element => {
         }
     };
     const ReceiveRequestInformation = (data: mockDataItem) => {
-        console.log(data, 'xhr返回');
         setMockData((value) => {
             value.push(data);
             return value;
@@ -92,25 +92,32 @@ const App = (): JSX.Element => {
                     backgroundColor: 'var(--semi-color-bg-0)',
                 }}
             >
-                <div style={{ display: 'flex', width: '50%' }} className="search-box">
-                    <IconSearch size="large" style={{ marginRight: '12px' }} />
-                    <Input
-                        addonBefore="过滤URL"
-                        onChange={() => {
-                            // ruleChangeHandel(value);
-                        }}
-                        className="rule-input"
-                    />
-                </div>
                 <div
                     style={{
                         borderRadius: '10px',
                         border: '1px solid var(--semi-color-border)',
-                        height: '376px',
+                        height: '100%',
                         padding: '32px',
                     }}
                 >
-                    <Skeleton placeholder={<Skeleton.Paragraph rows={2} />} loading={loading.current}></Skeleton>
+                    <Skeleton placeholder={<Skeleton.Paragraph rows={2} />} loading={loading.current}>
+                        <div className="tools-content">
+                            <div className="table-content">
+                                <div className="search-box">
+                                    <IconSearch size="large" style={{ marginRight: '12px' }} />
+                                    <Input
+                                        addonBefore="过滤URL"
+                                        onChange={() => {
+                                            // ruleChangeHandel(value);
+                                        }}
+                                        className="rule-input"
+                                    />
+                                </div>
+                                <DataTable></DataTable>
+                            </div>
+                            <div className="panel-content"></div>
+                        </div>
+                    </Skeleton>
                 </div>
             </Content>
             <Footer
