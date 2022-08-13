@@ -9,8 +9,8 @@ import { Input, SideSheet, Switch } from '@douyinfe/semi-ui';
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
 import { useState } from 'react';
 
+import { useUpdateEffect } from '../../../hooks/useUpdateEffect';
 import { mockDataItem } from '../../../utils/type';
-import { useUpdateEffect } from '../../hooks/useUpdateEffect';
 
 const reg = /^(((ht|f)tps?):\/{2})?([^\s!#$%&*.?@^-]([^\s!#$%&*.?@^]{1,64})?\.)+[a-z]{2,6}\/?/;
 export interface SingleSideSheetProps {

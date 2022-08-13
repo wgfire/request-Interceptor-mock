@@ -38,9 +38,9 @@ export const parseResponseHeaders = (xhr: any) => {
     console.log(headerMap, '响应头解析');
     return headerMap;
 };
-const createId = (item: { url: string; data: string }) => {
+export const createId = (item: { url: string; data: string }): string => {
     const { url, data } = item;
-    const id = `${url}${JSON.stringify(data)}`;
+    const id = `${url}${data ? JSON.stringify(data) : ''}`;
     return id;
 };
 

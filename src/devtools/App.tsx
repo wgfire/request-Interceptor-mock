@@ -1,20 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { Layout, Nav, Button, Skeleton, Avatar, Input, Typography } from '@douyinfe/semi-ui';
 import { IconSetting, IconGithubLogo, IconSearch } from '@douyinfe/semi-icons';
-import { globalDataProps, mockDataItem, ReceiveMessage } from '../utils/type';
+import { DevtoolsRequest, DevtoolsRequests, globalDataProps, mockDataItem, ReceiveMessage } from '../utils/type';
 
 import './App.scss';
 import { DataTable } from './components/dataTable';
-type DevtoolsRequest = chrome.devtools.network.Request;
-const CollectType = ['xhr', 'fetch'];
+import { createId } from '../utils/pagescript';
+import { useUpdateEffect } from '../hooks/useUpdateEffect';
+
+const CollectType = new Set(['xhr', 'fetch']);
 const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
     const { Title, Text } = Typography;
     const { Header, Footer, Content } = Layout;
     const loading = useRef<boolean | undefined>(false);
-    const [collectRequestData, setCollectRequestData] = useState<Array<DevtoolsRequest>>([]);
+    const [collectRequestData, setCollectRequestData] = useState<Array<DevtoolsRequests>>([]);
     const [mockData, setMockData] = useState<Array<mockDataItem>>([]);
     useEffect(() => {
-        // devtools提供的网络收集接口
         requestFinishedListener('add', collectRequestInformation);
         onMessageListener(ReceiveRequestInformation);
         return () => {
@@ -23,11 +24,18 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
     }, []);
 
     const collectRequestInformation = (request: DevtoolsRequest) => {
-        if (CollectType.includes(request._resourceType as string)) {
-            console.log(request, '网络收集');
+        if (CollectType.has(request._resourceType as string)) {
             setCollectRequestData((data) => {
-                data.push(request);
-                return data;
+                const newData = [...data];
+                const { method, url, postData } = request.request;
+                const newRequest: DevtoolsRequests = {
+                    ...request,
+                    id: createId({ url, data: method === 'GET' ? '' : (postData!.text as string) }),
+                };
+                // request.id = createId({ url: request._url, data: request.request.postData });
+                newData.push(newRequest);
+
+                return newData;
             });
         }
     };
@@ -38,28 +46,9 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
         });
     };
 
-    /**
-     * devtools拦截器返回的数据
-     */
-    const requestFinishedListener = (type: 'add' | 'remove', handel: (data: DevtoolsRequest) => void) => {
-        if (type === 'add') {
-            chrome.devtools.network.onRequestFinished.addListener(handel);
-        } else {
-            chrome.devtools.network.onRequestFinished.removeListener(handel);
-        }
-    };
-
-    /**
-     * xhr拦截器返回的数据
-     */
-    const onMessageListener = (handel: (data: mockDataItem) => void) => {
-        chrome.runtime.onMessage.addListener((request: ReceiveMessage) => {
-            console.log('devtools 接受到消息', request);
-            if (request.to === 'devtools') {
-                handel(request.data);
-            }
-        });
-    };
+    useUpdateEffect(() => {
+        console.log(collectRequestData, '网络收集');
+    }, [collectRequestData]);
 
     return (
         <Layout style={{ border: '1px solid var(--semi-color-border)' }}>
@@ -113,9 +102,11 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
                                         className="rule-input"
                                     />
                                 </div>
-                                <DataTable></DataTable>
+                                <DataTable data={collectRequestData} />
                             </div>
-                            <div className="panel-content"></div>
+                            <div className="panel-content">
+                                <p>sss</p>
+                            </div>
                         </div>
                     </Skeleton>
                 </div>
@@ -145,5 +136,25 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
         </Layout>
     );
 };
-
+/**
+ * xhr拦截器返回的数据
+ */
+const onMessageListener = (handel: (data: mockDataItem) => void) => {
+    chrome.runtime.onMessage.addListener((request: ReceiveMessage) => {
+        console.log('devtools 接受到消息', request);
+        if (request.to === 'devtools') {
+            handel(request.data);
+        }
+    });
+};
+/**
+ * devtools拦截器返回的数据
+ */
+const requestFinishedListener = (type: 'add' | 'remove', handel: (data: DevtoolsRequest) => void) => {
+    if (type === 'add') {
+        chrome.devtools.network.onRequestFinished.addListener(handel);
+    } else {
+        chrome.devtools.network.onRequestFinished.removeListener(handel);
+    }
+};
 export default App;
