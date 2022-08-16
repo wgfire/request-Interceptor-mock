@@ -61,4 +61,4 @@ export interface ReceiveMessage {
     data: any;
 }
 export type DevtoolsRequest = chrome.devtools.network.Request;
-export type DevtoolsRequests = DevtoolsRequest & { id: string };
+export type DevtoolsRequests = DevtoolsRequest & { id: string; _resourceType?: string };

@@ -1,66 +1,88 @@
-import { Table } from '@douyinfe/semi-ui';
+//@ts-nocheck
+import { Table, Typography } from '@douyinfe/semi-ui';
+import { TextProps } from '@douyinfe/semi-ui/lib/es/typography/text';
 import { DevtoolsRequests } from '../../../utils/type';
 
+const { Paragraph, Text } = Typography;
 export const DataTable: React.FC<{ data: Array<DevtoolsRequests> }> = (props: { data: Array<DevtoolsRequests> }) => {
     const { data } = props;
     return (
         <div>
-            <Table columns={columns} dataSource={data} pagination={false} size="small" />
+            <Table columns={columns} dataSource={data} size="small" />
         </div>
     );
 };
-// const data = [
-//     {
-//         key: '1',
-//         name: 'Semi Design 设计稿.fig',
-//         nameIconSrc: 'https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/figma-icon.png',
-//         size: '2M',
-//         owner: '姜鹏志',
-//         updateTime: '2020-02-02 05:13',
-//         avatarBg: 'grey',
-//     },
-//     {
-//         key: '2',
-//         name: 'Semi Design 分享演示文稿',
-//         nameIconSrc: 'https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/docs-icon.png',
-//         size: '2M',
-//         owner: '郝宣',
-//         updateTime: '2020-01-17 05:31',
-//         avatarBg: 'red',
-//     },
-//     {
-//         key: '3',
-//         name: '设计文档',
-//         nameIconSrc: 'https://lf3-static.bytednsdoc.com/obj/eden-cn/ptlz_zlp/ljhwZthlaukjlkulzlp/docs-icon.png',
-//         size: '34KB',
-//         owner: 'Zoey Edwards',
-//         updateTime: '2020-01-26 11:01',
-//         avatarBg: 'light-blue',
-//     },
-// ];
 const columns = [
     {
         title: '请求地址',
         dataIndex: 'url',
-        render: (text: string, item: DevtoolsRequests) => <span>{JSON.stringify(item.request.url)}</span>,
+        render: (text: string, item: DevtoolsRequests) => {
+            return (
+                <Paragraph
+                    link
+                    ellipsis={{
+                        showTooltip: {
+                            type: 'popover',
+                            opts: {
+                                style: { width: 400, wordBreak: 'break-all' },
+                            },
+                        },
+                        pos: 'middle',
+                        rows: 1,
+                    }}
+                    style={{ width: 300 }}
+                >
+                    {item.request.url}
+                </Paragraph>
+            );
+        },
     },
     {
         title: '请求方法',
         dataIndex: 'method',
-        render: (text: string, item: DevtoolsRequests) => <span>{JSON.stringify(item.request.method)}</span>,
+        render: (text: string, item: DevtoolsRequests) => <Text strong>{item.request.method}</Text>,
     },
     {
         title: '请求类型',
         dataIndex: '_resourceType',
+        render: (text: string, item: DevtoolsRequests) => <Text strong>{item._resourceType}</Text>,
     },
     {
         title: '优先级',
         dataIndex: '_priority',
+        render: (text: string, item: DevtoolsRequests) => (
+            <Text strong type="warning">
+                {item._priority}
+            </Text>
+        ),
     },
     {
         title: '等待时间',
         dataIndex: 'time',
-        render: (text: number) => <span>{`${text.toFixed(0)}s`}</span>,
+        sorter: (a: DevtoolsRequests, b: DevtoolsRequests) => (a.time - b.time > 0 ? 1 : -1), // 这里ts类型处理有问题
+        render: (text: number) => <Text type={setTimeType(text)}>{`${text.toFixed(0)}ms`}</Text>,
     },
 ];
+
+const setTimeType = (time: number): TextProps['type'] => {
+    let result = 'success';
+    const timeType = {
+        success: [0, 100],
+        warning: [100, 200],
+        danger: [200],
+    };
+    Object.keys(timeType).forEach((keys: string) => {
+        const times = timeType[keys];
+        if (times[0] && times[1]) {
+            if (time > times[0] && time <= times[1]) {
+                result = keys;
+            }
+        } else {
+            if (time > times[0]) {
+                result = keys;
+            }
+        }
+    });
+    return result;
+};
 export default DataTable;

@@ -32,23 +32,25 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
                     ...request,
                     id: createId({ url, data: method === 'GET' ? '' : (postData!.text as string) }),
                 };
-                // request.id = createId({ url: request._url, data: request.request.postData });
                 newData.push(newRequest);
-
                 return newData;
             });
         }
     };
     const ReceiveRequestInformation = (data: mockDataItem) => {
         setMockData((value) => {
-            value.push(data);
-            return value;
+            const newData = [...value];
+            newData.push(data);
+            return newData;
         });
     };
 
     useUpdateEffect(() => {
         console.log(collectRequestData, '网络收集');
     }, [collectRequestData]);
+    useUpdateEffect(() => {
+        console.log(mockData, '拦截数据');
+    }, [mockData]);
 
     return (
         <Layout style={{ border: '1px solid var(--semi-color-border)' }}>
