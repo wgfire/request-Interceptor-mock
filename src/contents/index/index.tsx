@@ -53,17 +53,15 @@ function createPopup() {
     });
 }
 
-function start() {
+async function start() {
+    await injectCustomJs('js/pageScript.js');
+    postMockDataToScript({ mockData: [], config: { withCredentials: false, proxySwitch: false } }); // 加载完成后立马先吧完成xhr的重写
     const map = readStorageAll();
-    chrome.runtime.sendMessage({ to: 'background', action: 'onload' });
     map.then((res) => {
-        console.log('读取本地数据', res);
+        if (res.config.proxySwitch) {
+            postMockDataToScript(res);
+        }
         createPopup();
-        injectCustomJs('js/pageScript.js').then(() => {
-            if (res.config.proxySwitch) {
-                postMockDataToScript(res); //  需要在js挂载成功之后 再去发送消息
-            }
-        });
     });
 }
 start();

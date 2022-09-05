@@ -37,7 +37,7 @@ export const HeaderExtraContent: React.FC<HeaderExtraContentProps> = (props: Hea
     return (
         <div className="HeaderExtraContent">
             <Switch checked={switchCheck} size="small" onChange={switchChange} />
-            <Dropdown menu={menu} trigger="hover" position="bottomRight">
+            <Dropdown menu={menu} trigger="click" position="bottomRight">
                 <Button type="primary" icon={<IconSetting />} size="small" theme="light" style={{ color: '#00b3a1' }} />
             </Dropdown>
         </div>
