@@ -40,16 +40,19 @@ const columns = [
     {
         title: '请求方法',
         dataIndex: 'method',
+        width: '90px',
         render: (text: string, item: DevtoolsRequests) => <Text strong>{item.request.method}</Text>,
     },
     {
         title: '请求类型',
         dataIndex: '_resourceType',
+        width: '90px',
         render: (text: string, item: DevtoolsRequests) => <Text strong>{item._resourceType}</Text>,
     },
     {
         title: '优先级',
         dataIndex: '_priority',
+        width: '100px',
         render: (text: string, item: DevtoolsRequests) => (
             <Text strong type="warning">
                 {item._priority}
@@ -59,6 +62,7 @@ const columns = [
     {
         title: '等待时间',
         dataIndex: 'time',
+        width: '110px',
         sorter: (a: DevtoolsRequests, b: DevtoolsRequests) => (a.time - b.time > 0 ? 1 : -1), // 这里ts类型处理有问题
         render: (text: number) => <Text type={setTimeType(text)}>{`${text.toFixed(0)}ms`}</Text>,
     },

@@ -15,6 +15,7 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
     const loading = useRef<boolean | undefined>(false);
     const [collectRequestData, setCollectRequestData] = useState<Array<DevtoolsRequests>>([]);
     const [mockData, setMockData] = useState<Array<mockDataItem>>([]);
+    const [inputContent, setInputContent] = useState('');
     useEffect(() => {
         requestFinishedListener('add', collectRequestInformation);
         onMessageListener(ReceiveRequestInformation);
@@ -22,7 +23,10 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
             requestFinishedListener('remove', collectRequestInformation);
         };
     }, []);
-
+    /**
+     * @description 接受devtools API递过来的数据
+     * @param data
+     */
     const collectRequestInformation = (request: DevtoolsRequest) => {
         if (CollectType.has(request._resourceType as string)) {
             setCollectRequestData((data) => {
@@ -30,18 +34,30 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
                 const { method, url, postData } = request.request;
                 const newRequest: DevtoolsRequests = {
                     ...request,
-                    id: createId({ url, data: method === 'GET' ? '' : (postData!.text as string) }),
+                    id: createId({ url, data: method === 'GET' ? '' : postData ? (postData.text as string) : '' }),
                 };
                 newData.push(newRequest);
                 return newData;
             });
         }
     };
+    /**
+     * @description 接受xhr拦截器传递过来的数据
+     * @param data
+     */
     const ReceiveRequestInformation = (data: mockDataItem) => {
         setMockData((value) => {
             const newData = [...value];
             newData.push(data);
             return newData;
+        });
+    };
+    /**
+     * @description 根据输入框内容筛选数据
+     */
+    const filterTableData = () => {
+        return collectRequestData.filter((el) => {
+            return el._url === inputContent || el.response.content;
         });
     };
 
@@ -89,6 +105,7 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
                         border: '1px solid var(--semi-color-border)',
                         height: '100%',
                         padding: '32px',
+                        boxShadow: '0px 0px 1px 1px var(--semi-color-border)',
                     }}
                 >
                     <Skeleton placeholder={<Skeleton.Paragraph rows={2} />} loading={loading.current}>
@@ -97,9 +114,11 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
                                 <div className="search-box">
                                     <IconSearch size="large" style={{ marginRight: '12px' }} />
                                     <Input
+                                        value={inputContent}
                                         addonBefore="过滤URL"
-                                        onChange={() => {
+                                        onChange={(value: string) => {
                                             // ruleChangeHandel(value);
+                                            setInputContent(value);
                                         }}
                                         className="rule-input"
                                     />
