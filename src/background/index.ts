@@ -20,11 +20,11 @@ const proxyNotifications = (item: mockDataItem) => {
     });
 };
 const errorNotifications = (item: { url: string }) => {
-    const domain = item.url.match(/^(https?):\/\/(.*?)\//);
+    resetMax(2);
     isNotifications({
-        title: `提醒:${domain ? domain[0] : ''}`,
+        title: `提醒:`,
         url: item.url,
-        message: `当前地址请求失败`,
+        message: `当前地址请求失败:${item.url ? item.url : ''}`,
     });
 };
 
@@ -84,7 +84,7 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
 
     onload: () => {
         // 页面加载完成后，重置提醒次数,代理是弹出一次
-        resetMax(1);
+        resetMax(3);
     },
     reload: () => {
         // 重新加载界面

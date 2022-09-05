@@ -178,4 +178,5 @@ const requestFinishedListener = (type: 'add' | 'remove', handel: (data: Devtools
         chrome.devtools.network.onRequestFinished.removeListener(handel);
     }
 };
+
 export default App;
