@@ -156,7 +156,7 @@ export const initXhr = (data: globalDataProps): ProxyXhr => {
             },
             onload(event: any) {
                 try {
-                    if (event.target.status === 200) {
+                    if (event.target.status !== 400 && event.target.static !== 500) {
                         console.log('插件监听-获取完成', event, this);
                         const data = findUrlBuyMock(this.responseURL, xhrData.mockData);
                         const item = createMockItem({ xhr: this });
