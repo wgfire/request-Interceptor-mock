@@ -7,6 +7,7 @@ import './App.scss';
 import { DataTable } from './components/dataTable';
 import { createId } from '../utils/pagescript';
 import { useUpdateEffect } from '../hooks/useUpdateEffect';
+import { DataTabs } from './components/dataTabs';
 
 const CollectType = new Set(['xhr', 'fetch']);
 const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
@@ -45,12 +46,20 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
      * @description 接受xhr拦截器传递过来的数据
      * @param data
      */
-    const ReceiveRequestInformation = (data: mockDataItem) => {
-        setMockData((value) => {
-            const newData = [...value];
-            newData.push(data);
-            return newData;
-        });
+    const ReceiveRequestInformation = (request: ReceiveMessage) => {
+        const { action, data } = request;
+        if (action === 'update') {
+            setMockData((value) => {
+                const newData = [...value];
+                const notExistData = newData.every((el) => el.id !== data.id);
+                notExistData && newData.push(data);
+                return newData;
+            });
+        } else if (action === 'load') {
+            console.log('devtools清空数据');
+            setMockData(data);
+            setCollectRequestData(data);
+        }
     };
     /**
      * @description 根据输入框内容筛选数据
@@ -126,7 +135,7 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
                                 <DataTable data={collectRequestData} />
                             </div>
                             <div className="panel-content">
-                                <p>sss</p>
+                                <DataTabs></DataTabs>
                             </div>
                         </div>
                     </Skeleton>
@@ -160,11 +169,11 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
 /**
  * xhr拦截器返回的数据
  */
-const onMessageListener = (handel: (data: mockDataItem) => void) => {
+const onMessageListener = (handel: (data: ReceiveMessage) => void) => {
     chrome.runtime.onMessage.addListener((request: ReceiveMessage) => {
         console.log('devtools 接受到消息', request);
         if (request.to === 'devtools') {
-            handel(request.data);
+            handel(request);
         }
     });
 };

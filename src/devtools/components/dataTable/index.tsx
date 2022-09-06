@@ -1,14 +1,31 @@
 //@ts-nocheck
 import { Table, Typography } from '@douyinfe/semi-ui';
 import { TextProps } from '@douyinfe/semi-ui/lib/es/typography/text';
+import { useState } from 'react';
 import { DevtoolsRequests } from '../../../utils/type';
 
 const { Paragraph, Text } = Typography;
 export const DataTable: React.FC<{ data: Array<DevtoolsRequests> }> = (props: { data: Array<DevtoolsRequests> }) => {
     const { data } = props;
+    const [activeIndex, setActiveIndex] = useState(0);
+
     return (
         <div>
-            <Table columns={columns} dataSource={data} size="small" />
+            <Table
+                columns={columns}
+                dataSource={data}
+                size="small"
+                onRow={(record, index) => {
+                    const activeStyle = { background: index === activeIndex ? 'var(--semi-color-fill-0)' : 'var(--semi-color-white)' };
+                    return {
+                        onClick: () => {
+                            console.log('点击', index);
+                            setActiveIndex(index);
+                        }, // 点击行
+                        style: activeStyle,
+                    };
+                }}
+            />
         </div>
     );
 };
@@ -16,7 +33,7 @@ const columns = [
     {
         title: '请求地址',
         dataIndex: 'url',
-        render: (text: string, item: DevtoolsRequests) => {
+        render: (text: string, item: DevtoolsRequests, index: number) => {
             return (
                 <Paragraph
                     link
