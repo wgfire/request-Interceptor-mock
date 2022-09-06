@@ -73,6 +73,13 @@ window.addEventListener('message', (event) => {
         actionMap[action](data);
     }
 });
+document.addEventListener('readystatechange', (event) => {
+    // 页面开始加载
+    console.log(document.readyState, '页面加载');
+    if (document.readyState === 'interactive') {
+        chrome.runtime.sendMessage({ to: 'background', action: 'onload' });
+    }
+});
 
 chrome.runtime.onMessage.addListener((request) => {
     if (request.to === 'content') {
