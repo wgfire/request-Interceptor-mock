@@ -85,8 +85,6 @@ const actionMap: { [key: string]: (fn: (arg: any) => void, arg: any) => void } =
     onload: () => {
         // 页面加载完成后，重置提醒次数,代理是弹出一次
         resetMax(3);
-        // 页面加载完 由于devtools还是存在的所以需要清空里面的mock数据
-        chrome.runtime.sendMessage({ action: 'load', to: 'devtools', data: [] });
     },
     reload: () => {
         // 重新加载界面

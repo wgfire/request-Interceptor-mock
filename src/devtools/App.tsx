@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Layout, Nav, Button, Skeleton, Avatar, Input, Typography } from '@douyinfe/semi-ui';
+import { Layout, Nav, Button, Skeleton, Avatar, Input, Typography, Spin } from '@douyinfe/semi-ui';
 import { IconSetting, IconGithubLogo, IconSearch } from '@douyinfe/semi-icons';
 import { DevtoolsRequest, DevtoolsRequests, globalDataProps, mockDataItem, ReceiveMessage } from '../utils/type';
 
@@ -8,57 +8,70 @@ import { DataTable } from './components/dataTable';
 import { createId } from '../utils/pagescript';
 import { useUpdateEffect } from '../hooks/useUpdateEffect';
 import { DataTabs } from './components/dataTabs';
+import { throttle } from '../utils/common';
 
 const CollectType = new Set(['xhr', 'fetch']);
 const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
     const { Title, Text } = Typography;
     const { Header, Footer, Content } = Layout;
-    const loading = useRef<boolean | undefined>(false);
+    const [loading, setLoading] = useState(false);
     const [collectRequestData, setCollectRequestData] = useState<Array<DevtoolsRequests>>([]);
     const [mockData, setMockData] = useState<Array<mockDataItem>>([]);
     const [inputContent, setInputContent] = useState('');
     useEffect(() => {
         requestFinishedListener('add', collectRequestInformation);
-        onMessageListener(ReceiveRequestInformation);
+        onMessageListener('add', ReceiveRequestInformation);
         return () => {
             requestFinishedListener('remove', collectRequestInformation);
+            onMessageListener('remove', ReceiveRequestInformation);
         };
     }, []);
     /**
      * @description 接受devtools API递过来的数据
      * @param data
      */
-    const collectRequestInformation = (request: DevtoolsRequest) => {
-        if (CollectType.has(request._resourceType as string)) {
-            setCollectRequestData((data) => {
-                const newData = [...data];
-                const { method, url, postData } = request.request;
-                const newRequest: DevtoolsRequests = {
-                    ...request,
-                    id: createId({ url, data: method === 'GET' ? '' : postData ? (postData.text as string) : '' }),
-                };
-                newData.push(newRequest);
-                return newData;
-            });
-        }
-    };
+    const collectRequestInformation = throttle(
+        100,
+        (request: DevtoolsRequest) => {
+            if (CollectType.has(request._resourceType as string)) {
+                setLoading(true);
+                setCollectRequestData((data) => {
+                    const newData = [...data];
+                    const { method, url, postData } = request.request;
+                    const newRequest: DevtoolsRequests = {
+                        ...request,
+                        id: createId({ url, data: method === 'GET' ? '' : postData ? (postData.text as string) : '' }),
+                    };
+                    newData.push(newRequest);
+                    return newData;
+                });
+            }
+        },
+        () => {
+            console.log('收集结束');
+            setLoading(false);
+        },
+    );
     /**
      * @description 接受xhr拦截器传递过来的数据
      * @param data
      */
     const ReceiveRequestInformation = (request: ReceiveMessage) => {
-        const { action, data } = request;
-        if (action === 'update') {
-            setMockData((value) => {
-                const newData = [...value];
-                const notExistData = newData.every((el) => el.id !== data.id);
-                notExistData && newData.push(data);
-                return newData;
-            });
-        } else if (action === 'load') {
-            console.log('devtools清空数据');
-            setMockData(data);
-            setCollectRequestData(data);
+        console.log('devtools接受消息', request);
+        if (request.to === 'devtools') {
+            const { action, data } = request;
+            if (action === 'update') {
+                setMockData((value) => {
+                    const newData = [...value];
+                    const notExistData = newData.every((el) => el.id !== data.id);
+                    notExistData && newData.push(data);
+                    return newData;
+                });
+            } else if (action === 'onload') {
+                console.log('devtools清空数据');
+                setMockData(data);
+                setCollectRequestData(data);
+            }
         }
     };
     /**
@@ -102,6 +115,7 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
                     </Nav>
                 </div>
             </Header>
+
             <Content
                 style={{
                     padding: '24px',
@@ -117,7 +131,7 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
                         boxShadow: '0px 0px 1px 1px var(--semi-color-border)',
                     }}
                 >
-                    <Skeleton placeholder={<Skeleton.Paragraph rows={2} />} loading={loading.current}>
+                    <Spin spinning={loading} tip="别动! 我自己会消失..." size="large">
                         <div className="tools-content">
                             <div className="table-content">
                                 <div className="search-box">
@@ -138,9 +152,10 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
                                 <DataTabs></DataTabs>
                             </div>
                         </div>
-                    </Skeleton>
+                    </Spin>
                 </div>
             </Content>
+
             <Footer
                 style={{
                     display: 'flex',
@@ -167,15 +182,14 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
     );
 };
 /**
- * xhr拦截器返回的数据
+ * background拦截器返回的数据
  */
-const onMessageListener = (handel: (data: ReceiveMessage) => void) => {
-    chrome.runtime.onMessage.addListener((request: ReceiveMessage) => {
-        console.log('devtools 接受到消息', request);
-        if (request.to === 'devtools') {
-            handel(request);
-        }
-    });
+const onMessageListener = (type: 'add' | 'remove', handel: (data: ReceiveMessage) => void) => {
+    if (type == 'add') {
+        chrome.runtime.onMessage.addListener(handel);
+    } else {
+        chrome.runtime.onMessage.removeListener(handel);
+    }
 };
 /**
  * devtools拦截器返回的数据

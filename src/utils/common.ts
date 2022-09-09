@@ -70,6 +70,22 @@ export function debounce(func: (...arg: any[]) => void, wait: number, immediate:
         return true;
     };
 }
+/**
+ * 节流函数，支持完成后触发一个回调函数
+ */
+export function throttle(wait: number, fn: (...arg: any[]) => void, callback: (...arg: any[]) => void) {
+    let timeout: null | any = null;
+    const call = debounce(callback, 1000, false);
+    return (...arg: any[]) => {
+        if (!timeout) {
+            timeout = setTimeout(() => {
+                fn.apply(null, arg);
+                call();
+                timeout = null;
+            }, wait);
+        }
+    };
+}
 
 export function postMockDataToScript(globalData: globalDataProps | null, action = 'start') {
     window.postMessage({
