@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Layout, Nav, Button, Skeleton, Avatar, Input, Typography, Spin } from '@douyinfe/semi-ui';
 import { IconSetting, IconGithubLogo, IconSearch } from '@douyinfe/semi-icons';
 import { DevtoolsRequest, DevtoolsRequests, globalDataProps, mockDataItem, ReceiveMessage } from '../utils/type';
@@ -8,7 +8,6 @@ import { DataTable } from './components/dataTable';
 import { createId } from '../utils/pagescript';
 import { useUpdateEffect } from '../hooks/useUpdateEffect';
 import { DataTabs } from './components/dataTabs';
-import { throttle } from '../utils/common';
 
 const CollectType = new Set(['xhr', 'fetch']);
 const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
@@ -18,6 +17,86 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
     const [collectRequestData, setCollectRequestData] = useState<Array<DevtoolsRequests>>([]);
     const [mockData, setMockData] = useState<Array<mockDataItem>>([]);
     const [inputContent, setInputContent] = useState('');
+    const [activeMockItem, setActiveMockItem] = useState<mockDataItem | undefined>();
+
+    /**
+     * @description 接受devtools API递过来的数据
+     * @param data
+     */
+    const collectRequestInformation = useCallback((request: DevtoolsRequest) => {
+        if (CollectType.has(request._resourceType as string)) {
+            setLoading(true);
+            setCollectRequestData((data) => {
+                const newData = [...data];
+                const { method, url, postData } = request.request;
+                const newRequest: DevtoolsRequests = {
+                    ...request,
+                    id: createId({ url, data: method === 'GET' ? '' : postData ? (postData.text as string) : '' }),
+                };
+                const notExistData = newData.every((el) => el.id !== newRequest.id);
+                notExistData && newData.push(newRequest);
+
+                setTimeout(() => {
+                    setLoading(false);
+                }, 500);
+                return newData;
+            });
+        }
+    }, []);
+
+    /**
+     * @description 接受xhr拦截器传递过来的数据
+     * @param data
+     */
+    const ReceiveRequestInformation = useCallback((request: ReceiveMessage, sender: any) => {
+        if (request.to === 'devtools') {
+            console.log('devtools接受消息', request, sender);
+            const { action, data } = request;
+            action === 'update' && setMockDataHandel(data);
+        }
+    }, []);
+
+    /**
+     * @description 设置mockData值，过滤id一样的
+     */
+    const setMockDataHandel = (data: mockDataItem) => {
+        setMockData((value) => {
+            const newData = [...value];
+            const notExistData = newData.every((el) => el.id !== data.id);
+            notExistData && newData.push(data);
+            return newData;
+        });
+    };
+
+    // 匹配规则保存到后台
+    const ruleChangeHandel = (value: string) => {
+        chrome.storage.local.set({ rule: value });
+        setInputContent(value);
+    };
+
+    /**
+     * @description 根据输入框内容筛选数据
+     */
+    const filterTableData = useMemo(() => {
+        setLoading(true);
+        const filterData = mockData.filter((el: mockDataItem) => {
+            if (!inputContent) return true;
+            const testArray = [el.url, el.response, el.originResponse];
+            try {
+                const reg = new RegExp(inputContent, 'g');
+                return testArray.some((item) => reg.test(item));
+            } catch (error) {
+                console.log(error);
+                return false;
+            }
+        });
+
+        const newTableData = collectRequestData.filter((item: DevtoolsRequests) => filterData.some((el: mockDataItem) => item.id === el.id));
+        console.log('查询结果', filterData, newTableData);
+        setLoading(false);
+        return newTableData;
+    }, [collectRequestData, inputContent, mockData]);
+
     useEffect(() => {
         requestFinishedListener('add', collectRequestInformation);
         onMessageListener('add', ReceiveRequestInformation);
@@ -25,70 +104,21 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
             requestFinishedListener('remove', collectRequestInformation);
             onMessageListener('remove', ReceiveRequestInformation);
         };
-    }, []);
-    /**
-     * @description 接受devtools API递过来的数据
-     * @param data
-     */
-    const collectRequestInformation = throttle(
-        100,
-        (request: DevtoolsRequest) => {
-            if (CollectType.has(request._resourceType as string)) {
-                setLoading(true);
-                setCollectRequestData((data) => {
-                    const newData = [...data];
-                    const { method, url, postData } = request.request;
-                    const newRequest: DevtoolsRequests = {
-                        ...request,
-                        id: createId({ url, data: method === 'GET' ? '' : postData ? (postData.text as string) : '' }),
-                    };
-                    newData.push(newRequest);
-                    return newData;
-                });
-            }
-        },
-        () => {
-            console.log('收集结束');
-            setLoading(false);
-        },
-    );
-    /**
-     * @description 接受xhr拦截器传递过来的数据
-     * @param data
-     */
-    const ReceiveRequestInformation = (request: ReceiveMessage) => {
-        console.log('devtools接受消息', request);
-        if (request.to === 'devtools') {
-            const { action, data } = request;
-            if (action === 'update') {
-                setMockData((value) => {
-                    const newData = [...value];
-                    const notExistData = newData.every((el) => el.id !== data.id);
-                    notExistData && newData.push(data);
-                    return newData;
-                });
-            } else if (action === 'onload') {
-                console.log('devtools清空数据');
-                setMockData(data);
-                setCollectRequestData(data);
-            }
-        }
-    };
-    /**
-     * @description 根据输入框内容筛选数据
-     */
-    const filterTableData = () => {
-        return collectRequestData.filter((el) => {
-            return el._url === inputContent || el.response.content;
-        });
-    };
+    }, [ReceiveRequestInformation, collectRequestInformation]);
 
     useUpdateEffect(() => {
         console.log(collectRequestData, '网络收集');
     }, [collectRequestData]);
+
     useUpdateEffect(() => {
         console.log(mockData, '拦截数据');
     }, [mockData]);
+
+    useEffect(() => {
+        chrome.storage.local.get('rule', (res) => {
+            setInputContent(res.rule);
+        });
+    }, []);
 
     return (
         <Layout style={{ border: '1px solid var(--semi-color-border)' }}>
@@ -140,16 +170,22 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
                                         value={inputContent}
                                         addonBefore="过滤URL"
                                         onChange={(value: string) => {
-                                            // ruleChangeHandel(value);
-                                            setInputContent(value);
+                                            ruleChangeHandel(value);
                                         }}
                                         className="rule-input"
                                     />
                                 </div>
-                                <DataTable data={collectRequestData} />
+                                <DataTable
+                                    data={filterTableData}
+                                    clickRow={(item) => {
+                                        console.log(item, 'x');
+                                        const currentItem = mockData.find((mockItem) => mockItem.id === item.id);
+                                        setActiveMockItem(currentItem);
+                                    }}
+                                />
                             </div>
                             <div className="panel-content">
-                                <DataTabs></DataTabs>
+                                <DataTabs mockData={activeMockItem} />
                             </div>
                         </div>
                     </Spin>
@@ -184,8 +220,8 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
 /**
  * background拦截器返回的数据
  */
-const onMessageListener = (type: 'add' | 'remove', handel: (data: ReceiveMessage) => void) => {
-    if (type == 'add') {
+const onMessageListener = (type: 'add' | 'remove', handel: (data: ReceiveMessage, sender: any) => void) => {
+    if (type === 'add') {
         chrome.runtime.onMessage.addListener(handel);
     } else {
         chrome.runtime.onMessage.removeListener(handel);

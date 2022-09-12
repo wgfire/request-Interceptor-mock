@@ -177,7 +177,7 @@ export const initXhr = (data: globalDataProps): ProxyXhr => {
                         });
                     }
                 } catch (error) {
-                    console.log(error);
+                    console.log(error, 'event', event);
                 }
             },
             onerror(event: any) {

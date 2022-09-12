@@ -1,12 +1,16 @@
-//@ts-nocheck
+// @ts-nocheck
 import { Table, Typography } from '@douyinfe/semi-ui';
 import { TextProps } from '@douyinfe/semi-ui/lib/es/typography/text';
 import { useState } from 'react';
 import { DevtoolsRequests } from '../../../utils/type';
 
 const { Paragraph, Text } = Typography;
-export const DataTable: React.FC<{ data: Array<DevtoolsRequests> }> = (props: { data: Array<DevtoolsRequests> }) => {
-    const { data } = props;
+export interface DataTableProps {
+    data: Array<DevtoolsRequests>;
+    clickRow: (item: DevtoolsRequests) => void;
+}
+export const DataTable: React.FC<DataTableProps> = (props: DataTableProps) => {
+    const { data, clickRow } = props;
     const [activeIndex, setActiveIndex] = useState(0);
 
     return (
@@ -21,6 +25,7 @@ export const DataTable: React.FC<{ data: Array<DevtoolsRequests> }> = (props: { 
                         onClick: () => {
                             console.log('点击', index);
                             setActiveIndex(index);
+                            clickRow(record);
                         }, // 点击行
                         style: activeStyle,
                     };
@@ -33,26 +38,25 @@ const columns = [
     {
         title: '请求地址',
         dataIndex: 'url',
-        render: (text: string, item: DevtoolsRequests, index: number) => {
-            return (
-                <Paragraph
-                    link
-                    ellipsis={{
-                        showTooltip: {
-                            type: 'popover',
-                            opts: {
-                                style: { width: 400, wordBreak: 'break-all' },
-                            },
+        width: '100px',
+        render: (text: string, item: DevtoolsRequests, index: number) => (
+            <Paragraph
+                link
+                ellipsis={{
+                    showTooltip: {
+                        type: 'popover',
+                        opts: {
+                            style: { width: 400, wordBreak: 'break-all' },
                         },
-                        pos: 'middle',
-                        rows: 1,
-                    }}
-                    style={{ width: 300 }}
-                >
-                    {item.request.url}
-                </Paragraph>
-            );
-        },
+                    },
+                    pos: 'middle',
+                    rows: 1,
+                }}
+                style={{ width: 300 }}
+            >
+                {item.request.url}
+            </Paragraph>
+        ),
     },
     {
         title: '请求方法',
@@ -98,10 +102,8 @@ const setTimeType = (time: number): TextProps['type'] => {
             if (time > times[0] && time <= times[1]) {
                 result = keys;
             }
-        } else {
-            if (time > times[0]) {
-                result = keys;
-            }
+        } else if (time > times[0]) {
+            result = keys;
         }
     });
     return result;

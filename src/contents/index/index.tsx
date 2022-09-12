@@ -78,7 +78,7 @@ document.addEventListener('readystatechange', (event) => {
     console.log(document.readyState, '页面加载');
     if (document.readyState === 'interactive') {
         chrome.runtime.sendMessage({ to: 'background', action: 'onload' });
-        // 页面加载完 由于devtools还是存在的所以需要清空里面的mock数据
+        // 页面加载完 由于devtools还是存在的所以需要清空里面的mock数据 devtools接受消息 会触发两次
         // chrome.runtime.sendMessage({ to: 'devtools', action: 'onload', data: [] });
     }
 });

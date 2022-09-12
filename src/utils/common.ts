@@ -71,18 +71,26 @@ export function debounce(func: (...arg: any[]) => void, wait: number, immediate:
     };
 }
 /**
- * 节流函数，支持完成后触发一个回调函数
+ * 将所有函数保存在一个栈
  */
 export function throttle(wait: number, fn: (...arg: any[]) => void, callback: (...arg: any[]) => void) {
-    let timeout: null | any = null;
-    const call = debounce(callback, 1000, false);
+    let timeout: undefined | number;
+    const taskArray: Array<(...arg: any[]) => void> = [];
     return (...arg: any[]) => {
         if (!timeout) {
+            taskArray.push(fn);
             timeout = setTimeout(() => {
-                fn.apply(null, arg);
-                call();
-                timeout = null;
+                // taskArray.forEach((fun) => {
+                //     fun(arg);
+                // });
+                // timeout = undefined;
+                // callback();
+                console.log(taskArray, '收集的栈');
             }, wait);
+        } else {
+            taskArray.push(fn);
+            console.log('添加的栈', taskArray);
+            clearTimeout(timeout);
         }
     };
 }

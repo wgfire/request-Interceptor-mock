@@ -1,5 +1,4 @@
 import ReactDOM from 'react-dom';
-import { HashRouter } from 'react-router-dom';
 import { readStorageAll } from '../utils/common';
 
 import App from './App';

@@ -1,36 +1,70 @@
 import React from 'react';
 import { Tabs, TabPane } from '@douyinfe/semi-ui';
 import { IconFile, IconGlobe, IconHelpCircle } from '@douyinfe/semi-icons';
+import ReactJson, { InteractionProps } from 'react-json-view';
+import { mockDataItem } from '../../../utils/type';
 
-export const DataTabs: React.FC<{}> = (props: any) => {
+export interface DataTabsProps {
+    mockData: mockDataItem | undefined;
+}
+
+export const DataTabs: React.FC<DataTabsProps> = (props: DataTabsProps) => {
+    const { mockData } = props;
     return (
-        <Tabs tabPosition="left" type="line">
+        <Tabs tabPosition="left" type="line" defaultActiveKey="1">
             <TabPane
                 tab={
                     <span>
                         <IconFile />
-                        文档
+                        RequsetHeader
                     </span>
                 }
                 itemKey="1"
+                disabled={!!mockData?.id}
             >
                 <div style={{ padding: '0 24px' }}>
-                    <h3>文档</h3>
-                    <p style={{ lineHeight: 1.8 }}>
-                        Semi Design 是由互娱社区前端团队与 UED
-                        团队共同设计开发并维护的设计系统。设计系统包含设计语言以及一整套可复用的前端组件，帮助设计师与开发者更容易地打造高质量的、用户体验一致的、符合设计规范的
-                        Web 应用。
-                    </p>
-                    <p style={{ lineHeight: 1.8 }}>
-                        区别于其他的设计系统而言，Semi Design 以用户中心、内容优先、设计人性化为设计理念，具有以下优势：
-                    </p>
+                    <div id="s-1-jsonInput-body">
+                        <ReactJson
+                            name={false}
+                            collapsed
+                            theme="monokai"
+                            collapseStringsAfterLength={12}
+                            src={checkJson(mockData?.showOriginHeader ? mockData?.request.originHeaders : mockData?.request.headers)}
+                            onEdit={(value: InteractionProps) => {
+                                if (mockData?.showOriginHeader) return false;
+                                //  changeHandel(mockData?.id, value.updated_src, ['request', 'headers']);
+                                return true;
+                            }}
+                            onAdd={(value: InteractionProps) => {
+                                if (mockData?.showOriginHeader) return false;
+                                //  changeHandel(mockData?.id, value.updated_src, ['request', 'headers']);
+                                return true;
+                            }}
+                            onDelete={(value: InteractionProps) => {
+                                if (mockData?.showOriginHeader) return false;
+                                // changeHandel(mockData?.id, value.updated_src, ['request', 'headers']);
+                                return true;
+                            }}
+                            displayDataTypes
+                        />
+                        {!mockData?.showOriginHeader && (
+                            <textarea
+                                rows={4}
+                                cols={51}
+                                value={mockData?.request.headers}
+                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                                    //   textAreaChange(mockData?.id, e.currentTarget.value, ['request', 'headers']);
+                                }}
+                            />
+                        )}
+                    </div>
                 </div>
             </TabPane>
             <TabPane
                 tab={
                     <span>
                         <IconGlobe />
-                        快速起步
+                        RequestData
                     </span>
                 }
                 itemKey="2"
@@ -56,7 +90,7 @@ export const DataTabs: React.FC<{}> = (props: any) => {
                 tab={
                     <span>
                         <IconHelpCircle />
-                        帮助
+                        ResponseData
                     </span>
                 }
                 itemKey="3"
@@ -76,3 +110,16 @@ export const DataTabs: React.FC<{}> = (props: any) => {
         </Tabs>
     );
 };
+
+const checkJson = (json: any) => {
+    try {
+        if (!json) return {};
+        // 用户404 或者报错 会返回html文档导致解析失败
+        if (typeof json === 'string' && /^{.+}$/.test(json)) return JSON.parse(json);
+        if (json instanceof Object) json;
+        return {};
+    } catch {
+        return {};
+    }
+};
+export default DataTabs;

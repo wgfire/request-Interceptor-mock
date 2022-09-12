@@ -156,7 +156,7 @@ export class BaseXhr {
             if (_this.hooks[key]) {
                 console.log('拦截on的监听函数');
                 this._xhr[key] = function (...args: any[]) {
-                    _this.hooks[key].call(proxyXHR); // 执行代理函数
+                    _this.hooks[key].apply(proxyXHR, args); // 执行代理函数
                     val.apply(proxyXHR, args); // 执行用户set的函数
                 };
 
