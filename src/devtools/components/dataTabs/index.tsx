@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Tabs, TabPane } from '@douyinfe/semi-ui';
 import { IconFile, IconGlobe, IconHelpCircle } from '@douyinfe/semi-icons';
 import ReactJson, { InteractionProps } from 'react-json-view';
@@ -10,19 +10,22 @@ export interface DataTabsProps {
 
 export const DataTabs: React.FC<DataTabsProps> = (props: DataTabsProps) => {
     const { mockData } = props;
+    useEffect(() => {
+        console.log(mockData, '面板数据改变');
+    }, []);
     return (
         <Tabs tabPosition="left" type="line" defaultActiveKey="1">
             <TabPane
                 tab={
                     <span>
                         <IconFile />
-                        RequsetHeader
+                        RequestHeader
                     </span>
                 }
                 itemKey="1"
                 disabled={!!mockData?.id}
             >
-                <div style={{ padding: '0 24px' }}>
+                <div style={{ padding: '8px 12px' }}>
                     <div id="s-1-jsonInput-body">
                         <ReactJson
                             name={false}
@@ -51,6 +54,7 @@ export const DataTabs: React.FC<DataTabsProps> = (props: DataTabsProps) => {
                             <textarea
                                 rows={4}
                                 cols={51}
+                                style={{ width: '100%' }}
                                 value={mockData?.request.headers}
                                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                                     //   textAreaChange(mockData?.id, e.currentTarget.value, ['request', 'headers']);

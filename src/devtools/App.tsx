@@ -17,7 +17,7 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
     const [collectRequestData, setCollectRequestData] = useState<Array<DevtoolsRequests>>([]);
     const [mockData, setMockData] = useState<Array<mockDataItem>>([]);
     const [inputContent, setInputContent] = useState('');
-    const [activeMockItem, setActiveMockItem] = useState<mockDataItem | undefined>();
+    const [activeMockItem, setActiveMockItem] = useState<mockDataItem | undefined>(undefined);
 
     /**
      * @description 接受devtools API递过来的数据
@@ -78,9 +78,9 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
      * @description 根据输入框内容筛选数据
      */
     const filterTableData = useMemo(() => {
+        if (!inputContent) return collectRequestData;
         setLoading(true);
         const filterData = mockData.filter((el: mockDataItem) => {
-            if (!inputContent) return true;
             const testArray = [el.url, el.response, el.originResponse];
             try {
                 const reg = new RegExp(inputContent, 'g');
@@ -97,6 +97,10 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
         return newTableData;
     }, [collectRequestData, inputContent, mockData]);
 
+    /**
+     *
+     */
+    const setInitActiveMockItem = () => {};
     useEffect(() => {
         requestFinishedListener('add', collectRequestInformation);
         onMessageListener('add', ReceiveRequestInformation);
@@ -112,6 +116,7 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
 
     useUpdateEffect(() => {
         console.log(mockData, '拦截数据');
+        setInitActiveMockItem();
     }, [mockData]);
 
     useEffect(() => {
@@ -178,8 +183,8 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
                                 <DataTable
                                     data={filterTableData}
                                     clickRow={(item) => {
-                                        console.log(item, 'x');
                                         const currentItem = mockData.find((mockItem) => mockItem.id === item.id);
+                                        console.log(item, currentItem, 'x');
                                         setActiveMockItem(currentItem);
                                     }}
                                 />
