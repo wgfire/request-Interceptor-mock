@@ -11,6 +11,9 @@
 .semi-layout-footer {
     flex: 0 0 60px;
 }
+.semi-spin-children {
+    height: 100%;
+}
 .search-box {
     display: flex;
     align-items: center;
@@ -20,6 +23,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     column-gap: 16px;
+    height: 95%;
 }
 .table-content {
 }

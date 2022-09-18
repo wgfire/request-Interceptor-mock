@@ -1,13 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Layout, Nav, Button, Skeleton, Avatar, Input, Typography, Spin } from '@douyinfe/semi-ui';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Layout, Nav, Button, Skeleton, Avatar, Input, Typography, Spin, Empty } from '@douyinfe/semi-ui';
 import { IconSetting, IconGithubLogo, IconSearch } from '@douyinfe/semi-icons';
+import { IllustrationIdle, IllustrationIdleDark } from '@douyinfe/semi-illustrations';
 import { DevtoolsRequest, DevtoolsRequests, globalDataProps, mockDataItem, ReceiveMessage } from '../utils/type';
-
 import './App.scss';
 import { DataTable } from './components/dataTable';
 import { createId } from '../utils/pagescript';
 import { useUpdateEffect } from '../hooks/useUpdateEffect';
 import { DataTabs } from './components/dataTabs';
+import { setObjectValue } from '../utils/popup';
 
 const CollectType = new Set(['xhr', 'fetch']);
 const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
@@ -17,7 +18,8 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
     const [collectRequestData, setCollectRequestData] = useState<Array<DevtoolsRequests>>([]);
     const [mockData, setMockData] = useState<Array<mockDataItem>>([]);
     const [inputContent, setInputContent] = useState('');
-    const [activeMockItem, setActiveMockItem] = useState<mockDataItem | undefined>(undefined);
+    const [activeMockItem, setActiveMockItem] = useState<mockDataItem>({} as mockDataItem);
+    const initMockItemStatus = useRef<boolean>(false); // 是否设置过初始值
 
     /**
      * @description 接受devtools API递过来的数据
@@ -98,9 +100,57 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
     }, [collectRequestData, inputContent, mockData]);
 
     /**
-     *
+     *设置当前查看的mockitem
      */
-    const setInitActiveMockItem = () => {};
+    const setInitActiveMockItem = (item: DevtoolsRequests) => {
+        const currentItem = mockData.find((mockItem) => mockItem.id === item.id);
+        console.log(item, currentItem, 'x');
+        setActiveMockItem(currentItem ?? ({} as mockDataItem));
+    };
+    /**
+     *修改mock数据的回调
+     */
+    const changeHandel = (id: string, updatedSrc: object, key: string[]) => {
+        findMockBuyUrl(
+            id,
+            (indexSwitch: number) => {
+                setMockDataProps(JSON.stringify(updatedSrc), indexSwitch, key);
+            },
+            mockData,
+        );
+    };
+    const setMockDataProps = (value: any, index: number, key: string[]) => {
+        // 根据索引设置某个key的值
+        const mock = [...mockData];
+        const item = mock[index];
+        const updateItem = setObjectValue(key, item, value);
+        mock[index] = { ...item, ...updateItem };
+        console.log('设置的mock', mock[index]);
+        setMockData(mock);
+        setActiveMockItem(mock[index]);
+    };
+    const textAreaChange = (id: string, value: string, key: string[]) => {
+        console.log(value.toString());
+        let data: any; // 检查是否是合法的json
+        try {
+            data = JSON.parse(value);
+            findMockBuyUrl(
+                id,
+                (indexSwitch: number) => {
+                    setMockDataProps(JSON.stringify(data), indexSwitch, key);
+                },
+                mockData,
+            );
+        } catch {
+            findMockBuyUrl(
+                id,
+                (indexSwitch: number) => {
+                    setMockDataProps(JSON.stringify(data), indexSwitch, key);
+                },
+                mockData,
+            );
+        }
+    };
     useEffect(() => {
         requestFinishedListener('add', collectRequestInformation);
         onMessageListener('add', ReceiveRequestInformation);
@@ -112,12 +162,19 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
 
     useUpdateEffect(() => {
         console.log(collectRequestData, '网络收集');
+        if (!initMockItemStatus.current && mockData.length > 0) {
+            setInitActiveMockItem(collectRequestData[0]);
+            initMockItemStatus.current = true;
+        }
     }, [collectRequestData]);
 
     useUpdateEffect(() => {
         console.log(mockData, '拦截数据');
-        setInitActiveMockItem();
     }, [mockData]);
+
+    useUpdateEffect(() => {
+        console.log('当前的mock', activeMockItem);
+    }, [activeMockItem]);
 
     useEffect(() => {
         chrome.storage.local.get('rule', (res) => {
@@ -153,7 +210,8 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
 
             <Content
                 style={{
-                    padding: '24px',
+                    padding: '2px',
+                    height: '0px',
                     backgroundColor: 'var(--semi-color-bg-0)',
                 }}
             >
@@ -162,11 +220,11 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
                         borderRadius: '10px',
                         border: '1px solid var(--semi-color-border)',
                         height: '100%',
-                        padding: '32px',
+                        padding: '12px',
                         boxShadow: '0px 0px 1px 1px var(--semi-color-border)',
                     }}
                 >
-                    <Spin spinning={loading} tip="别动! 我自己会消失..." size="large">
+                    <Spin spinning={loading} tip="别动! 我自己会消失..." size="large" style={{ height: '100%' }}>
                         <div className="tools-content">
                             <div className="table-content">
                                 <div className="search-box">
@@ -183,14 +241,20 @@ const App: React.FC<{ globalDataProps: globalDataProps }> = (props) => {
                                 <DataTable
                                     data={filterTableData}
                                     clickRow={(item) => {
-                                        const currentItem = mockData.find((mockItem) => mockItem.id === item.id);
-                                        console.log(item, currentItem, 'x');
-                                        setActiveMockItem(currentItem);
+                                        setInitActiveMockItem(item);
                                     }}
                                 />
                             </div>
                             <div className="panel-content">
-                                <DataTabs mockData={activeMockItem} />
+                                {activeMockItem.id ? (
+                                    <DataTabs mockData={activeMockItem} changeHandel={changeHandel} textAreaChange={textAreaChange} />
+                                ) : (
+                                    <Empty
+                                        image={<IllustrationIdle style={{ width: 150, height: 150 }} />}
+                                        darkModeImage={<IllustrationIdleDark style={{ width: 150, height: 150 }} />}
+                                        description={collectRequestData.length === 0 ? '哦豁，刷新页面试试' : '未拦截到此请求...'}
+                                    />
+                                )}
                             </div>
                         </div>
                     </Spin>
@@ -240,6 +304,14 @@ const requestFinishedListener = (type: 'add' | 'remove', handel: (data: Devtools
         chrome.devtools.network.onRequestFinished.addListener(handel);
     } else {
         chrome.devtools.network.onRequestFinished.removeListener(handel);
+    }
+};
+
+const findMockBuyUrl = (id: string, fn: (index: number) => void, mockData: mockDataItem[]) => {
+    // 根据url 找到列表数据
+    const indexSwitch = mockData.findIndex((item) => id === item.id);
+    if (indexSwitch > -1) {
+        fn(indexSwitch);
     }
 };
 
