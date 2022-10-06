@@ -1,4 +1,4 @@
-import { IconDoubleChevronLeft, IconDoubleChevronRight, IconRefresh, IconSetting } from '@douyinfe/semi-icons';
+import { IconMinus, IconRefresh, IconSetting } from '@douyinfe/semi-icons';
 import { IllustrationConstruction, IllustrationConstructionDark } from '@douyinfe/semi-illustrations';
 import { Card, Empty, Input, Notification, TabPane, Tabs } from '@douyinfe/semi-ui';
 import React, { useEffect, useState } from 'react';
@@ -11,6 +11,7 @@ import { ConfigSideSheet } from './components/ConfigSideSheet';
 import { DropDownParam, HeaderExtraContent } from './components/HeaderExtraContent';
 import { SingleSideSheet } from './components/SingleSideSheet';
 import { useCopy } from './hooks/useCopy';
+import { Screen, useDrap } from './hooks/useDrap';
 import { getUrlNumberData } from './parse';
 
 import './index.scss';
@@ -40,6 +41,9 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     const [ruleInput, setRuleInput] = useState('https?://'); // 过滤规则
     const { activeKey: defaultedKey, panelData } = getUrlNumberData(mockData, ruleInput); // 转换为面板数据
     const [activeKey, setActiveKey] = useState(defaultedKey);
+    // const dragStatus = useRef(false)
+
+    const { dragStatus } = useDrap({ el: '.box-small', onmouseMove: mouseDownMove });
     const copy = useCopy({
         onSuccess: (value) => {
             Notification.success({
@@ -168,128 +172,146 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mockData, config]);
     return (
-        <div className="popup-box scrollbar">
-            <ConfigSideSheet
-                config={config}
-                visible={visible}
-                mockData={mockData}
-                onCancel={(value: boolean) => {
-                    setVisible(value);
-                }}
-                onChangeConfig={(value: globalConfig) => {
-                    setControlRefresh(true);
-                    setConfig(value);
-                }}
-                onchangeMockData={(mock: Array<mockDataItem>) => {
-                    setControlRefresh(true);
-                    setMockData(mock);
-                }}
-            />
-            <SingleSideSheet
-                visible={singleVisible}
-                item={singMockData}
-                itemChange={(item) => {
-                    setControlRefresh(true);
-                    findMockBuyUrl(item.id, (indexSwitch: number) => {
-                        const mock = [...mockData];
-                        mock[indexSwitch] = item;
-                        setMockData(mock);
-                    });
-                }}
-                onCancel={(value: boolean) => {
-                    setSingVisible(value);
-                }}
-            />
-            <div className="title-box">
-                <h1 className="title">mT插件🤺</h1>
-                <div>
-                    <IconRefresh
-                        style={{ margin: '0px 16px', cursor: 'pointer' }}
-                        title="重新加载"
-                        onClick={() => {
-                            chrome.runtime.sendMessage({ to: 'background', action: 'reload' });
+        <>
+            {show ? (
+                <div className="popup-box scrollbar">
+                    <ConfigSideSheet
+                        config={config}
+                        visible={visible}
+                        mockData={mockData}
+                        onCancel={(value: boolean) => {
+                            setVisible(value);
+                        }}
+                        onChangeConfig={(value: globalConfig) => {
+                            setControlRefresh(true);
+                            setConfig(value);
+                        }}
+                        onchangeMockData={(mock: Array<mockDataItem>) => {
+                            setControlRefresh(true);
+                            setMockData(mock);
                         }}
                     />
-                    <IconSetting
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => {
-                            setVisible(true);
+                    <SingleSideSheet
+                        visible={singleVisible}
+                        item={singMockData}
+                        itemChange={(item) => {
+                            setControlRefresh(true);
+                            findMockBuyUrl(item.id, (indexSwitch: number) => {
+                                const mock = [...mockData];
+                                mock[indexSwitch] = item;
+                                setMockData(mock);
+                            });
+                        }}
+                        onCancel={(value: boolean) => {
+                            setSingVisible(value);
                         }}
                     />
-                </div>
-            </div>
-            <div onClick={showClickHandel} className="show-icon">
-                {show ? <IconDoubleChevronRight /> : <IconDoubleChevronLeft />}
-            </div>
-            <Input
-                addonBefore="过滤URL"
-                onChange={(value: string) => {
-                    ruleChangeHandel(value);
-                }}
-                value={ruleInput}
-                className="rule-input"
-            />
+                    <div className="title-box">
+                        <h1 className="title">mT插件🤺</h1>
+                        <div>
+                            <IconRefresh
+                                style={{ margin: '0px 16px', cursor: 'pointer' }}
+                                title="重新加载"
+                                onClick={() => {
+                                    chrome.runtime.sendMessage({ to: 'background', action: 'reload' });
+                                }}
+                            />
+                            <IconSetting
+                                style={{ marginRight: '16px', cursor: 'pointer' }}
+                                onClick={() => {
+                                    setVisible(true);
+                                }}
+                            />
+                            <IconMinus style={{ cursor: 'pointer' }} onClick={showClickHandel} />
+                        </div>
+                    </div>
 
-            {panelData.length > 0 && config.proxySwitch ? (
-                <Tabs
-                    type="card"
-                    collapsible
-                    defaultActiveKey={activeKey}
-                    activeKey={activeKey}
-                    onTabClick={(Key) => {
-                        console.log(Key);
-                        setActiveKey(Key);
+                    <Input
+                        addonBefore="过滤URL"
+                        onChange={(value: string) => {
+                            ruleChangeHandel(value);
+                        }}
+                        value={ruleInput}
+                        className="rule-input"
+                    />
+
+                    {panelData.length > 0 && config.proxySwitch ? (
+                        <Tabs
+                            type="card"
+                            collapsible
+                            defaultActiveKey={activeKey}
+                            activeKey={activeKey}
+                            onTabClick={(Key) => {
+                                console.log(Key);
+                                setActiveKey(Key);
+                            }}
+                        >
+                            {panelData.map((item) => (
+                                <TabPane tab={item.url} itemKey={item.url} key={item.id} className="scrollbar">
+                                    {filterMockData(item.data, ruleInput).map((el, index) => (
+                                        <Card
+                                            shadows="hover"
+                                            key={el.id}
+                                            className="card-box"
+                                            title={<CardTitle url={el.url} type={el.type} />}
+                                            headerExtraContent={
+                                                <HeaderExtraContent
+                                                    switchCheck={el.switch}
+                                                    switchChange={(value) => {
+                                                        findMockBuyUrl(el.id, (indexSwitch: number) => {
+                                                            setMockDataProps(value, indexSwitch, ['switch']);
+                                                        });
+                                                    }}
+                                                    dropdownClick={(value) => {
+                                                        dropDownClick(value, el);
+                                                    }}
+                                                />
+                                            }
+                                        >
+                                            <ActionPanel
+                                                valueChange={(id, value, key) => {
+                                                    findMockBuyUrl(id, (indexSwitch: number) => {
+                                                        setMockDataProps(value, indexSwitch, [key]);
+                                                    });
+                                                }}
+                                                textAreaChange={textAreaChange}
+                                                changeHandel={changeHandel}
+                                                data={el}
+                                                index={index}
+                                            />
+                                        </Card>
+                                    ))}
+                                </TabPane>
+                            ))}
+                        </Tabs>
+                    ) : (
+                        <div className="empty-wrapper">
+                            <Empty
+                                image={<IllustrationConstruction style={{ width: 150, height: 150 }} />}
+                                darkModeImage={<IllustrationConstructionDark style={{ width: 150, height: 150 }} />}
+                                title="哦豁，还没有任何数据"
+                                description="打开右上角的设置，开启拦截开关试试！"
+                            />
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <div
+                    className="box-small"
+                    onClick={(e) => {
+                        if (!dragStatus.current) {
+                            console.log(e, '事件');
+                            e.stopPropagation();
+                            setShow(true);
+                            window.postMessage({ action: 'toggle', to: 'content' });
+                            chrome.runtime.sendMessage({ action: 'toggle', to: 'background' });
+                        }
                     }}
                 >
-                    {panelData.map((item) => (
-                        <TabPane tab={item.url} itemKey={item.url} key={item.id} className="scrollbar">
-                            {filterMockData(item.data, ruleInput).map((el, index) => (
-                                <Card
-                                    shadows="hover"
-                                    key={el.id}
-                                    className="card-box"
-                                    title={<CardTitle url={el.url} type={el.type} />}
-                                    headerExtraContent={
-                                        <HeaderExtraContent
-                                            switchCheck={el.switch}
-                                            switchChange={(value) => {
-                                                findMockBuyUrl(el.id, (indexSwitch: number) => {
-                                                    setMockDataProps(value, indexSwitch, ['switch']);
-                                                });
-                                            }}
-                                            dropdownClick={(value) => {
-                                                dropDownClick(value, el);
-                                            }}
-                                        />
-                                    }
-                                >
-                                    <ActionPanel
-                                        valueChange={(id, value, key) => {
-                                            findMockBuyUrl(id, (indexSwitch: number) => {
-                                                setMockDataProps(value, indexSwitch, [key]);
-                                            });
-                                        }}
-                                        textAreaChange={textAreaChange}
-                                        changeHandel={changeHandel}
-                                        data={el}
-                                        index={index}
-                                    />
-                                </Card>
-                            ))}
-                        </TabPane>
-                    ))}
-                </Tabs>
-            ) : (
-                <div className="empty-wrapper">
-                    <Empty
-                        image={<IllustrationConstruction style={{ width: 150, height: 150 }} />}
-                        darkModeImage={<IllustrationConstructionDark style={{ width: 150, height: 150 }} />}
-                        title="哦豁，还没有任何数据"
-                        description="打开右上角的设置，开启拦截开关试试！"
-                    />
+                    Mt
                 </div>
             )}
-        </div>
+        </>
     );
 };
 /**
@@ -303,12 +325,16 @@ const filterMockData = (mockData: mockDataItem[], ruleInput: string): mockDataIt
         if (!ruleInput) return true;
         const testArray = [el.url, el.response, el.originResponse];
         try {
-            const reg = new RegExp(ruleInput, 'g');
+            const reg = new RegExp(ruleInput.replace('/', ''), 'g');
             return testArray.some((item) => reg.test(item));
         } catch (error) {
             console.log(error);
             return false;
         }
     });
+
+const mouseDownMove = (screen: Screen) => {
+    // chrome.runtime.sendMessage({ action: 'mouseMove', to: 'background', data: screen });
+};
 
 export default Popup;

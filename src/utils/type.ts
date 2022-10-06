@@ -9,6 +9,7 @@ export interface configProps {
 export interface globalConfig {
     withCredentials: boolean;
     proxySwitch: boolean;
+    interactionStatus: 'small' | 'large'; // 交互状态
 }
 
 export interface globalDataProps {

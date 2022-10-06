@@ -18,7 +18,6 @@
 }
 .popup-box {
     padding: 0px 10px;
-    padding-left: 25px;
     overflow: auto;
     height: 100%;
     transition: all 0.5s;
@@ -39,12 +38,17 @@
     }
 }
 .title-box {
-    margin: 8px 0px;
+    position: fixed;
+    height: 47px;
+    background: #fbfbfb;
+    width: 91%;
+    z-index: 1000;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 .rule-input {
+    margin-top: 52px;
     background: white;
     box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 4px 2px !important;
     & .semi-input-default {
@@ -56,7 +60,6 @@
     top: 20%;
 }
 .semi-tabs-pane {
-    height: 90vh;
     overflow: auto;
 }
 .semi-tabs-bar {
@@ -75,4 +78,14 @@
 }
 .semi-input-prepend {
     background: #f4f5f5;
+}
+.box-small {
+    height: 100%;
+    font-size: 24px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    line-height: 60px;
+    overflow: hidden;
+    user-select: none;
 }

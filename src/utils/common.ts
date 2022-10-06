@@ -96,7 +96,7 @@ export function localGetSync(key: string): Promise<any> {
 export async function readStorageAll(): Promise<globalDataProps> {
     let localKey: globalDataProps = {
         mockData: [],
-        config: { withCredentials: false, proxySwitch: true },
+        config: { withCredentials: false, proxySwitch: true, interactionStatus: 'small' },
     };
 
     const data = await localGetSync('globalData');

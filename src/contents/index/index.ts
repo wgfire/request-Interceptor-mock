@@ -15,9 +15,10 @@ let show = false; // iframe是否展开的字段
 const iframe: HTMLIFrameElement = document.createElement('iframe');
 const actionMap: any = {
     toggle: (request: any) => {
-        console.log('收到popup的toggle事件');
         show = !show;
-        iframe?.style.setProperty('transform', show ? 'translateX(0px)' : 'translateX(480px)', 'important');
+        console.log('收到popup的toggle事件', show);
+        iframe.setAttribute('class', show ? 'mt-iframe-large' : 'mt-iframe-small');
+        // iframe?.style.setProperty('transform', show ? 'translateX(0px)' : 'translateX(480px)', 'important');
     },
     setMock: (request: any) => {
         console.log('收到popup的setMock事件,转发给pagescript');
@@ -32,22 +33,35 @@ const actionMap: any = {
         console.log('content接受到error');
         chrome.runtime.sendMessage({ to: 'background', action: 'error', data });
     },
-    reload: (data: any) => {
+    reload: () => {
         console.log('content接受到reload');
         window.top?.location.reload();
     },
+    mouseMove: (request: any) => {
+        const { data } = request;
+        const y = data.y - (window.screen.availHeight - window.innerHeight + 30);
+        const x = data.x - 30;
+        // iframe.setAttribute('style', `top:${y}px !important;left:${x}px !important`);
+        // iframe.style.top = `${data.y}px !important`;
+        // iframe.style.left = `${data.x}px !important`;
+    },
 };
 
-function createPopup() {
+function createPopup(interactionStatus: string) {
     // 有些网站可能加载的数据比较多，所以还是要在一个回调函数里等document有了在插入
     document.addEventListener('DOMContentLoaded', () => {
         // 只在最顶层页面嵌入iframe
         if (window.self === window.top) {
             iframe.setAttribute('frameborder', 'none');
             iframe.setAttribute('id', 'mt-chrome-extension-iframe');
+            iframe.setAttribute('class', interactionStatus === 'small' ? 'mt-iframe-small' : 'mt-iframe-large ');
             iframe.setAttribute('allowfullscreen', 'true'); // 允许iframe全屏
             iframe.src = chrome.runtime.getURL('popup.html');
             document.body.append(iframe);
+            iframe.addEventListener('mousedown', (e: MouseEvent) => {
+                console.log(e, '点击事件');
+            });
+
             console.log('iframe插入成功', iframe);
         }
     });
@@ -55,13 +69,13 @@ function createPopup() {
 
 async function start() {
     await injectCustomJs('js/pageScript.js');
-    postMockDataToScript({ mockData: [], config: { withCredentials: false, proxySwitch: false } }); // 加载完成后立马先吧完成xhr的重写
+    postMockDataToScript({ mockData: [], config: { withCredentials: false, proxySwitch: false, interactionStatus: 'small' } }); // 加载完成后立马先吧完成xhr的重写
     const map = readStorageAll();
     map.then((res) => {
         if (res.config.proxySwitch) {
             postMockDataToScript(res);
         }
-        createPopup();
+        createPopup(res.config.interactionStatus);
     });
 }
 start();

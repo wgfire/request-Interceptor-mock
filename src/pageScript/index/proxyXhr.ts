@@ -4,7 +4,7 @@ import { BaseXhr, hooksProps } from './baseXhr';
 
 const xhrData: globalDataProps = {
     mockData: [],
-    config: { withCredentials: true, proxySwitch: true },
+    config: { withCredentials: true, proxySwitch: true, interactionStatus: 'small' },
 };
 let xhr: ProxyXhr | null;
 class ProxyXhr extends BaseXhr {
