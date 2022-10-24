@@ -41,7 +41,6 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
     const [ruleInput, setRuleInput] = useState('https?://'); // 过滤规则
     const { activeKey: defaultedKey, panelData } = getUrlNumberData(mockData, ruleInput); // 转换为面板数据
     const [activeKey, setActiveKey] = useState(defaultedKey);
-    // const dragStatus = useRef(false)
 
     const { dragStatus } = useDrap({ el: '.box-small', onmouseMove: mouseDownMove });
     const copy = useCopy({
@@ -303,8 +302,8 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                             console.log(e, '事件');
                             e.stopPropagation();
                             setShow(true);
-                            window.postMessage({ action: 'toggle', to: 'content' });
-                            chrome.runtime.sendMessage({ action: 'toggle', to: 'background' });
+                            // window.postMessage({ action: 'toggle', to: 'content' });
+                            // chrome.runtime.sendMessage({ action: 'toggle', to: 'background' });
                         }
                     }}
                 >
