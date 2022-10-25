@@ -39,7 +39,7 @@ class NotificationsEvent {
         console.log(options, '创建提醒');
         const domain = options.url.match(/^(https?):\/\/(.*?)\//);
         const url = options.url.match(/(?<=^(https?):\/\/(.*?)\/)\S+/g);
-        Max > 0 &&
+        if (Max > 0) {
             chrome.notifications.create(
                 `${Math.random()}`,
                 {
@@ -54,6 +54,7 @@ class NotificationsEvent {
                     console.log(id, '创建完成');
                 },
             );
+        }
     }
 }
 

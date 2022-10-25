@@ -67,16 +67,27 @@ class ProxyXhr extends BaseXhr {
         );
     }
     setRequestData(config: configProps) {
-        const data = findUrlBuyMock(config.url, xhrData.mockData);
-        if (data && data.switch) {
-            const { request } = data;
-            if (data.showOriginData) {
-                // 如果用户设置了显示原始数据,那么就发送原生请求数据
-                return config.data;
-            }
-            return request.data;
-        }
-        return config.data;
+        let sendData = config.data;
+        switchFindUrl(
+            config.url,
+            (data) => {
+                if (!data.showOriginData) {
+                    sendData = data.request.data;
+                }
+            },
+            xhrData.mockData,
+        );
+        return sendData;
+        // const data = findUrlBuyMock(config.url, xhrData.mockData);
+        // if (data && data.switch) {
+        //     const { request } = data;
+        //     if (data.showOriginData) {
+        //         // 如果用户设置了显示原始数据,那么就发送原生请求数据
+        //         return config.data;
+        //     }
+        //     return request.data;
+        // }
+        // return config.data;
     }
     setResponseData(config: configProps, xhr: any) {
         // 修改返回的reponse数据
@@ -121,6 +132,7 @@ export const initXhr = (data: globalDataProps): ProxyXhr => {
                     ProxyXhr.config.data = body ? body[0] : undefined;
                     xhr!.setResponseData(ProxyXhr.config, this);
                     const data = xhr!.setRequestData(ProxyXhr.config);
+                    console.log('send', data);
                     return data;
                 } catch (error) {
                     console.log(error);

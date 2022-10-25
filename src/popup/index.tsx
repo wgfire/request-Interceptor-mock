@@ -303,7 +303,7 @@ export const Popup: React.FC<{ mockDataPopup: mockDataItem[]; configPopup: globa
                             e.stopPropagation();
                             setShow(true);
                             // window.postMessage({ action: 'toggle', to: 'content' });
-                            // chrome.runtime.sendMessage({ action: 'toggle', to: 'background' });
+                            chrome.runtime.sendMessage({ action: 'toggle', to: 'background' });
                         }
                     }}
                 >
