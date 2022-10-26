@@ -19,6 +19,7 @@ const myFetch = function (...args) {
     let [url] = copyArgs;
     // 查看当前url在mock 数据里是否存在
     const item = IsIncludeUrlBuyMock(url, mockData);
+    console.log(item, 'fetch item');
 
     if (item && item.switch) {
         // 更新原生请求数据

@@ -35,12 +35,10 @@ export const useDrap = (props: UseDrapProps) => {
         dragStatus.current = true;
         screen.current.x = event.screenX;
         screen.current.y = event.screenY;
-        console.log(screen.current, event, '移动', dragStatus.current);
         onmouseMove && onmouseMove(screen.current);
     };
 
     const onmouseup = (e: Event) => {
-        console.log(e, '放下', dragStatus.current);
         screen.current.x = 0;
         screen.current.y = 0;
         removeEvent('mousemove', onmousemove);
